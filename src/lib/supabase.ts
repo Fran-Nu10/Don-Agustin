@@ -1,175 +1,86 @@
-import { supabase } from './supabase/client';
 import { User, Trip, Booking, Stats } from '../types';
+import { users, trips, bookings, stats } from './mockData';
 
 // Authentication functions
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) throw error;
-  return data;
+  const user = users.find(u => u.email === email);
+  if (!user || password !== 'password') {
+    throw new Error('Invalid credentials');
+  }
+  return { user };
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  // Mock sign out
+  return;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  return profile;
+  // For demo purposes, always return the owner user
+  return users[0];
 }
 
 // Trip functions
 export async function getTrips(): Promise<Trip[]> {
-  const { data, error } = await supabase
-    .from('trips')
-    .select(`
-      *,
-      itinerary:itinerary_days(*),
-      included_services(*)
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
+  return trips;
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {
-  const { data, error } = await supabase
-    .from('trips')
-    .select(`
-      *,
-      itinerary:itinerary_days(*),
-      included_services(*)
-    `)
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data;
+  return trips.find(trip => trip.id === id) || null;
 }
 
 export async function createTrip(trip: Omit<Trip, 'id' | 'created_at' | 'updated_at'>): Promise<Trip> {
-  const { data, error } = await supabase
-    .from('trips')
-    .insert([{
-      ...trip,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const newTrip: Trip = {
+    id: String(trips.length + 1),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...trip,
+  };
+  trips.push(newTrip);
+  return newTrip;
 }
 
 export async function updateTrip(id: string, tripUpdate: Partial<Trip>): Promise<Trip> {
-  const { data, error } = await supabase
-    .from('trips')
-    .update({
-      ...tripUpdate,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const index = trips.findIndex(t => t.id === id);
+  if (index === -1) throw new Error('Trip not found');
+  
+  trips[index] = {
+    ...trips[index],
+    ...tripUpdate,
+    updated_at: new Date().toISOString(),
+  };
+  
+  return trips[index];
 }
 
 export async function deleteTrip(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('trips')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
+  const index = trips.findIndex(t => t.id === id);
+  if (index !== -1) {
+    trips.splice(index, 1);
+  }
 }
 
 // Booking functions
 export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Promise<Booking> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert([{
-      ...booking,
-      created_at: new Date().toISOString(),
-    }])
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .single();
-
-  if (error) throw error;
-  return data;
+  const newBooking: Booking = {
+    id: String(bookings.length + 1),
+    created_at: new Date().toISOString(),
+    ...booking,
+    trip: trips.find(t => t.id === booking.trip_id),
+  };
+  bookings.push(newBooking);
+  return newBooking;
 }
 
 export async function getBookings(): Promise<Booking[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
+  return bookings;
 }
 
 export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .eq('trip_id', tripId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data || [];
+  return bookings.filter(booking => booking.trip_id === tripId);
 }
 
 // Stats functions
 export async function getStats(): Promise<Stats> {
-  const [
-    { count: totalTrips },
-    { count: totalBookings },
-    { count: upcomingTrips },
-    { data: popularDestinations }
-  ] = await Promise.all([
-    supabase.from('trips').select('*', { count: 'exact', head: true }),
-    supabase.from('bookings').select('*', { count: 'exact', head: true }),
-    supabase.from('trips')
-      .select('*', { count: 'exact', head: true })
-      .gte('departure_date', new Date().toISOString()),
-    supabase.from('trips')
-      .select('destination, count')
-      .order('count', { ascending: false })
-      .limit(5)
-  ]);
-
-  return {
-    totalTrips: totalTrips || 0,
-    totalBookings: totalBookings || 0,
-    upcomingTrips: upcomingTrips || 0,
-    popularDestinations: popularDestinations?.map(d => ({
-      destination: d.destination,
-      count: parseInt(d.count)
-    })) || []
-  };
+  return stats;
 }
