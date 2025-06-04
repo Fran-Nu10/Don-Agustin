@@ -13,12 +13,24 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Authentication functions
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  // First authenticate with Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email,
-    password,
+    password
   });
-  if (error) throw error;
-  return data;
+  
+  if (authError) throw authError;
+
+  // Then get the user data from our users table
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authData.user.id)
+    .single();
+
+  if (userError) throw userError;
+
+  return { user: userData };
 }
 
 export async function signOut() {
@@ -185,7 +197,7 @@ export async function getStats(): Promise<Stats> {
     upcomingTrips: upcomingTrips || 0,
     popularDestinations: (popularDestinations || []).map(trip => ({
       destination: trip.destination,
-      count: 1, // This is a simplification, you might want to count actual bookings per destination
+      count: 1,
     })),
   };
 }
