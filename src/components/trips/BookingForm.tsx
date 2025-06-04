@@ -38,10 +38,6 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
         phone: data.phone,
       });
       
-      // Update available spots
-      // Note: This would ideally be handled by a database trigger or backend function
-      // to ensure consistency, but for demo purposes we'll handle it client-side
-      
       toast.success('¡Reserva realizada con éxito!');
       reset();
       onSuccess();
