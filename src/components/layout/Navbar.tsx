@@ -14,21 +14,26 @@ export function Navbar() {
     return location.pathname === path;
   };
 
+  // Only show logo on home page
+  const isHomePage = location.pathname === '/';
+
   return (
     <header className="absolute top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img 
-              src="/image.png" 
-              alt="Don Agustín Viajes" 
-              className="h-12 w-12"
-            />
-          </Link>
+          {/* Logo - Only on home page */}
+          {isHomePage && (
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/image.png" 
+                alt="Don Agustín Viajes" 
+                className="h-12 w-12"
+              />
+            </Link>
+          )}
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className={`hidden md:flex items-center space-x-8 ${!isHomePage ? 'ml-0' : ''}`}>
             <NavLink to="/" isActive={isActive('/')}>
               Inicio
             </NavLink>

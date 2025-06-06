@@ -30,7 +30,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             alt={trip.title}
             className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
           />
-          <div className="absolute top-0 right-0 bg-primary-950 text-white py-1 px-3 font-medium rounded-bl-lg">
+          <div className="absolute top-0 right-0 bg-primary-600 text-white py-1 px-3 font-medium rounded-bl-lg">
             ${trip.price.toLocaleString('es-UY')}
           </div>
         </div>
@@ -39,19 +39,19 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
           <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900">{trip.title}</h3>
           
           <div className="flex items-center text-secondary-600 mb-2">
-            <MapPin className="h-4 w-4 mr-1 text-primary-950" />
+            <MapPin className="h-4 w-4 mr-1 text-primary-600" />
             <span className="text-sm">{trip.destination}</span>
           </div>
           
           <div className="flex items-center text-secondary-600 mb-2">
-            <Calendar className="h-4 w-4 mr-1 text-primary-950" />
+            <Calendar className="h-4 w-4 mr-1 text-primary-600" />
             <span className="text-sm">
               {formattedDepartureDate} - {formattedReturnDate}
             </span>
           </div>
           
           <div className="flex items-center text-secondary-600 mb-4">
-            <Tag className="h-4 w-4 mr-1 text-primary-950" />
+            <Tag className="h-4 w-4 mr-1 text-primary-600" />
             <span className="text-sm">
               {trip.available_spots} {trip.available_spots === 1 ? 'cupo disponible' : 'cupos disponibles'}
             </span>

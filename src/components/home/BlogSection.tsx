@@ -79,7 +79,7 @@ export function BlogSection() {
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                   />
-                  <div className="absolute top-4 left-4 bg-primary-950 text-white text-sm px-3 py-1 rounded-full">
+                  <div className="absolute top-4 left-4 bg-primary-600 text-white text-sm px-3 py-1 rounded-full">
                     {post.category}
                   </div>
                 </div>
@@ -92,7 +92,7 @@ export function BlogSection() {
                     </span>
                   </div>
                   
-                  <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-950 transition-colors">
+                  <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-600 transition-colors">
                     {post.title}
                   </h3>
                   
@@ -100,7 +100,7 @@ export function BlogSection() {
                     {post.excerpt}
                   </p>
                   
-                  <div className="flex items-center text-primary-950 font-medium group-hover:text-primary-800 mt-auto">
+                  <div className="flex items-center text-primary-600 font-medium group-hover:text-primary-700 mt-auto">
                     <span>Leer más</span>
                     <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
                   </div>
@@ -116,7 +116,7 @@ export function BlogSection() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-primary-950 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-800 transition-colors"
+                className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
               >
                 Ver todos los artículos
               </motion.button>

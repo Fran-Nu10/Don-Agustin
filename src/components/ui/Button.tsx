@@ -28,14 +28,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={clsx(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-950',
+          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-600',
           {
             // Variant styles
-            'bg-primary-950 text-white hover:bg-primary-800 active:bg-primary-900':
+            'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800':
               variant === 'primary',
             'bg-secondary-200 text-secondary-900 hover:bg-secondary-300 active:bg-secondary-400':
               variant === 'secondary',
-            'border border-primary-950 bg-transparent text-primary-950 hover:bg-primary-50':
+            'border border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50':
               variant === 'outline',
             'bg-transparent text-secondary-900 hover:bg-secondary-100 active:bg-secondary-200':
               variant === 'ghost',

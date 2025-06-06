@@ -53,22 +53,22 @@ export function AboutSection() {
             className="grid grid-cols-1 sm:grid-cols-2 gap-6"
           >
             <ValueCard
-              icon={<Award className="h-8 w-8 text-primary-950" />}
+              icon={<Award className="h-8 w-8 text-primary-600" />}
               title="Profesionalismo"
               description="Más de 25 años de experiencia en el mercado turístico"
             />
             <ValueCard
-              icon={<Users className="h-8 w-8 text-primary-950" />}
+              icon={<Users className="h-8 w-8 text-primary-600" />}
               title="Servicio"
               description="Atención personalizada y asesoramiento experto"
             />
             <ValueCard
-              icon={<Target className="h-8 w-8 text-primary-950" />}
+              icon={<Target className="h-8 w-8 text-primary-600" />}
               title="Compromiso"
               description="Dedicación total a la satisfacción del cliente"
             />
             <ValueCard
-              icon={<Shield className="h-8 w-8 text-primary-950" />}
+              icon={<Shield className="h-8 w-8 text-primary-600" />}
               title="Respaldo"
               description="Garantía y seguridad en todos nuestros servicios"
             />
