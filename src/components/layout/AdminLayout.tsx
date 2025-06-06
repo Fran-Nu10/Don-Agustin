@@ -167,7 +167,7 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
 
   return (
     <div className="relative">
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
+      <Button variant="ghost\" size="sm\" onClick={() => setIsOpen(!isOpen)}>
         <span className="sr-only">Open menu</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
