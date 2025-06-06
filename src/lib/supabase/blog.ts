@@ -4,7 +4,20 @@ import { BlogPost, BlogCategory, BlogTag, BlogFormData } from '../../types/blog'
 export async function getBlogPosts(): Promise<BlogPost[]> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('*')
+    .select(`
+      id,
+      title,
+      slug,
+      excerpt,
+      content,
+      image_url,
+      category,
+      author_id,
+      status,
+      published_at,
+      created_at,
+      updated_at
+    `)
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
@@ -16,7 +29,18 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   const { data, error } = await supabase
     .from('blog_posts')
     .select(`
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      content,
+      image_url,
+      category,
+      author_id,
+      status,
+      published_at,
+      created_at,
+      updated_at,
       author:users!blog_posts_author_id_fkey(id, email)
     `)
     .order('created_at', { ascending: false });
@@ -28,7 +52,20 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('*')
+    .select(`
+      id,
+      title,
+      slug,
+      excerpt,
+      content,
+      image_url,
+      category,
+      author_id,
+      status,
+      published_at,
+      created_at,
+      updated_at
+    `)
     .eq('slug', slug)
     .eq('status', 'published')
     .single();
@@ -89,7 +126,18 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
       published_at: data.status === 'published' ? new Date().toISOString() : null,
     })
     .select(`
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      content,
+      image_url,
+      category,
+      author_id,
+      status,
+      published_at,
+      created_at,
+      updated_at,
       author:users!blog_posts_author_id_fkey(id, email)
     `)
     .single();
@@ -113,7 +161,18 @@ export async function updateBlogPost(id: string, data: Partial<BlogFormData>): P
     .update(updateData)
     .eq('id', id)
     .select(`
-      *,
+      id,
+      title,
+      slug,
+      excerpt,
+      content,
+      image_url,
+      category,
+      author_id,
+      status,
+      published_at,
+      created_at,
+      updated_at,
       author:users!blog_posts_author_id_fkey(id, email)
     `)
     .single();
