@@ -1,17 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { motion } from 'framer-motion';
-import { Calendar, Tag, Share2, Facebook, Twitter, Send } from 'lucide-react';
+import { Calendar, Share2, Facebook, Twitter, Send, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { blogPosts } from '../lib/mockData';
+import { getBlogPost, getBlogPosts } from '../lib/supabase/blog';
+import { BlogPost } from '../types/blog';
+import { toast } from 'react-hot-toast';
 
 export function BlogPostPage() {
-  const { id } = useParams<{ id: string }>();
-  const post = blogPosts.find(p => p.id === id);
-  
+  const { slug } = useParams<{ slug: string }>();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (slug) {
+      loadPost(slug);
+    }
+  }, [slug]);
+
+  async function loadPost(postSlug: string) {
+    try {
+      setLoading(true);
+      const [postData, allPosts] = await Promise.all([
+        getBlogPost(postSlug),
+        getBlogPosts(),
+      ]);
+      
+      setPost(postData);
+      
+      if (postData) {
+        // Get related posts from the same category
+        const related = allPosts
+          .filter(p => p.id !== postData.id && p.category === postData.category)
+          .slice(0, 3);
+        setRelatedPosts(related);
+      }
+    } catch (error) {
+      console.error('Error loading blog post:', error);
+      toast.error('Error al cargar el artículo');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <p className="text-secondary-500">Cargando artículo...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!post) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -33,10 +80,6 @@ export function BlogPostPage() {
       </div>
     );
   }
-
-  const relatedPosts = post.related_posts
-    ? blogPosts.filter(p => post.related_posts?.includes(p.id))
-    : [];
 
   const shareUrl = window.location.href;
   const shareText = `Leé "${post.title}" en Don Agustín Viajes`;
@@ -83,6 +126,15 @@ export function BlogPostPage() {
             transition={{ duration: 0.5 }}
             className="max-w-4xl mx-auto -mt-20 relative"
           >
+            {/* Back Button */}
+            <Link 
+              to="/blog" 
+              className="inline-flex items-center text-white hover:text-primary-200 mb-6 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Volver al blog
+            </Link>
+
             {/* Post Header */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <div className="flex items-center gap-4 mb-4">
@@ -91,7 +143,7 @@ export function BlogPostPage() {
                 </span>
                 <div className="flex items-center text-secondary-500 text-sm">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {format(new Date(post.date), 'dd MMM yyyy', { locale: es })}
+                  {post.published_at && format(new Date(post.published_at), 'dd MMM yyyy', { locale: es })}
                 </div>
               </div>
               
@@ -100,7 +152,7 @@ export function BlogPostPage() {
               </h1>
               
               <div className="flex items-center text-secondary-600 mb-6">
-                <span>Por {post.author}</span>
+                <span>Por {post.author?.email || 'Don Agustín Viajes'}</span>
               </div>
               
               {/* Share Buttons */}
@@ -133,23 +185,23 @@ export function BlogPostPage() {
             {/* Post Content */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <div className="prose prose-lg max-w-none">
-                {post.content.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-              
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mt-8">
-                {post.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="bg-secondary-100 text-secondary-600 px-3 py-1 rounded-full text-sm"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+                {post.content.split('\n').map((paragraph, index) => {
+                  if (paragraph.startsWith('## ')) {
+                    return (
+                      <h2 key={index} className="font-heading font-bold text-2xl text-secondary-900 mt-8 mb-4">
+                        {paragraph.replace('## ', '')}
+                      </h2>
+                    );
+                  }
+                  if (paragraph.trim() === '') {
+                    return <br key={index} />;
+                  }
+                  return (
+                    <p key={index} className="mb-4 text-secondary-700 leading-relaxed">
+                      {paragraph}
+                    </p>
+                  );
+                })}
               </div>
             </div>
             
@@ -164,7 +216,7 @@ export function BlogPostPage() {
                   {relatedPosts.map((relatedPost) => (
                     <Link
                       key={relatedPost.id}
-                      to={`/blog/${relatedPost.id}`}
+                      to={`/blog/${relatedPost.slug}`}
                       className="group"
                     >
                       <div className="relative h-40 mb-4 overflow-hidden rounded-lg">

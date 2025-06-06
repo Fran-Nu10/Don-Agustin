@@ -1,30 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowRight, Tag } from 'lucide-react';
+import { Calendar, ArrowRight, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { blogPosts } from '../lib/mockData';
-
-const categories = [
-  'Todos',
-  'Tips',
-  'Destinos',
-  'Rankings',
-  'Consejos',
-];
+import { getBlogPosts, getBlogCategories } from '../lib/supabase/blog';
+import { BlogPost, BlogCategory } from '../types/blog';
+import { toast } from 'react-hot-toast';
 
 export function BlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredPosts = blogPosts.filter(post => {
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const [postsData, categoriesData] = await Promise.all([
+        getBlogPosts(),
+        getBlogCategories(),
+      ]);
+      setPosts(postsData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error loading blog data:', error);
+      toast.error('Error al cargar los artículos del blog');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filteredPosts = posts.filter(post => {
     const matchesCategory = selectedCategory === 'Todos' || post.category === selectedCategory;
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const allCategories = ['Todos', ...categories.map(cat => cat.name)];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,8 +82,8 @@ export function BlogPage() {
         <div className="container mx-auto px-4 py-12">
           {/* Filters */}
           <div className="mb-8">
-            <div className="flex flex-wrap gap-4 justify-center">
-              {categories.map((category) => (
+            <div className="flex flex-wrap gap-4 justify-center mb-6">
+              {allCategories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
@@ -76,64 +97,85 @@ export function BlogPage() {
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Search */}
-          <div className="mb-8">
-            <input
-              type="text"
-              placeholder="Buscar artículos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-xl mx-auto block px-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+            {/* Search */}
+            <div className="relative max-w-xl mx-auto">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-secondary-400" />
+              <input
+                type="text"
+                placeholder="Buscar artículos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
           </div>
 
           {/* Blog Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPosts.map((post, index) => (
-              <motion.article
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-lg overflow-hidden shadow-card group cursor-pointer"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={post.image_url}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-primary-950 text-white text-sm px-3 py-1 rounded-full">
-                    {post.category}
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex items-center text-secondary-500 text-sm mb-2">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>
-                      {format(new Date(post.date), 'dd MMM yyyy', { locale: es })}
-                    </span>
-                  </div>
-                  
-                  <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-950 transition-colors">
-                    {post.title}
-                  </h3>
-                  
-                  <p className="text-secondary-600 mb-4 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center text-primary-950 font-medium group-hover:text-primary-800">
-                    <span>Leer más</span>
-                    <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </motion.article>
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-secondary-500">Cargando artículos...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+              <p className="text-secondary-500">No se encontraron artículos.</p>
+              <p className="text-secondary-400 mt-2">
+                {searchTerm || selectedCategory !== 'Todos' 
+                  ? 'Intenta con otros términos de búsqueda o categorías.'
+                  : 'Aún no hay artículos publicados en el blog.'
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPosts.map((post, index) => (
+                <motion.article
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="block bg-white rounded-lg overflow-hidden shadow-card group cursor-pointer h-full"
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={post.image_url}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                      />
+                      <div className="absolute top-4 left-4 bg-primary-950 text-white text-sm px-3 py-1 rounded-full">
+                        {post.category}
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 flex flex-col h-full">
+                      <div className="flex items-center text-secondary-500 text-sm mb-2">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        <span>
+                          {post.published_at && format(new Date(post.published_at), 'dd MMM yyyy', { locale: es })}
+                        </span>
+                      </div>
+                      
+                      <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-950 transition-colors">
+                        {post.title}
+                      </h3>
+                      
+                      <p className="text-secondary-600 mb-4 line-clamp-3 flex-grow">
+                        {post.excerpt}
+                      </p>
+                      
+                      <div className="flex items-center text-primary-950 font-medium group-hover:text-primary-800 mt-auto">
+                        <span>Leer más</span>
+                        <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.article>
+              ))}
+            </div>
+          )}
         </div>
       </main>
       

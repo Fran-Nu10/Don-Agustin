@@ -9,48 +9,38 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-
-// Mock data and functions (to be replaced with Supabase)
-const mockPosts: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Tips para viajar mejor',
-    slug: 'tips-para-viajar-mejor',
-    excerpt: 'Descubre los mejores consejos para hacer de tu próximo viaje una experiencia inolvidable.',
-    content: 'Contenido del artículo...',
-    image_url: 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg',
-    category: 'Tips',
-    author_id: '1',
-    status: 'published',
-    published_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  // Add more mock posts as needed
-];
+import { getAllBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost } from '../../lib/supabase/blog';
 
 export function BlogsPage() {
-  const [posts, setPosts] = useState<BlogPost[]>(mockPosts);
-  const [loading, setLoading] = useState(false);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  async function loadPosts() {
+    try {
+      setLoading(true);
+      const postsData = await getAllBlogPosts();
+      setPosts(postsData);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      toast.error('Error al cargar los artículos');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleCreatePost = async (data: BlogFormData) => {
     try {
       setIsSubmitting(true);
-      // Mock create post
-      const newPost: BlogPost = {
-        id: String(posts.length + 1),
-        slug: data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        author_id: '1',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        published_at: data.status === 'published' ? new Date().toISOString() : null,
-        ...data,
-      };
-      setPosts([newPost, ...posts]);
+      await createBlogPost(data);
+      await loadPosts(); // Refresh the posts list
       setShowForm(false);
       toast.success('Artículo creado con éxito');
     } catch (error) {
@@ -66,18 +56,8 @@ export function BlogsPage() {
     
     try {
       setIsSubmitting(true);
-      // Mock update post
-      const updatedPosts = posts.map(post => 
-        post.id === editingPost.id 
-          ? { 
-              ...post, 
-              ...data, 
-              updated_at: new Date().toISOString(),
-              published_at: data.status === 'published' ? new Date().toISOString() : null,
-            }
-          : post
-      );
-      setPosts(updatedPosts);
+      await updateBlogPost(editingPost.id, data);
+      await loadPosts(); // Refresh the posts list
       setEditingPost(null);
       toast.success('Artículo actualizado con éxito');
     } catch (error) {
@@ -94,8 +74,8 @@ export function BlogsPage() {
     }
     
     try {
-      // Mock delete post
-      setPosts(posts.filter(post => post.id !== id));
+      await deleteBlogPost(id);
+      await loadPosts(); // Refresh the posts list
       toast.success('Artículo eliminado con éxito');
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -143,10 +123,28 @@ export function BlogsPage() {
           </CardHeader>
           <CardContent>
             <BlogForm
-              initialData={editingPost || undefined}
+              initialData={editingPost ? {
+                title: editingPost.title,
+                excerpt: editingPost.excerpt,
+                content: editingPost.content,
+                image_url: editingPost.image_url,
+                category: editingPost.category,
+                status: editingPost.status,
+              } : undefined}
               onSubmit={editingPost ? handleUpdatePost : handleCreatePost}
               isSubmitting={isSubmitting}
             />
+            <div className="mt-4">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingPost(null);
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -220,12 +218,14 @@ export function BlogsPage() {
                   </p>
                   
                   <div className="flex flex-wrap gap-3">
-                    <Link to={`/blog/${post.slug}`} target="_blank">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver artículo
-                      </Button>
-                    </Link>
+                    {post.status === 'published' && (
+                      <Link to={`/blog/${post.slug}`} target="_blank">
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver artículo
+                        </Button>
+                      </Link>
+                    )}
 
                     <Button
                       variant="outline"

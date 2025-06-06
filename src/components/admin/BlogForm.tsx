@@ -52,7 +52,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       <Textarea
         label="Contenido"
         id="content"
-        rows={10}
+        rows={15}
         fullWidth
         error={errors.content?.message}
         {...register('content', { required: 'El contenido es obligatorio' })}
@@ -80,6 +80,16 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
             <option value="published">Publicado</option>
           </select>
         </div>
+      </div>
+
+      <div className="bg-secondary-50 p-4 rounded-lg">
+        <h4 className="font-medium text-secondary-900 mb-2">Consejos para escribir:</h4>
+        <ul className="text-sm text-secondary-600 space-y-1">
+          <li>• Usa títulos con "## " para crear secciones (ej: "## Planificación es clave")</li>
+          <li>• Separa párrafos con líneas en blanco</li>
+          <li>• Mantén un tono conversacional y amigable</li>
+          <li>• Incluye consejos prácticos y experiencias personales</li>
+        </ul>
       </div>
 
       <div className="pt-4">

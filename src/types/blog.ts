@@ -11,8 +11,10 @@ export interface BlogPost {
   published_at: string | null;
   created_at: string;
   updated_at: string;
-  author?: User;
-  tags?: BlogTag[];
+  author?: {
+    id: string;
+    email: string;
+  };
 }
 
 export interface BlogCategory {
@@ -35,6 +37,5 @@ export interface BlogFormData {
   content: string;
   image_url: string;
   category: string;
-  tags: string[];
   status: BlogPost['status'];
 }

@@ -6,8 +6,21 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     .from('blog_posts')
     .select(`
       *,
-      author:author_id(id, email),
-      tags:blog_posts_tags(tag:blog_tags(*))
+      author:users!blog_posts_author_id_fkey(id, email)
+    `)
+    .eq('status', 'published')
+    .order('published_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select(`
+      *,
+      author:users!blog_posts_author_id_fkey(id, email)
     `)
     .order('created_at', { ascending: false });
 
@@ -20,13 +33,16 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     .from('blog_posts')
     .select(`
       *,
-      author:author_id(id, email),
-      tags:blog_posts_tags(tag:blog_tags(*))
+      author:users!blog_posts_author_id_fkey(id, email)
     `)
     .eq('slug', slug)
+    .eq('status', 'published')
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') return null; // Not found
+    throw error;
+  }
   return data;
 }
 
@@ -54,9 +70,20 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
   const { data: user, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
+  // Get user from users table
+  const { data: userData, error: userDataError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('user_id', user.user.id)
+    .single();
+
+  if (userDataError) throw userDataError;
+
   const slug = data.title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
     .replace(/(^-|-$)/g, '');
 
   const { data: post, error } = await supabase
@@ -64,66 +91,40 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
     .insert({
       ...data,
       slug,
-      author_id: user.user.id,
+      author_id: userData.id,
       published_at: data.status === 'published' ? new Date().toISOString() : null,
     })
-    .select()
+    .select(`
+      *,
+      author:users!blog_posts_author_id_fkey(id, email)
+    `)
     .single();
 
   if (error) throw error;
-
-  if (data.tags.length > 0) {
-    const { error: tagsError } = await supabase
-      .from('blog_posts_tags')
-      .insert(
-        data.tags.map(tagId => ({
-          post_id: post.id,
-          tag_id: tagId,
-        }))
-      );
-
-    if (tagsError) throw tagsError;
-  }
-
   return post;
 }
 
 export async function updateBlogPost(id: string, data: Partial<BlogFormData>): Promise<BlogPost> {
+  const updateData: any = {
+    ...data,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (data.status === 'published' && !data.published_at) {
+    updateData.published_at = new Date().toISOString();
+  }
+
   const { data: post, error } = await supabase
     .from('blog_posts')
-    .update({
-      ...data,
-      updated_at: new Date().toISOString(),
-      published_at: data.status === 'published' ? new Date().toISOString() : null,
-    })
+    .update(updateData)
     .eq('id', id)
-    .select()
+    .select(`
+      *,
+      author:users!blog_posts_author_id_fkey(id, email)
+    `)
     .single();
 
   if (error) throw error;
-
-  if (data.tags) {
-    // Delete existing tags
-    await supabase
-      .from('blog_posts_tags')
-      .delete()
-      .eq('post_id', id);
-
-    // Insert new tags
-    if (data.tags.length > 0) {
-      const { error: tagsError } = await supabase
-        .from('blog_posts_tags')
-        .insert(
-          data.tags.map(tagId => ({
-            post_id: id,
-            tag_id: tagId,
-          }))
-        );
-
-      if (tagsError) throw tagsError;
-    }
-  }
-
   return post;
 }
 
