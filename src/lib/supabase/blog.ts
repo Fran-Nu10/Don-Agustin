@@ -40,8 +40,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users!blog_posts_author_id_fkey(id, email)
+      updated_at
     `)
     .order('created_at', { ascending: false });
 
@@ -101,14 +100,17 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
   const { data: user, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
-  // Get user from users table
+  // Get user from users table using the current user's ID
   const { data: userData, error: userDataError } = await supabase
     .from('users')
     .select('id')
     .eq('user_id', user.user.id)
     .single();
 
-  if (userDataError) throw userDataError;
+  if (userDataError) {
+    console.error('Error fetching user data:', userDataError);
+    throw new Error('No se pudo obtener la información del usuario');
+  }
 
   const slug = data.title
     .toLowerCase()
@@ -137,8 +139,7 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users!blog_posts_author_id_fkey(id, email)
+      updated_at
     `)
     .single();
 
@@ -172,8 +173,7 @@ export async function updateBlogPost(id: string, data: Partial<BlogFormData>): P
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users!blog_posts_author_id_fkey(id, email)
+      updated_at
     `)
     .single();
 
