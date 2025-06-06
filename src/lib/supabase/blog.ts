@@ -4,10 +4,7 @@ import { BlogPost, BlogCategory, BlogTag, BlogFormData } from '../../types/blog'
 export async function getBlogPosts(): Promise<BlogPost[]> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select(`
-      *,
-      author:users!blog_posts_author_id_fkey(id, email)
-    `)
+    .select('*')
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
@@ -31,10 +28,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   const { data, error } = await supabase
     .from('blog_posts')
-    .select(`
-      *,
-      author:users!blog_posts_author_id_fkey(id, email)
-    `)
+    .select('*')
     .eq('slug', slug)
     .eq('status', 'published')
     .single();
