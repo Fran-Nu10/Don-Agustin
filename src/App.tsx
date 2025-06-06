@@ -13,6 +13,7 @@ import { DashboardPage } from './pages/admin/DashboardPage';
 import { AdminTripsPage } from './pages/admin/TripsPage';
 import { BookingsPage } from './pages/admin/BookingsPage';
 import { BlogsPage } from './pages/admin/BlogsPage';
+import { ClientsPage } from './pages/admin/ClientsPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<DashboardPage />} />
         <Route path="/admin/viajes" element={<AdminTripsPage />} />
+        <Route path="/admin/clientes" element={<ClientsPage />} />
         <Route path="/admin/agendados" element={<BookingsPage />} />
         <Route path="/admin/blog" element={<BlogsPage />} />
       </Routes>

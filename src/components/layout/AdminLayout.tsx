@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText } from 'lucide-react';
+import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 
@@ -9,7 +9,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { user, isOwner, logout, loading } = useAuth();
+  const { user, isOwner, isEmployee, logout, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -54,23 +54,35 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             Viajes
           </SidebarLink>
           
-          {isOwner() && (
+          {(isOwner() || isEmployee()) && (
             <>
               <SidebarLink
-                to="/admin/agendados"
-                icon={<Users className="h-5 w-5" />}
-                isActive={isActive('/admin/agendados')}
+                to="/admin/clientes"
+                icon={<UserCheck className="h-5 w-5" />}
+                isActive={isActive('/admin/clientes')}
               >
-                Agendados
+                CRM - Clientes
               </SidebarLink>
               
-              <SidebarLink
-                to="/admin/blog"
-                icon={<FileText className="h-5 w-5" />}
-                isActive={isActive('/admin/blog')}
-              >
-                Blog
-              </SidebarLink>
+              {isOwner() && (
+                <>
+                  <SidebarLink
+                    to="/admin/agendados"
+                    icon={<Users className="h-5 w-5" />}
+                    isActive={isActive('/admin/agendados')}
+                  >
+                    Agendados
+                  </SidebarLink>
+                  
+                  <SidebarLink
+                    to="/admin/blog"
+                    icon={<FileText className="h-5 w-5" />}
+                    isActive={isActive('/admin/blog')}
+                  >
+                    Blog
+                  </SidebarLink>
+                </>
+              )}
             </>
           )}
         </nav>
@@ -96,7 +108,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </Link>
           
           <div className="flex items-center space-x-4">
-            <MobileNavMenu isOwner={isOwner()} logout={logout} />
+            <MobileNavMenu isOwner={isOwner()} isEmployee={isEmployee()} logout={logout} />
           </div>
         </header>
         
@@ -146,15 +158,16 @@ function SidebarLink({ to, icon, isActive, children }: SidebarLinkProps) {
 
 interface MobileNavMenuProps {
   isOwner: boolean;
+  isEmployee: boolean;
   logout: () => Promise<void>;
 }
 
-function MobileNavMenu({ isOwner, logout }: MobileNavMenuProps) {
+function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <div className="relative">
-      <Button variant="ghost\" size="sm\" onClick={() => setIsOpen(!isOpen)}>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
         <span className="sr-only">Open menu</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -188,22 +201,33 @@ function MobileNavMenu({ isOwner, logout }: MobileNavMenuProps) {
           >
             Viajes
           </Link>
-          {isOwner && (
+          {(isOwner || isEmployee) && (
             <>
               <Link
-                to="/admin/agendados"
+                to="/admin/clientes"
                 className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
                 onClick={() => setIsOpen(false)}
               >
-                Agendados
+                CRM - Clientes
               </Link>
-              <Link
-                to="/admin/blog"
-                className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                onClick={() => setIsOpen(false)}
-              >
-                Blog
-              </Link>
+              {isOwner && (
+                <>
+                  <Link
+                    to="/admin/agendados"
+                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Agendados
+                  </Link>
+                  <Link
+                    to="/admin/blog"
+                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Blog
+                  </Link>
+                </>
+              )}
             </>
           )}
           <button
