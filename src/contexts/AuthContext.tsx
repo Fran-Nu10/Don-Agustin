@@ -20,6 +20,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  async function logout() {
+    try {
+      setLoading(true);
+      await signOut();
+      setUser(null);
+      toast.success('Sesión cerrada correctamente');
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error al cerrar sesión');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     // Check for current user on mount
     async function loadUser() {
@@ -28,6 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(user);
       } catch (error) {
         console.error('Error loading user:', error);
+        // If session is invalid, clear local session data
+        await logout();
       } finally {
         setLoading(false);
       }
@@ -49,21 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:', error);
       toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
       throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function logout() {
-    try {
-      setLoading(true);
-      await signOut();
-      setUser(null);
-      toast.success('Sesión cerrada correctamente');
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Error al cerrar sesión');
     } finally {
       setLoading(false);
     }
