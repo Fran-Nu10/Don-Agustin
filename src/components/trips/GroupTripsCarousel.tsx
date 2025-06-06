@@ -119,7 +119,8 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                 >
                   <div className="bg-white rounded-lg overflow-hidden shadow-card">
                     <div className="grid grid-cols-1 md:grid-cols-2">
-                      <div className="relative h-64 md:h-full">
+                      {/* Fixed height image container */}
+                      <div className="relative h-64 md:h-80 lg:h-96">
                         <img
                           src={trip.image_url}
                           alt={trip.title}
@@ -130,7 +131,8 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         </div>
                       </div>
                       
-                      <div className="p-6 md:p-8 flex flex-col">
+                      {/* Content with matching height */}
+                      <div className="p-6 md:p-8 flex flex-col min-h-64 md:min-h-80 lg:min-h-96">
                         <h3 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
                           {trip.title}
                         </h3>
@@ -152,7 +154,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                           </span>
                         </div>
                         
-                        <p className="text-secondary-600 mb-6 flex-grow">
+                        <p className="text-secondary-600 mb-6 flex-grow line-clamp-4">
                           {trip.description}
                         </p>
                         
