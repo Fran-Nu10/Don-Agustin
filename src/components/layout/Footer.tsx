@@ -9,10 +9,16 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="font-heading text-xl font-bold mb-4 flex items-center">
-              <MapPin className="h-5 w-5 text-primary-500 mr-2" />
-              Don Agustín Viajes
-            </h3>
+            <div className="flex items-center mb-4">
+              <img 
+                src="/image.png" 
+                alt="Don Agustín Viajes" 
+                className="h-8 w-8 mr-3"
+              />
+              <h3 className="font-heading text-xl font-bold">
+                Don Agustín Viajes
+              </h3>
+            </div>
             <p className="text-secondary-300 mb-4">
               Tu agencia de viajes de confianza para descubrir el mundo desde 1995.
             </p>
@@ -21,7 +27,7 @@ export function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-300 hover:text-primary-500 transition-colors"
+                className="text-secondary-300 hover:text-primary-600 transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </a>
@@ -29,7 +35,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-300 hover:text-primary-500 transition-colors"
+                className="text-secondary-300 hover:text-primary-600 transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </a>
@@ -37,7 +43,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-300 hover:text-primary-500 transition-colors"
+                className="text-secondary-300 hover:text-primary-600 transition-colors"
               >
                 <Twitter className="h-5 w-5" />
               </a>
@@ -51,7 +57,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-secondary-300 hover:text-primary-500 transition-colors"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
                   Inicio
                 </Link>
@@ -59,7 +65,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/viajes"
-                  className="text-secondary-300 hover:text-primary-500 transition-colors"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
                   Viajes
                 </Link>
@@ -67,7 +73,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/contacto"
-                  className="text-secondary-300 hover:text-primary-500 transition-colors"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
                   Contacto
                 </Link>
@@ -75,7 +81,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/login"
-                  className="text-secondary-300 hover:text-primary-500 transition-colors"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
                   Iniciar Sesión
                 </Link>
@@ -88,20 +94,20 @@ export function Footer() {
             <h3 className="font-heading text-lg font-bold mb-4">Contáctanos</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
-                <MapPin className="h-5 w-5 text-primary-500 mr-2 mt-0.5" />
+                <MapPin className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
                 <span className="text-secondary-300">
                   Av. 18 de Julio 1234, Montevideo, Uruguay
                 </span>
               </li>
               <li className="flex items-center">
-                <Phone className="h-5 w-5 text-primary-500 mr-2" />
+                <Phone className="h-5 w-5 text-primary-600 mr-2" />
                 <span className="text-secondary-300">+598 2345 6789</span>
               </li>
               <li className="flex items-center">
-                <Mail className="h-5 w-5 text-primary-500 mr-2" />
+                <Mail className="h-5 w-5 text-primary-600 mr-2" />
                 <a
                   href="mailto:info@donagustinviajes.com.uy"
-                  className="text-secondary-300 hover:text-primary-500 transition-colors"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
                   info@donagustinviajes.com.uy
                 </a>

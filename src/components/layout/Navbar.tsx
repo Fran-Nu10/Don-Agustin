@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, MapPin } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -15,13 +15,17 @@ export function Navbar() {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="absolute top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <MapPin className="h-6 w-6 text-primary-950" />
-            <span className="font-heading font-bold text-xl text-secondary-950">
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/image.png" 
+              alt="Don Agustín Viajes" 
+              className="h-12 w-12"
+            />
+            <span className="font-heading font-bold text-xl text-white">
               Don Agustín Viajes
             </span>
           </Link>
@@ -47,17 +51,17 @@ export function Navbar() {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link to="/admin/dashboard">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-primary-600">
                     Panel Admin
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={() => logout()}>
+                <Button variant="ghost" size="sm" onClick={() => logout()} className="text-white hover:bg-white/10">
                   Cerrar Sesión
                 </Button>
               </div>
             ) : (
               <Link to="/login">
-                <Button variant="primary" size="sm">
+                <Button variant="primary" size="sm" className="bg-primary-600 hover:bg-primary-700">
                   Iniciar Sesión
                 </Button>
               </Link>
@@ -66,7 +70,7 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-secondary-900 focus:outline-none"
+            className="md:hidden text-white focus:outline-none"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -84,7 +88,7 @@ export function Navbar() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="md:hidden bg-white pb-4 px-4"
+          className="md:hidden bg-black/90 backdrop-blur-sm pb-4 px-4"
         >
           <div className="flex flex-col space-y-3">
             <MobileNavLink
@@ -139,6 +143,7 @@ export function Navbar() {
                     logout();
                     setIsMenuOpen(false);
                   }}
+                  className="text-white hover:bg-white/10"
                 >
                   Cerrar Sesión
                 </Button>
@@ -169,13 +174,13 @@ function NavLink({ to, isActive, children }: NavLinkProps) {
   return (
     <Link
       to={to}
-      className={`relative font-medium transition-colors hover:text-primary-950 ${
-        isActive ? 'text-primary-950' : 'text-secondary-600'
+      className={`relative font-medium transition-colors hover:text-primary-300 ${
+        isActive ? 'text-white' : 'text-white/80'
       }`}
     >
       {children}
       {isActive && (
-        <span className="absolute inset-x-0 -bottom-2 h-0.5 bg-primary-950" />
+        <span className="absolute inset-x-0 -bottom-2 h-0.5 bg-primary-600" />
       )}
     </Link>
   );
@@ -191,8 +196,8 @@ function MobileNavLink({ to, isActive, onClick, children }: MobileNavLinkProps) 
       to={to}
       className={`block py-2 px-3 rounded-md font-medium ${
         isActive
-          ? 'bg-primary-100 text-primary-950'
-          : 'text-secondary-600 hover:bg-secondary-100'
+          ? 'bg-primary-600 text-white'
+          : 'text-white/80 hover:bg-white/10 hover:text-white'
       }`}
       onClick={onClick}
     >

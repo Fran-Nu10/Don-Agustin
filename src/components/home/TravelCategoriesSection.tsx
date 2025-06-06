@@ -82,12 +82,12 @@ export function TravelCategoriesSection() {
               >
                 <div className="flex items-center mb-4">
                   <div className="bg-primary-100 p-3 rounded-lg mr-4 group-hover:bg-primary-200 transition-colors">
-                    <div className="text-primary-950">
+                    <div className="text-primary-600">
                       {category.icon}
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-xl text-secondary-900 group-hover:text-primary-950 transition-colors">
+                    <h3 className="font-heading font-bold text-xl text-secondary-900 group-hover:text-primary-600 transition-colors">
                       {category.title}
                     </h3>
                     <p className="text-secondary-600">

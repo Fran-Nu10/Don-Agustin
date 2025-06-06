@@ -37,7 +37,7 @@ export function HomePage() {
               alt="Viajes Don Agustín"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
@@ -65,22 +65,22 @@ export function HomePage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <FeatureCard
-                icon={<MapPin className="h-10 w-10 text-primary-950" />}
+                icon={<MapPin className="h-10 w-10 text-primary-600" />}
                 title="Destinos Únicos"
                 description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
               />
               <FeatureCard
-                icon={<Plane className="h-10 w-10 text-primary-950" />}
+                icon={<Plane className="h-10 w-10 text-primary-600" />}
                 title="Transporte de Calidad"
                 description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
               />
               <FeatureCard
-                icon={<Clock className="h-10 w-10 text-primary-950" />}
+                icon={<Clock className="h-10 w-10 text-primary-600" />}
                 title="Más de 25 Años"
                 description="Más de dos décadas de experiencia organizando viajes perfectos para nuestros clientes."
               />
               <FeatureCard
-                icon={<Shield className="h-10 w-10 text-primary-950" />}
+                icon={<Shield className="h-10 w-10 text-primary-600" />}
                 title="Garantía de Satisfacción"
                 description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
               />
@@ -130,7 +130,7 @@ export function HomePage() {
         <BlogSection />
         
         {/* CTA Section */}
-        <section className="py-16 bg-primary-950">
+        <section className="py-16 bg-primary-600">
           <div className="container mx-auto px-4 text-center">
             <h2 className="font-heading font-bold text-3xl text-white mb-6">
               ¿Listo para tu próxima aventura?
@@ -145,7 +145,7 @@ export function HomePage() {
                 </Button>
               </Link>
               <Link to="/contacto">
-                <Button size="lg" variant="outline" className="text-white border-white hover:bg-primary-900">
+                <Button size="lg" variant="outline" className="text-white border-white hover:bg-primary-700">
                   Contáctanos
                 </Button>
               </Link>
