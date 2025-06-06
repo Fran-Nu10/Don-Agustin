@@ -13,3 +13,28 @@ html, body {
 .touch-pan-x {
   touch-action: pan-x;
 }
+
+/* Add padding to body to prevent content from being hidden behind fixed navbar */
+body {
+  padding-top: 0;
+}
+
+/* Add padding to main content on non-home pages to account for fixed navbar */
+.main-content {
+  padding-top: 5rem; /* 80px - height of navbar */
+}
+
+/* Line clamp utilities */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

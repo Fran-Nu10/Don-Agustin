@@ -51,7 +51,7 @@ export function BlogPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50">
+      <main className="flex-grow bg-secondary-50 main-content">
         {/* Hero Section */}
         <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -89,7 +89,7 @@ export function BlogPage() {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-full transition-colors ${
                     selectedCategory === category
-                      ? 'bg-primary-950 text-white'
+                      ? 'bg-primary-600 text-white'
                       : 'bg-white text-secondary-600 hover:bg-secondary-100'
                   }`}
                 >
@@ -145,7 +145,7 @@ export function BlogPage() {
                         alt={post.title}
                         className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                       />
-                      <div className="absolute top-4 left-4 bg-primary-950 text-white text-sm px-3 py-1 rounded-full">
+                      <div className="absolute top-4 left-4 bg-primary-600 text-white text-sm px-3 py-1 rounded-full">
                         {post.category}
                       </div>
                     </div>
@@ -158,7 +158,7 @@ export function BlogPage() {
                         </span>
                       </div>
                       
-                      <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-950 transition-colors">
+                      <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-600 transition-colors">
                         {post.title}
                       </h3>
                       
@@ -166,7 +166,7 @@ export function BlogPage() {
                         {post.excerpt}
                       </p>
                       
-                      <div className="flex items-center text-primary-950 font-medium group-hover:text-primary-800 mt-auto">
+                      <div className="flex items-center text-primary-600 font-medium group-hover:text-primary-700 mt-auto">
                         <span>Leer más</span>
                         <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
                       </div>

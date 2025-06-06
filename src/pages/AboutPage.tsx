@@ -9,7 +9,7 @@ export function AboutPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
+      <main className="flex-grow main-content">
         {/* Hero Section */}
         <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -140,7 +140,7 @@ export function AboutPage() {
               >
                 <div className="flex items-center mb-6">
                   <div className="bg-primary-100 p-3 rounded-full mr-4">
-                    <Star className="h-6 w-6 text-primary-950" />
+                    <Star className="h-6 w-6 text-primary-600" />
                   </div>
                   <h3 className="font-heading font-bold text-2xl text-secondary-900">
                     Nuestra Misión
@@ -162,7 +162,7 @@ export function AboutPage() {
               >
                 <div className="flex items-center mb-6">
                   <div className="bg-primary-100 p-3 rounded-full mr-4">
-                    <Heart className="h-6 w-6 text-primary-950" />
+                    <Heart className="h-6 w-6 text-primary-600" />
                   </div>
                   <h3 className="font-heading font-bold text-2xl text-secondary-900">
                     Nuestra Visión
@@ -190,7 +190,7 @@ export function AboutPage() {
                 className="bg-white p-8 rounded-lg shadow-card"
               >
                 <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                  <MapPin className="h-6 w-6 text-primary-950" />
+                  <MapPin className="h-6 w-6 text-primary-600" />
                 </div>
                 <h4 className="font-heading font-bold text-xl mb-4 text-secondary-900">
                   Destinos Únicos
@@ -209,7 +209,7 @@ export function AboutPage() {
                 className="bg-white p-8 rounded-lg shadow-card"
               >
                 <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                  <Clock className="h-6 w-6 text-primary-950" />
+                  <Clock className="h-6 w-6 text-primary-600" />
                 </div>
                 <h4 className="font-heading font-bold text-xl mb-4 text-secondary-900">
                   Experiencia Comprobada
@@ -228,7 +228,7 @@ export function AboutPage() {
                 className="bg-white p-8 rounded-lg shadow-card lg:col-span-1 md:col-span-2 lg:col-start-3"
               >
                 <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                  <Users className="h-6 w-6 text-primary-950" />
+                  <Users className="h-6 w-6 text-primary-600" />
                 </div>
                 <h4 className="font-heading font-bold text-xl mb-4 text-secondary-900">
                   Atención Personalizada
@@ -264,7 +264,7 @@ function ValueCard({ icon, title, description }: ValueCardProps) {
       className="bg-white p-6 rounded-lg shadow-card"
     >
       <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-        <div className="text-primary-950">
+        <div className="text-primary-600">
           {icon}
         </div>
       </div>

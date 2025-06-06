@@ -30,7 +30,7 @@ export function TripsPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 py-12">
+      <main className="flex-grow bg-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           {/* Page Header */}
           <div className="mb-10 text-center">

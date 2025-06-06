@@ -40,7 +40,7 @@ export function ContactPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 py-12">
+      <main className="flex-grow bg-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           {/* Page Header */}
           <div className="mb-10 text-center">
@@ -129,7 +129,7 @@ export function ContactPage() {
                   <div className="flex">
                     <div className="mr-4">
                       <div className="bg-primary-100 rounded-full p-3">
-                        <MapPin className="h-6 w-6 text-primary-950" />
+                        <MapPin className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div>
@@ -146,7 +146,7 @@ export function ContactPage() {
                   <div className="flex">
                     <div className="mr-4">
                       <div className="bg-primary-100 rounded-full p-3">
-                        <Phone className="h-6 w-6 text-primary-950" />
+                        <Phone className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div>
@@ -163,7 +163,7 @@ export function ContactPage() {
                   <div className="flex">
                     <div className="mr-4">
                       <div className="bg-primary-100 rounded-full p-3">
-                        <Mail className="h-6 w-6 text-primary-950" />
+                        <Mail className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div>
@@ -180,7 +180,7 @@ export function ContactPage() {
                   <div className="flex">
                     <div className="mr-4">
                       <div className="bg-primary-100 rounded-full p-3">
-                        <Clock className="h-6 w-6 text-primary-950" />
+                        <Clock className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div>
