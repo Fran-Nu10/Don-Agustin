@@ -113,6 +113,26 @@ export function BlogPostPage() {
 
   const formatContent = (content: string) => {
     return content.split('\n').map((paragraph, index) => {
+      // Handle images in markdown format
+      const imageMatch = paragraph.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (imageMatch) {
+        const [, alt, src] = imageMatch;
+        return (
+          <div key={index} className="my-8">
+            <img
+              src={src}
+              alt={alt || 'Imagen del artículo'}
+              className="w-full max-w-2xl mx-auto rounded-lg shadow-md"
+            />
+            {alt && (
+              <p className="text-center text-sm text-secondary-500 mt-2 italic">
+                {alt}
+              </p>
+            )}
+          </div>
+        );
+      }
+
       if (paragraph.startsWith('## ')) {
         return (
           <h2 key={index} className="font-heading font-bold text-2xl text-secondary-900 mt-8 mb-4 first:mt-0">
