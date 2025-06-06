@@ -16,8 +16,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users(id, email)
+      updated_at
     `)
     .eq('status', 'published')
     .order('published_at', { ascending: false });
@@ -41,8 +40,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users(id, email)
+      updated_at
     `)
     .order('created_at', { ascending: false });
 
@@ -65,8 +63,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users(id, email)
+      updated_at
     `)
     .eq('slug', slug)
     .eq('status', 'published')
@@ -142,8 +139,7 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users(id, email)
+      updated_at
     `)
     .single();
 
@@ -177,8 +173,7 @@ export async function updateBlogPost(id: string, data: Partial<BlogFormData>): P
       status,
       published_at,
       created_at,
-      updated_at,
-      author:users(id, email)
+      updated_at
     `)
     .single();
 

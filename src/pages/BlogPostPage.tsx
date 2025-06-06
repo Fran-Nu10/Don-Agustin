@@ -63,7 +63,7 @@ export function BlogPostPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center bg-secondary-50">
+        <main className="flex-grow flex flex-col items-center justify-center bg-secondary-50">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-secondary-900 mb-4">
               Artículo no encontrado
@@ -152,7 +152,7 @@ export function BlogPostPage() {
               </h1>
               
               <div className="flex items-center text-secondary-600 mb-6">
-                <span>Por {post.author?.email || 'Don Agustín Viajes'}</span>
+                <span>Por Don Agustín Viajes</span>
               </div>
               
               {/* Share Buttons */}
