@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { motion } from 'framer-motion';
-import { Calendar, Share2, Facebook, Twitter, Send, ArrowLeft } from 'lucide-react';
+import { Calendar, Share2, Facebook, Twitter, Send, ArrowLeft, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getBlogPost, getBlogPosts } from '../lib/supabase/blog';
@@ -51,8 +51,11 @@ export function BlogPostPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <p className="text-secondary-500">Cargando artículo...</p>
+        <div className="flex-grow flex items-center justify-center bg-secondary-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
+            <p className="text-secondary-500">Cargando artículo...</p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -64,14 +67,18 @@ export function BlogPostPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow flex flex-col items-center justify-center bg-secondary-50">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-secondary-900 mb-4">
+          <div className="text-center max-w-md mx-auto px-4">
+            <h1 className="text-3xl font-bold text-secondary-900 mb-4">
               Artículo no encontrado
             </h1>
+            <p className="text-secondary-600 mb-6">
+              El artículo que buscas no existe o ha sido eliminado.
+            </p>
             <Link
               to="/blog"
-              className="text-primary-950 hover:underline"
+              className="inline-flex items-center text-primary-950 hover:text-primary-800 font-medium"
             >
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Volver al blog
             </Link>
           </div>
@@ -104,19 +111,57 @@ export function BlogPostPage() {
     window.open(shareLink, '_blank');
   };
 
+  const formatContent = (content: string) => {
+    return content.split('\n').map((paragraph, index) => {
+      if (paragraph.startsWith('## ')) {
+        return (
+          <h2 key={index} className="font-heading font-bold text-2xl text-secondary-900 mt-8 mb-4 first:mt-0">
+            {paragraph.replace('## ', '')}
+          </h2>
+        );
+      }
+      if (paragraph.startsWith('### ')) {
+        return (
+          <h3 key={index} className="font-heading font-bold text-xl text-secondary-900 mt-6 mb-3">
+            {paragraph.replace('### ', '')}
+          </h3>
+        );
+      }
+      if (paragraph.trim() === '') {
+        return <div key={index} className="h-4" />;
+      }
+      return (
+        <p key={index} className="mb-4 text-secondary-700 leading-relaxed text-lg">
+          {paragraph}
+        </p>
+      );
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
       <main className="flex-grow bg-secondary-50">
         {/* Hero Image */}
-        <div className="relative h-[50vh] min-h-[400px]">
+        <div className="relative h-[60vh] min-h-[400px]">
           <img
             src={post.image_url}
             alt={post.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          
+          {/* Back Button */}
+          <div className="absolute top-6 left-6">
+            <Link 
+              to="/blog" 
+              className="inline-flex items-center bg-white/90 backdrop-blur-sm text-secondary-900 hover:bg-white px-4 py-2 rounded-full transition-colors shadow-lg"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver al blog
+            </Link>
+          </div>
         </div>
         
         <div className="container mx-auto px-4">
@@ -124,58 +169,66 @@ export function BlogPostPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto -mt-20 relative"
+            className="max-w-4xl mx-auto -mt-32 relative z-10"
           >
-            {/* Back Button */}
-            <Link 
-              to="/blog" 
-              className="inline-flex items-center text-white hover:text-primary-200 mb-6 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver al blog
-            </Link>
-
             {/* Post Header */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <div className="flex items-center gap-4 mb-4">
-                <span className="bg-primary-950 text-white text-sm px-3 py-1 rounded-full">
+              {/* Category Badge */}
+              <div className="mb-4">
+                <span className="inline-block bg-primary-950 text-white text-sm font-medium px-4 py-2 rounded-full">
                   {post.category}
                 </span>
-                <div className="flex items-center text-secondary-500 text-sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {post.published_at && format(new Date(post.published_at), 'dd MMM yyyy', { locale: es })}
-                </div>
               </div>
               
-              <h1 className="font-heading font-bold text-3xl md:text-4xl text-secondary-900 mb-4">
+              {/* Title */}
+              <h1 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl text-secondary-900 mb-6 leading-tight">
                 {post.title}
               </h1>
               
-              <div className="flex items-center text-secondary-600 mb-6">
-                <span>Por Don Agustín Viajes</span>
+              {/* Meta Information */}
+              <div className="flex flex-wrap items-center gap-6 text-secondary-600 mb-6 pb-6 border-b border-secondary-200">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  <span>Por {post.author?.email || 'Don Agustín Viajes'}</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <span>
+                    {post.published_at && format(new Date(post.published_at), 'dd MMMM yyyy', { locale: es })}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Excerpt */}
+              <div className="text-xl text-secondary-700 leading-relaxed mb-6 font-light">
+                {post.excerpt}
               </div>
               
               {/* Share Buttons */}
               <div className="flex items-center gap-4">
-                <span className="text-secondary-600 flex items-center">
+                <span className="text-secondary-600 flex items-center font-medium">
                   <Share2 className="h-4 w-4 mr-2" />
                   Compartir
                 </span>
                 <button
                   onClick={() => handleShare('facebook')}
-                  className="text-secondary-600 hover:text-primary-950 transition-colors"
+                  className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  title="Compartir en Facebook"
                 >
                   <Facebook className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => handleShare('twitter')}
-                  className="text-secondary-600 hover:text-primary-950 transition-colors"
+                  className="flex items-center justify-center w-10 h-10 bg-sky-500 text-white rounded-full hover:bg-sky-600 transition-colors"
+                  title="Compartir en Twitter"
                 >
                   <Twitter className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => handleShare('whatsapp')}
-                  className="text-secondary-600 hover:text-primary-950 transition-colors"
+                  className="flex items-center justify-center w-10 h-10 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                  title="Compartir en WhatsApp"
                 >
                   <Send className="h-5 w-5" />
                 </button>
@@ -185,23 +238,7 @@ export function BlogPostPage() {
             {/* Post Content */}
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <div className="prose prose-lg max-w-none">
-                {post.content.split('\n').map((paragraph, index) => {
-                  if (paragraph.startsWith('## ')) {
-                    return (
-                      <h2 key={index} className="font-heading font-bold text-2xl text-secondary-900 mt-8 mb-4">
-                        {paragraph.replace('## ', '')}
-                      </h2>
-                    );
-                  }
-                  if (paragraph.trim() === '') {
-                    return <br key={index} />;
-                  }
-                  return (
-                    <p key={index} className="mb-4 text-secondary-700 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  );
-                })}
+                {formatContent(post.content)}
               </div>
             </div>
             
@@ -209,7 +246,7 @@ export function BlogPostPage() {
             {relatedPosts.length > 0 && (
               <div className="bg-white rounded-lg shadow-lg p-8">
                 <h2 className="font-heading font-bold text-2xl text-secondary-900 mb-6">
-                  Te puede interesar
+                  Artículos relacionados
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -223,12 +260,16 @@ export function BlogPostPage() {
                         <img
                           src={relatedPost.image_url}
                           alt={relatedPost.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                         />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors"></div>
                       </div>
-                      <h3 className="font-heading font-bold text-lg text-secondary-900 group-hover:text-primary-950 transition-colors">
+                      <h3 className="font-heading font-bold text-lg text-secondary-900 group-hover:text-primary-950 transition-colors mb-2">
                         {relatedPost.title}
                       </h3>
+                      <p className="text-secondary-600 text-sm line-clamp-2">
+                        {relatedPost.excerpt}
+                      </p>
                     </Link>
                   ))}
                 </div>

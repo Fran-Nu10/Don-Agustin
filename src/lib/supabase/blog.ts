@@ -16,7 +16,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       status,
       published_at,
       created_at,
-      updated_at
+      updated_at,
+      author:users!blog_posts_author_id_fkey(email)
     `)
     .eq('status', 'published')
     .order('published_at', { ascending: false });
@@ -40,7 +41,8 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       status,
       published_at,
       created_at,
-      updated_at
+      updated_at,
+      author:users!blog_posts_author_id_fkey(email)
     `)
     .order('created_at', { ascending: false });
 
@@ -63,7 +65,8 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       status,
       published_at,
       created_at,
-      updated_at
+      updated_at,
+      author:users!blog_posts_author_id_fkey(email)
     `)
     .eq('slug', slug)
     .eq('status', 'published')
@@ -139,7 +142,8 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
       status,
       published_at,
       created_at,
-      updated_at
+      updated_at,
+      author:users!blog_posts_author_id_fkey(email)
     `)
     .single();
 
@@ -173,7 +177,8 @@ export async function updateBlogPost(id: string, data: Partial<BlogFormData>): P
       status,
       published_at,
       created_at,
-      updated_at
+      updated_at,
+      author:users!blog_posts_author_id_fkey(email)
     `)
     .single();
 

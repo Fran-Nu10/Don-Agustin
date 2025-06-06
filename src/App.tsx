@@ -24,7 +24,7 @@ function App() {
         <Route path="/viajes/:id" element={<TripDetailPage />} />
         <Route path="/sobre-nosotros" element={<AboutPage />} />
         <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/:id" element={<BlogPostPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         

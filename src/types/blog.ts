@@ -12,7 +12,6 @@ export interface BlogPost {
   created_at: string;
   updated_at: string;
   author?: {
-    id: string;
     email: string;
   };
 }
