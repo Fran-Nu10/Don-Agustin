@@ -19,15 +19,12 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center">
             <img 
               src="/image.png" 
               alt="Don Agustín Viajes" 
               className="h-12 w-12"
             />
-            <span className="font-heading font-bold text-xl text-white">
-              Don Agustín Viajes
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
