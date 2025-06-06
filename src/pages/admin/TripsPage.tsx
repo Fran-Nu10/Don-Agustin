@@ -8,37 +8,20 @@ import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Trip, TripFormData } from '../../types';
 import { getTrips, createTrip, updateTrip, deleteTrip } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
+import { useTrips } from '../../hooks/useTrips';
 
 export function AdminTripsPage() {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { trips, loading, refetch } = useTrips();
   const [showForm, setShowForm] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    loadTrips();
-  }, []);
-
-  async function loadTrips() {
-    try {
-      setLoading(true);
-      const tripsData = await getTrips();
-      setTrips(tripsData);
-    } catch (error) {
-      console.error('Error loading trips:', error);
-      toast.error('Error al cargar los viajes');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const handleCreateTrip = async (data: TripFormData) => {
     try {
       setIsSubmitting(true);
       await createTrip(data);
-      await loadTrips();
+      await refetch(); // Refresh the trips list
       setShowForm(false);
       toast.success('Viaje creado con éxito');
     } catch (error) {
@@ -55,7 +38,7 @@ export function AdminTripsPage() {
     try {
       setIsSubmitting(true);
       await updateTrip(editingTrip.id, data);
-      await loadTrips();
+      await refetch(); // Refresh the trips list
       setEditingTrip(null);
       toast.success('Viaje actualizado con éxito');
     } catch (error) {
@@ -73,7 +56,7 @@ export function AdminTripsPage() {
     
     try {
       await deleteTrip(id);
-      await loadTrips();
+      await refetch(); // Refresh the trips list
       toast.success('Viaje eliminado con éxito');
     } catch (error) {
       console.error('Error deleting trip:', error);
@@ -85,7 +68,8 @@ export function AdminTripsPage() {
   const filteredTrips = trips.filter((trip) => {
     return (
       trip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trip.destination.toLowerCase().includes(searchTerm.toLowerCase())
+      trip.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trip.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
@@ -124,6 +108,17 @@ export function AdminTripsPage() {
               onSubmit={editingTrip ? handleUpdateTrip : handleCreateTrip}
               isSubmitting={isSubmitting}
             />
+            <div className="mt-4">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingTrip(null);
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -134,7 +129,7 @@ export function AdminTripsPage() {
           <Search className="absolute left-3 top-3 h-5 w-5 text-secondary-400" />
           <input
             type="text"
-            placeholder="Buscar por título o destino..."
+            placeholder="Buscar por título, destino o categoría..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
@@ -161,7 +156,7 @@ export function AdminTripsPage() {
             >
               <div className="grid grid-cols-1 md:grid-cols-3">
                 {/* Trip Image */}
-                <div className="h-full">
+                <div className="h-48 md:h-full">
                   <img
                     src={trip.image_url}
                     alt={trip.title}
@@ -172,21 +167,33 @@ export function AdminTripsPage() {
                 {/* Trip Info */}
                 <div className="p-6 md:col-span-2">
                   <div className="flex justify-between mb-2">
-                    <h3 className="font-heading font-bold text-xl text-secondary-900">
-                      {trip.title}
-                    </h3>
+                    <div>
+                      <h3 className="font-heading font-bold text-xl text-secondary-900">
+                        {trip.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-secondary-600">{trip.destination}</span>
+                        <span className="text-sm bg-primary-100 text-primary-950 px-2 py-1 rounded-full">
+                          {trip.category}
+                        </span>
+                      </div>
+                    </div>
                     <div className="text-lg font-bold text-primary-950">
                       ${trip.price.toLocaleString('es-UY')}
                     </div>
                   </div>
                   
-                  <p className="text-secondary-600 mb-4">
-                    <span className="font-medium">Destino:</span> {trip.destination}
-                  </p>
-                  
-                  <p className="text-secondary-700 mb-6 line-clamp-2">
+                  <p className="text-secondary-700 mb-4 line-clamp-2">
                     {trip.description}
                   </p>
+                  
+                  <div className="flex items-center gap-4 text-sm text-secondary-600 mb-4">
+                    <span>{trip.available_spots} cupos disponibles</span>
+                    <span>•</span>
+                    <span>{trip.itinerary?.length || 0} días de itinerario</span>
+                    <span>•</span>
+                    <span>{trip.included_services?.length || 0} servicios incluidos</span>
+                  </div>
                   
                   <div className="flex flex-wrap gap-3 mt-auto">
                     <Button

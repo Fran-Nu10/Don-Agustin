@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { User, Trip, Booking, Stats } from '../types';
-import { users, trips, bookings, stats } from './mockData';
+import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -125,34 +124,112 @@ export async function getTrip(id: string): Promise<Trip | null> {
   return data;
 }
 
-export async function createTrip(trip: Omit<Trip, 'id' | 'created_at' | 'updated_at'>): Promise<Trip> {
-  const { data, error } = await supabase
+export async function createTrip(tripData: TripFormData): Promise<Trip> {
+  const { itinerary, included_services, ...tripInfo } = tripData;
+  
+  // Create the trip first
+  const { data: trip, error: tripError } = await supabase
     .from('trips')
     .insert([{
-      ...trip,
+      ...tripInfo,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }])
     .select()
     .single();
 
-  if (error) throw error;
-  return data;
+  if (tripError) throw tripError;
+
+  // Create itinerary days
+  if (itinerary && itinerary.length > 0) {
+    const itineraryData = itinerary.map((day, index) => ({
+      trip_id: trip.id,
+      day: index + 1,
+      title: day.title,
+      description: day.description,
+    }));
+
+    const { error: itineraryError } = await supabase
+      .from('itinerary_days')
+      .insert(itineraryData);
+
+    if (itineraryError) throw itineraryError;
+  }
+
+  // Create included services
+  if (included_services && included_services.length > 0) {
+    const servicesData = included_services.map((service) => ({
+      trip_id: trip.id,
+      icon: service.icon,
+      title: service.title,
+      description: service.description,
+    }));
+
+    const { error: servicesError } = await supabase
+      .from('included_services')
+      .insert(servicesData);
+
+    if (servicesError) throw servicesError;
+  }
+
+  // Return the complete trip with relations
+  return getTrip(trip.id) as Promise<Trip>;
 }
 
-export async function updateTrip(id: string, tripUpdate: Partial<Trip>): Promise<Trip> {
-  const { data, error } = await supabase
+export async function updateTrip(id: string, tripData: TripFormData): Promise<Trip> {
+  const { itinerary, included_services, ...tripInfo } = tripData;
+  
+  // Update the trip
+  const { data: trip, error: tripError } = await supabase
     .from('trips')
     .update({
-      ...tripUpdate,
+      ...tripInfo,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
     .select()
     .single();
 
-  if (error) throw error;
-  return data;
+  if (tripError) throw tripError;
+
+  // Delete existing itinerary and services
+  await supabase.from('itinerary_days').delete().eq('trip_id', id);
+  await supabase.from('included_services').delete().eq('trip_id', id);
+
+  // Create new itinerary days
+  if (itinerary && itinerary.length > 0) {
+    const itineraryData = itinerary.map((day, index) => ({
+      trip_id: id,
+      day: index + 1,
+      title: day.title,
+      description: day.description,
+    }));
+
+    const { error: itineraryError } = await supabase
+      .from('itinerary_days')
+      .insert(itineraryData);
+
+    if (itineraryError) throw itineraryError;
+  }
+
+  // Create new included services
+  if (included_services && included_services.length > 0) {
+    const servicesData = included_services.map((service) => ({
+      trip_id: id,
+      icon: service.icon,
+      title: service.title,
+      description: service.description,
+    }));
+
+    const { error: servicesError } = await supabase
+      .from('included_services')
+      .insert(servicesData);
+
+    if (servicesError) throw servicesError;
+  }
+
+  // Return the complete trip with relations
+  return getTrip(id) as Promise<Trip>;
 }
 
 export async function deleteTrip(id: string): Promise<void> {

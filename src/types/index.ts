@@ -8,12 +8,14 @@ export interface User {
 
 // Trip Types
 export interface ItineraryDay {
+  id?: string;
   day: number;
   title: string;
   description: string;
 }
 
 export interface IncludedService {
+  id?: string;
   icon: string;
   title: string;
   description: string;
@@ -31,9 +33,10 @@ export interface Trip {
   image_url: string;
   created_at: string;
   updated_at: string;
+  created_by?: string;
   itinerary: ItineraryDay[];
   included_services: IncludedService[];
-  category: 'nacional' | 'internacional' | 'religioso' | 'aventura' | 'escapada';
+  category: 'nacional' | 'internacional' | 'grupal';
 }
 
 // Blog Types
@@ -58,6 +61,7 @@ export interface Booking {
   email: string;
   phone: string;
   created_at: string;
+  user_id?: string;
   trip?: Trip;
 }
 
@@ -71,9 +75,9 @@ export interface TripFormData {
   return_date: string;
   available_spots: number;
   image_url: string;
+  category: Trip['category'];
   itinerary: ItineraryDay[];
   included_services: IncludedService[];
-  category: Trip['category'];
 }
 
 export interface BookingFormData {
