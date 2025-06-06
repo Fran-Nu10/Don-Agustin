@@ -23,13 +23,13 @@ export function TripSearch({ destinations }: TripSearchProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-2">
+    <div className="max-w-4xl mx-auto bg-white/20 backdrop-blur-md rounded-lg shadow-lg border border-white/30 p-2">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <input
           type="text"
           placeholder="¿A dónde querés ir?"
           {...register('keyword')}
-          className="flex-1 px-6 py-3 text-lg border-none focus:outline-none focus:ring-0 text-secondary-900 placeholder-secondary-400 rounded-md bg-transparent"
+          className="flex-1 px-6 py-3 text-lg border-none focus:outline-none focus:ring-0 text-white placeholder-white/70 rounded-md bg-transparent"
         />
         <Button type="submit" size="lg" className="w-full sm:w-auto min-w-[120px] bg-primary-600 hover:bg-primary-700">
           Buscar
