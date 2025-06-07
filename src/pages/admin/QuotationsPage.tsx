@@ -31,7 +31,7 @@ export function QuotationsPage() {
 
   // Redirect if not admin
   if (!isOwner() && !isEmployee()) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin/dashboard\" replace />;
   }
 
   useEffect(() => {
