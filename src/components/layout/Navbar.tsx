@@ -104,7 +104,7 @@ export function Navbar() {
             <div className="flex items-center justify-between h-20">
               {/* Logo - Only on home page */}
               {isHomePage && (
-                <Link to="/" className="flex items-center">
+                <Link to="/\" className="flex items-center">
                   <img 
                     src="/image.png" 
                     alt="Don Agustín Viajes" 
