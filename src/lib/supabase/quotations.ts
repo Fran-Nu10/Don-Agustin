@@ -26,13 +26,10 @@ export async function getQuotation(id: string): Promise<Quotation | null> {
 }
 
 export async function createQuotation(quotationData: QuotationFormData): Promise<Quotation> {
+  // Remove manual timestamp setting - let the database handle defaults and triggers
   const { data, error } = await supabase
     .from('quotations')
-    .insert([{
-      ...quotationData,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }])
+    .insert([quotationData])
     .select()
     .single();
 
@@ -41,12 +38,10 @@ export async function createQuotation(quotationData: QuotationFormData): Promise
 }
 
 export async function updateQuotation(id: string, quotationData: Partial<QuotationFormData>): Promise<Quotation> {
+  // Remove manual updated_at setting - let the database trigger handle it
   const { data, error } = await supabase
     .from('quotations')
-    .update({
-      ...quotationData,
-      updated_at: new Date().toISOString(),
-    })
+    .update(quotationData)
     .eq('id', id)
     .select()
     .single();
