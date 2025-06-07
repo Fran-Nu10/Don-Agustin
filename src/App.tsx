@@ -8,12 +8,14 @@ import { ContactPage } from './pages/ContactPage';
 import { AboutPage } from './pages/AboutPage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogPostPage } from './pages/BlogPostPage';
+import { QuotationPage } from './pages/QuotationPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/admin/DashboardPage';
 import { AdminTripsPage } from './pages/admin/TripsPage';
 import { BookingsPage } from './pages/admin/BookingsPage';
 import { BlogsPage } from './pages/admin/BlogsPage';
 import { ClientsPage } from './pages/admin/ClientsPage';
+import { QuotationsPage } from './pages/admin/QuotationsPage';
 
 function App() {
   return (
@@ -27,6 +29,7 @@ function App() {
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/cotizacion" element={<QuotationPage />} />
         <Route path="/login" element={<LoginPage />} />
         
         {/* Admin Routes */}
@@ -34,6 +37,7 @@ function App() {
         <Route path="/admin/viajes" element={<AdminTripsPage />} />
         <Route path="/admin/clientes" element={<ClientsPage />} />
         <Route path="/admin/agendados" element={<BookingsPage />} />
+        <Route path="/admin/cotizaciones" element={<QuotationsPage />} />
         <Route path="/admin/blog" element={<BlogsPage />} />
       </Routes>
     </AuthProvider>

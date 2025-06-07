@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck } from 'lucide-react';
+import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 
@@ -62,6 +62,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 isActive={isActive('/admin/clientes')}
               >
                 CRM - Clientes
+              </SidebarLink>
+              
+              <SidebarLink
+                to="/admin/cotizaciones"
+                icon={<Calculator className="h-5 w-5" />}
+                isActive={isActive('/admin/cotizaciones')}
+              >
+                Cotizaciones
               </SidebarLink>
               
               {isOwner() && (
@@ -167,7 +175,7 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
 
   return (
     <div className="relative">
-      <Button variant="ghost\" size="sm\" onClick={() => setIsOpen(!isOpen)}>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
         <span className="sr-only">Open menu</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -209,6 +217,13 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
                 onClick={() => setIsOpen(false)}
               >
                 CRM - Clientes
+              </Link>
+              <Link
+                to="/admin/cotizaciones"
+                className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                onClick={() => setIsOpen(false)}
+              >
+                Cotizaciones
               </Link>
               {isOwner && (
                 <>

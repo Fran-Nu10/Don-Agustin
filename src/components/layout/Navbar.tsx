@@ -104,7 +104,7 @@ export function Navbar() {
             <div className="flex items-center justify-between h-20">
               {/* Logo - Only on home page */}
               {isHomePage && (
-                <Link to="/\" className="flex items-center">
+                <Link to="/" className="flex items-center">
                   <img 
                     src="/image.png" 
                     alt="Don Agustín Viajes" 
@@ -150,6 +150,15 @@ export function Navbar() {
                   activeLinkClasses={activeLinkClasses}
                 >
                   Blog
+                </NavLink>
+                <NavLink 
+                  to="/cotizacion" 
+                  isActive={isActive('/cotizacion')} 
+                  isHomePage={isHomePage}
+                  linkClasses={linkClasses}
+                  activeLinkClasses={activeLinkClasses}
+                >
+                  Cotización
                 </NavLink>
                 <NavLink 
                   to="/contacto" 
@@ -250,6 +259,14 @@ export function Navbar() {
                   isHomePage={isHomePage}
                 >
                   Blog
+                </MobileNavLink>
+                <MobileNavLink
+                  to="/cotizacion"
+                  isActive={isActive('/cotizacion')}
+                  onClick={() => setIsMenuOpen(false)}
+                  isHomePage={isHomePage}
+                >
+                  Cotización
                 </MobileNavLink>
                 <MobileNavLink
                   to="/contacto"
