@@ -20,8 +20,10 @@ interface ContentElement {
 export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
   const [elements, setElements] = useState<ContentElement[]>([]);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [editingElement, setEditingElement] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Parse content into elements
   useEffect(() => {
@@ -73,6 +75,16 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
 
     setElements(newElements);
   }, []);
+
+  // Auto-focus textarea when editing starts
+  useEffect(() => {
+    if (editingElement && textareaRef.current) {
+      textareaRef.current.focus();
+      // Move cursor to end
+      const textarea = textareaRef.current;
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
+  }, [editingElement]);
 
   // Convert elements back to content
   const updateContent = useCallback((newElements: ContentElement[]) => {
@@ -191,6 +203,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
       return newElements;
     });
     setSelectedElement(null);
+    setEditingElement(null);
   }, [updateContent]);
 
   // Update text content
@@ -212,7 +225,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
     const newTextElement: ContentElement = {
       id: `text-${Date.now()}-${Math.random()}`,
       type: 'text',
-      content: 'Escribe tu texto aquí...'
+      content: ''
     };
     
     setElements(prev => {
@@ -222,10 +235,33 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
       updateContent(newElements);
       return newElements;
     });
+
+    // Automatically start editing the new text block
+    setTimeout(() => {
+      setEditingElement(newTextElement.id);
+    }, 100);
   }, [updateContent]);
 
+  // Start editing text
+  const startEditingText = useCallback((elementId: string) => {
+    setEditingElement(elementId);
+    setSelectedElement(null);
+  }, []);
+
+  // Stop editing text
+  const stopEditingText = useCallback(() => {
+    setEditingElement(null);
+  }, []);
+
+  // Handle click outside to stop editing
+  const handleClickOutside = useCallback((e: React.MouseEvent) => {
+    if (editingElement && !(e.target as Element).closest('.text-editor')) {
+      stopEditingText();
+    }
+  }, [editingElement, stopEditingText]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={handleClickOutside}>
       {/* Upload Area */}
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
@@ -273,6 +309,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
             </div>
             <div className="flex items-center space-x-2">
               <button
+                type="button"
                 onClick={() => addTextBlock()}
                 className="flex items-center px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
               >
@@ -280,6 +317,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
                 Texto
               </button>
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
               >
@@ -306,7 +344,11 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
                     // IMAGE ELEMENT - SOLO LA IMAGEN VISUAL
                     <div 
                       className={`relative inline-block ${selectedElement === element.id ? 'ring-2 ring-primary-500 rounded' : ''}`}
-                      onClick={() => setSelectedElement(selectedElement === element.id ? null : element.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedElement(selectedElement === element.id ? null : element.id);
+                        setEditingElement(null);
+                      }}
                     >
                       <img
                         src={element.imageData.src}
@@ -320,6 +362,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
                         <>
                           {/* Delete button */}
                           <button
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               removeElement(element.id);
@@ -366,76 +409,111 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
                     </div>
                   ) : (
                     // TEXT ELEMENT
-                    <div 
-                      className={`${selectedElement === element.id ? 'ring-2 ring-blue-500 rounded p-2' : 'p-2'}`}
-                      onClick={() => setSelectedElement(selectedElement === element.id ? null : element.id)}
-                    >
-                      {selectedElement === element.id ? (
+                    <div className="text-editor">
+                      {editingElement === element.id ? (
+                        // EDITING MODE - Textarea siempre visible
                         <div className="relative">
                           <textarea
+                            ref={textareaRef}
                             value={element.content}
                             onChange={(e) => updateTextContent(element.id, e.target.value)}
-                            className="w-full p-3 border border-secondary-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows={Math.max(3, element.content.split('\n').length)}
-                            placeholder="Escribe tu texto aquí..."
-                          />
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeElement(element.id);
+                            onBlur={(e) => {
+                              // Solo salir del modo edición si el click fue fuera del textarea
+                              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                stopEditingText();
+                              }
                             }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-lg"
-                            title="Eliminar texto"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                            className="w-full p-4 border-2 border-blue-500 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-600 bg-blue-50"
+                            rows={Math.max(3, element.content.split('\n').length + 1)}
+                            placeholder="Escribe tu texto aquí..."
+                            style={{ minHeight: '80px' }}
+                          />
+                          <div className="absolute -top-2 -right-2 flex space-x-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                stopEditingText();
+                              }}
+                              className="bg-green-500 text-white rounded-full p-1 hover:bg-green-600 transition-colors shadow-lg text-xs"
+                              title="Guardar texto"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeElement(element.id);
+                              }}
+                              className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-lg"
+                              title="Eliminar texto"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <div className="prose max-w-none cursor-pointer hover:bg-secondary-50 rounded p-2 transition-colors">
-                          {element.content.split('\n').map((line, lineIndex) => {
-                            if (line.startsWith('## ')) {
-                              return (
-                                <h2 key={lineIndex} className="text-2xl font-bold text-secondary-900 mt-6 mb-4 first:mt-0">
-                                  {line.replace('## ', '')}
-                                </h2>
-                              );
-                            } else if (line.startsWith('### ')) {
-                              return (
-                                <h3 key={lineIndex} className="text-xl font-bold text-secondary-900 mt-4 mb-3">
-                                  {line.replace('### ', '')}
-                                </h3>
-                              );
-                            } else if (line.trim()) {
-                              return (
-                                <p key={lineIndex} className="text-secondary-700 mb-3 leading-relaxed">
-                                  {line}
-                                </p>
-                              );
-                            }
-                            return <div key={lineIndex} className="h-2" />;
-                          })}
+                        // DISPLAY MODE - Texto formateado
+                        <div 
+                          className="prose max-w-none cursor-pointer hover:bg-blue-50 rounded p-3 transition-colors border border-transparent hover:border-blue-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            startEditingText(element.id);
+                          }}
+                        >
+                          {element.content ? (
+                            element.content.split('\n').map((line, lineIndex) => {
+                              if (line.startsWith('## ')) {
+                                return (
+                                  <h2 key={lineIndex} className="text-2xl font-bold text-secondary-900 mt-6 mb-4 first:mt-0">
+                                    {line.replace('## ', '')}
+                                  </h2>
+                                );
+                              } else if (line.startsWith('### ')) {
+                                return (
+                                  <h3 key={lineIndex} className="text-xl font-bold text-secondary-900 mt-4 mb-3">
+                                    {line.replace('### ', '')}
+                                  </h3>
+                                );
+                              } else if (line.trim()) {
+                                return (
+                                  <p key={lineIndex} className="text-secondary-700 mb-3 leading-relaxed">
+                                    {line}
+                                  </p>
+                                );
+                              }
+                              return <div key={lineIndex} className="h-2" />;
+                            })
+                          ) : (
+                            <p className="text-secondary-400 italic">Haz clic para escribir texto...</p>
+                          )}
                         </div>
                       )}
                     </div>
                   )}
 
                   {/* Insert buttons between elements */}
-                  <div className="flex justify-center space-x-2 my-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => addTextBlock(index + 1)}
-                      className="flex items-center px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Texto
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Imagen
-                    </button>
-                  </div>
+                  {editingElement !== element.id && (
+                    <div className="flex justify-center space-x-2 my-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => addTextBlock(index + 1)}
+                        className="flex items-center px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Texto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Imagen
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -447,23 +525,23 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
       <div className="bg-green-50 p-4 rounded-lg">
         <h4 className="font-medium text-green-900 mb-2 flex items-center">
           <ImageIcon className="h-4 w-4 mr-2" />
-          ¡Perfecto! Ahora solo verás imágenes:
+          ¡Perfecto! Ahora puedes escribir normalmente:
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
           <div>
-            <h5 className="font-medium mb-1">✅ Lo que VES:</h5>
+            <h5 className="font-medium mb-1">✅ Cómo escribir texto:</h5>
             <ul className="space-y-1">
-              <li>• Solo las imágenes reales</li>
-              <li>• Texto formateado visualmente</li>
-              <li>• Controles cuando seleccionas</li>
+              <li>• Haz clic en cualquier texto para editarlo</li>
+              <li>• El textarea se mantiene abierto mientras escribes</li>
+              <li>• Haz clic en ✓ o fuera para guardar</li>
             </ul>
           </div>
           <div>
-            <h5 className="font-medium mb-1">❌ Lo que NO verás:</h5>
+            <h5 className="font-medium mb-1">✅ Cómo manejar imágenes:</h5>
             <ul className="space-y-1">
-              <li>• Código markdown</li>
-              <li>• URLs de imágenes</li>
-              <li>• Texto base64</li>
+              <li>• Solo verás las imágenes reales</li>
+              <li>• Haz clic para seleccionar y redimensionar</li>
+              <li>• Sin código ni texto base64</li>
             </ul>
           </div>
         </div>
