@@ -1,65 +1,97 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Upload, X, Move, Maximize2, Type, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Move, Maximize2, Type, Image as ImageIcon, Plus } from 'lucide-react';
 
 interface VisualBlogEditorProps {
   content: string;
   onChange: (content: string) => void;
 }
 
-interface ImageElement {
+interface ContentElement {
   id: string;
-  src: string;
-  alt: string;
-  width: number;
-  position: number;
+  type: 'text' | 'image';
+  content: string;
+  imageData?: {
+    src: string;
+    alt: string;
+    width: number;
+  };
 }
 
 export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
-  const [images, setImages] = useState<ImageElement[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [cursorPosition, setCursorPosition] = useState(0);
+  const [elements, setElements] = useState<ContentElement[]>([]);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Parse existing images from content
+  // Parse content into elements
   useEffect(() => {
-    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-    const foundImages: ImageElement[] = [];
-    let match;
-    
-    while ((match = imageRegex.exec(content)) !== null) {
-      const [fullMatch, alt, src] = match;
-      // Only process if it's not a base64 image and not already in our images array
-      if (!src.startsWith('data:') && !images.find(img => img.src === src)) {
-        foundImages.push({
-          id: `img-${Date.now()}-${Math.random()}`,
-          src,
-          alt: alt || 'Imagen',
-          width: 300,
-          position: match.index
-        });
+    const lines = content.split('\n');
+    const newElements: ContentElement[] = [];
+    let currentTextBlock = '';
+
+    lines.forEach((line, index) => {
+      const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      
+      if (imageMatch) {
+        // If we have accumulated text, add it as a text element
+        if (currentTextBlock.trim()) {
+          newElements.push({
+            id: `text-${Date.now()}-${index}`,
+            type: 'text',
+            content: currentTextBlock.trim()
+          });
+          currentTextBlock = '';
+        }
+        
+        // Add image element (only if not base64)
+        const [, alt, src] = imageMatch;
+        if (!src.startsWith('data:')) {
+          newElements.push({
+            id: `img-${Date.now()}-${index}`,
+            type: 'image',
+            content: line,
+            imageData: {
+              src,
+              alt: alt || 'Imagen',
+              width: 400
+            }
+          });
+        }
+      } else if (line.trim()) {
+        currentTextBlock += (currentTextBlock ? '\n' : '') + line;
       }
+    });
+
+    // Add any remaining text
+    if (currentTextBlock.trim()) {
+      newElements.push({
+        id: `text-${Date.now()}-final`,
+        type: 'text',
+        content: currentTextBlock.trim()
+      });
     }
-    
-    if (foundImages.length > 0) {
-      setImages(prev => [...prev, ...foundImages]);
-    }
+
+    setElements(newElements);
   }, []);
 
-  // Convert base64 to a simple placeholder and upload to a service (or use a placeholder URL)
+  // Convert elements back to content
+  const updateContent = useCallback((newElements: ContentElement[]) => {
+    const contentParts = newElements.map(element => {
+      if (element.type === 'text') {
+        return element.content;
+      } else {
+        return `![${element.imageData?.alt || 'Imagen'}](${element.imageData?.src})`;
+      }
+    });
+    
+    const newContent = contentParts.join('\n\n');
+    onChange(newContent);
+  }, [onChange]);
+
+  // Process image file to URL
   const processImageFile = useCallback((file: File): Promise<string> => {
     return new Promise((resolve) => {
-      // For now, we'll use a placeholder service or convert to a shorter reference
-      // In a real app, you'd upload to a service like Cloudinary, AWS S3, etc.
-      
-      // Create a simple filename-based placeholder
-      const fileName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9]/g, '-');
-      const timestamp = Date.now();
-      const placeholderUrl = `https://images.pexels.com/photos/placeholder-${timestamp}.jpeg`;
-      
-      // For demo purposes, we'll use a real Pexels image
-      // In production, you'd upload the actual file and get a real URL
+      // Demo images for placeholder
       const demoImages = [
         'https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg',
         'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg',
@@ -77,51 +109,37 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
   }, []);
 
   // Handle file upload
-  const handleFileUpload = useCallback(async (files: FileList) => {
+  const handleFileUpload = useCallback(async (files: FileList, insertIndex?: number) => {
     for (const file of Array.from(files)) {
       if (file.type.startsWith('image/')) {
         try {
-          // Process the image to get a clean URL (not base64)
           const imageUrl = await processImageFile(file);
+          const fileName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9]/g, ' ');
           
-          const newImage: ImageElement = {
+          const newImageElement: ContentElement = {
             id: `img-${Date.now()}-${Math.random()}`,
-            src: imageUrl,
-            alt: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
-            width: 300,
-            position: cursorPosition
+            type: 'image',
+            content: `![${fileName}](${imageUrl})`,
+            imageData: {
+              src: imageUrl,
+              alt: fileName,
+              width: 400
+            }
           };
           
-          // Insert clean image markdown at cursor position
-          const beforeCursor = content.substring(0, cursorPosition);
-          const afterCursor = content.substring(cursorPosition);
-          const imageMarkdown = `\n![${newImage.alt}](${newImage.src})\n`;
-          const newContent = beforeCursor + imageMarkdown + afterCursor;
-          
-          setImages(prev => [...prev, newImage]);
-          onChange(newContent);
-          
-          // Update cursor position to after the inserted image
-          setTimeout(() => {
-            if (textareaRef.current) {
-              const newPosition = cursorPosition + imageMarkdown.length;
-              textareaRef.current.setSelectionRange(newPosition, newPosition);
-              setCursorPosition(newPosition);
-            }
-          }, 0);
+          setElements(prev => {
+            const newElements = [...prev];
+            const index = insertIndex !== undefined ? insertIndex : newElements.length;
+            newElements.splice(index, 0, newImageElement);
+            updateContent(newElements);
+            return newElements;
+          });
         } catch (error) {
           console.error('Error processing image:', error);
         }
       }
     }
-  }, [content, cursorPosition, onChange, processImageFile]);
-
-  // Handle cursor position change
-  const handleCursorChange = useCallback(() => {
-    if (textareaRef.current) {
-      setCursorPosition(textareaRef.current.selectionStart);
-    }
-  }, []);
+  }, [processImageFile, updateContent]);
 
   // Handle drag events
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -135,168 +153,76 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
   }, []);
 
   // Handle drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent, insertIndex?: number) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileUpload(e.dataTransfer.files);
+      handleFileUpload(e.dataTransfer.files, insertIndex);
     }
   }, [handleFileUpload]);
 
   // Handle image resize
-  const handleImageResize = useCallback((imageId: string, newWidth: number) => {
-    setImages(prev => prev.map(img => 
-      img.id === imageId 
-        ? { ...img, width: Math.max(100, Math.min(800, newWidth)) }
-        : img
-    ));
-  }, []);
-
-  // Remove image
-  const removeImage = useCallback((imageId: string) => {
-    const imageToRemove = images.find(img => img.id === imageId);
-    if (imageToRemove) {
-      // Remove image markdown from content
-      const imageMarkdown = `![${imageToRemove.alt}](${imageToRemove.src})`;
-      const newContent = content.replace(imageMarkdown, '').replace(/\n\n\n/g, '\n\n'); // Clean up extra line breaks
-      onChange(newContent);
-      
-      setImages(prev => prev.filter(img => img.id !== imageId));
-      setSelectedImage(null);
-    }
-  }, [images, content, onChange]);
-
-  // Clean content from any base64 images that might have slipped through
-  const cleanContent = useCallback((rawContent: string) => {
-    // Remove any base64 image data
-    return rawContent.replace(/!\[([^\]]*)\]\(data:image\/[^)]+\)/g, '');
-  }, []);
-
-  // Handle content change with cleaning
-  const handleContentChange = useCallback((newContent: string) => {
-    const cleaned = cleanContent(newContent);
-    onChange(cleaned);
-  }, [onChange, cleanContent]);
-
-  // Render content with images as visual elements
-  const renderContentWithImages = () => {
-    const lines = content.split('\n');
-    const elements: React.ReactNode[] = [];
-    
-    lines.forEach((line, lineIndex) => {
-      // Skip empty lines at the beginning
-      if (!line.trim() && elements.length === 0) return;
-      
-      // Check if line contains an image
-      const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-      
-      if (imageMatch) {
-        const [, alt, src] = imageMatch;
-        // Only render if it's not a base64 image
-        if (!src.startsWith('data:')) {
-          const image = images.find(img => img.src === src);
-          
-          elements.push(
-            <div key={`img-${lineIndex}`} className="my-6 relative group">
-              <div 
-                className={`relative inline-block ${selectedImage === image?.id ? 'ring-2 ring-primary-500 rounded' : ''}`}
-                onClick={() => setSelectedImage(selectedImage === image?.id ? null : image?.id || null)}
-              >
-                <img
-                  src={src}
-                  alt={alt || 'Imagen'}
-                  style={{ width: `${image?.width || 300}px`, height: 'auto' }}
-                  className="rounded shadow-md cursor-pointer max-w-full"
-                />
-                
-                {/* Image controls */}
-                {selectedImage === image?.id && (
-                  <>
-                    {/* Delete button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeImage(image.id);
-                      }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-lg"
-                      title="Eliminar imagen"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-
-                    {/* Resize handle */}
-                    <div
-                      className="absolute -bottom-2 -right-2 bg-primary-600 text-white rounded-full p-1 cursor-ew-resize hover:bg-primary-700 transition-colors shadow-lg"
-                      title="Redimensionar imagen"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        
-                        const startX = e.clientX;
-                        const startWidth = image.width;
-
-                        const handleMouseMove = (e: MouseEvent) => {
-                          const deltaX = e.clientX - startX;
-                          handleImageResize(image.id, startWidth + deltaX);
-                        };
-
-                        const handleMouseUp = () => {
-                          document.removeEventListener('mousemove', handleMouseMove);
-                          document.removeEventListener('mouseup', handleMouseUp);
-                        };
-
-                        document.addEventListener('mousemove', handleMouseMove);
-                        document.addEventListener('mouseup', handleMouseUp);
-                      }}
-                    >
-                      <Maximize2 className="h-3 w-3" />
-                    </div>
-
-                    {/* Move indicator */}
-                    <div className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1 shadow-lg">
-                      <Move className="h-3 w-3" />
-                    </div>
-                  </>
-                )}
-              </div>
-              
-              {/* Image caption */}
-              <p className="text-sm text-secondary-500 mt-2 text-center italic">
-                {alt || 'Imagen'}
-              </p>
-            </div>
-          );
+  const handleImageResize = useCallback((elementId: string, newWidth: number) => {
+    setElements(prev => {
+      const newElements = prev.map(element => {
+        if (element.id === elementId && element.imageData) {
+          return {
+            ...element,
+            imageData: {
+              ...element.imageData,
+              width: Math.max(100, Math.min(800, newWidth))
+            }
+          };
         }
-      } else if (line.trim()) {
-        // Regular text line
-        if (line.startsWith('## ')) {
-          elements.push(
-            <h2 key={`h2-${lineIndex}`} className="text-2xl font-bold text-secondary-900 mt-8 mb-4 first:mt-0">
-              {line.replace('## ', '')}
-            </h2>
-          );
-        } else if (line.startsWith('### ')) {
-          elements.push(
-            <h3 key={`h3-${lineIndex}`} className="text-xl font-bold text-secondary-900 mt-6 mb-3">
-              {line.replace('### ', '')}
-            </h3>
-          );
-        } else {
-          elements.push(
-            <p key={`p-${lineIndex}`} className="text-secondary-700 mb-4 leading-relaxed">
-              {line}
-            </p>
-          );
-        }
-      } else {
-        // Empty line for spacing
-        elements.push(<div key={`br-${lineIndex}`} className="h-2" />);
-      }
+        return element;
+      });
+      updateContent(newElements);
+      return newElements;
     });
+  }, [updateContent]);
+
+  // Remove element
+  const removeElement = useCallback((elementId: string) => {
+    setElements(prev => {
+      const newElements = prev.filter(element => element.id !== elementId);
+      updateContent(newElements);
+      return newElements;
+    });
+    setSelectedElement(null);
+  }, [updateContent]);
+
+  // Update text content
+  const updateTextContent = useCallback((elementId: string, newText: string) => {
+    setElements(prev => {
+      const newElements = prev.map(element => {
+        if (element.id === elementId && element.type === 'text') {
+          return { ...element, content: newText };
+        }
+        return element;
+      });
+      updateContent(newElements);
+      return newElements;
+    });
+  }, [updateContent]);
+
+  // Add text block
+  const addTextBlock = useCallback((insertIndex?: number) => {
+    const newTextElement: ContentElement = {
+      id: `text-${Date.now()}-${Math.random()}`,
+      type: 'text',
+      content: 'Escribe tu texto aquí...'
+    };
     
-    return elements;
-  };
+    setElements(prev => {
+      const newElements = [...prev];
+      const index = insertIndex !== undefined ? insertIndex : newElements.length;
+      newElements.splice(index, 0, newTextElement);
+      updateContent(newElements);
+      return newElements;
+    });
+  }, [updateContent]);
 
   return (
     <div className="space-y-4">
@@ -310,7 +236,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
-        onDrop={handleDrop}
+        onDrop={(e) => handleDrop(e)}
       >
         <Upload className="h-8 w-8 text-secondary-400 mx-auto mb-2" />
         <p className="text-secondary-600 mb-2">
@@ -324,7 +250,7 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
           </button>
         </p>
         <p className="text-xs text-secondary-500">
-          Las imágenes se insertarán donde esté el cursor en el texto
+          Solo verás las imágenes, sin código ni texto markdown
         </p>
         
         <input
@@ -337,87 +263,207 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
         />
       </div>
 
-      {/* Editor */}
-      <div className="border border-secondary-200 rounded-lg overflow-hidden">
+      {/* Visual Content Editor */}
+      <div className="border border-secondary-200 rounded-lg overflow-hidden bg-white">
         <div className="bg-secondary-50 px-4 py-2 border-b border-secondary-200">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center text-sm text-secondary-600">
-              <Type className="h-4 w-4 mr-2" />
-              Editor de Contenido
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Editor Visual - Solo Imágenes
             </div>
-            <div className="text-xs text-secondary-500">
-              Posición del cursor: {cursorPosition}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => addTextBlock()}
+                className="flex items-center px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+              >
+                <Type className="h-3 w-3 mr-1" />
+                Texto
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
+              >
+                <ImageIcon className="h-3 w-3 mr-1" />
+                Imagen
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Split View */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
-          {/* Text Editor */}
-          <div className="border-r border-secondary-200">
-            <div className="bg-secondary-100 px-3 py-2 text-sm font-medium text-secondary-700 border-b border-secondary-200">
-              Editar Texto
+        {/* Content Elements */}
+        <div className="p-6 min-h-[400px]">
+          {elements.length === 0 ? (
+            <div className="text-center py-12 text-secondary-400">
+              <ImageIcon className="h-12 w-12 mx-auto mb-4 text-secondary-300" />
+              <p className="text-lg mb-2">Tu contenido aparecerá aquí</p>
+              <p className="text-sm">Arrastra imágenes o usa los botones de arriba para empezar</p>
             </div>
-            <textarea
-              ref={textareaRef}
-              value={content}
-              onChange={(e) => handleContentChange(e.target.value)}
-              onSelect={handleCursorChange}
-              onKeyUp={handleCursorChange}
-              onClick={handleCursorChange}
-              className="w-full h-full p-4 border-none resize-none focus:outline-none font-mono text-sm"
-              placeholder="Escribe tu contenido aquí...
+          ) : (
+            <div className="space-y-6">
+              {elements.map((element, index) => (
+                <div key={element.id} className="relative group">
+                  {element.type === 'image' && element.imageData ? (
+                    // IMAGE ELEMENT - SOLO LA IMAGEN VISUAL
+                    <div 
+                      className={`relative inline-block ${selectedElement === element.id ? 'ring-2 ring-primary-500 rounded' : ''}`}
+                      onClick={() => setSelectedElement(selectedElement === element.id ? null : element.id)}
+                    >
+                      <img
+                        src={element.imageData.src}
+                        alt={element.imageData.alt}
+                        style={{ width: `${element.imageData.width}px`, height: 'auto' }}
+                        className="rounded shadow-md cursor-pointer max-w-full block"
+                      />
+                      
+                      {/* Image controls - SOLO cuando está seleccionada */}
+                      {selectedElement === element.id && (
+                        <>
+                          {/* Delete button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeElement(element.id);
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-lg"
+                            title="Eliminar imagen"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
 
-Usa ## para títulos principales
-Usa ### para subtítulos
+                          {/* Resize handle */}
+                          <div
+                            className="absolute -bottom-2 -right-2 bg-primary-600 text-white rounded-full p-1 cursor-ew-resize hover:bg-primary-700 transition-colors shadow-lg"
+                            title="Redimensionar imagen"
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              
+                              const startX = e.clientX;
+                              const startWidth = element.imageData!.width;
 
-Las imágenes aparecerán como ![alt](url) y se mostrarán en la vista previa."
-              style={{ minHeight: '460px' }}
-            />
-          </div>
+                              const handleMouseMove = (e: MouseEvent) => {
+                                const deltaX = e.clientX - startX;
+                                handleImageResize(element.id, startWidth + deltaX);
+                              };
 
-          {/* Visual Preview */}
-          <div>
-            <div className="bg-secondary-100 px-3 py-2 text-sm font-medium text-secondary-700 border-b border-secondary-200 flex items-center">
-              <ImageIcon className="h-4 w-4 mr-2" />
-              Vista Previa
-            </div>
-            <div className="p-4 overflow-y-auto" style={{ maxHeight: '460px' }}>
-              {content.trim() ? (
-                <div className="prose max-w-none">
-                  {renderContentWithImages()}
+                              const handleMouseUp = () => {
+                                document.removeEventListener('mousemove', handleMouseMove);
+                                document.removeEventListener('mouseup', handleMouseUp);
+                              };
+
+                              document.addEventListener('mousemove', handleMouseMove);
+                              document.addEventListener('mouseup', handleMouseUp);
+                            }}
+                          >
+                            <Maximize2 className="h-3 w-3" />
+                          </div>
+
+                          {/* Move indicator */}
+                          <div className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1 shadow-lg">
+                            <Move className="h-3 w-3" />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    // TEXT ELEMENT
+                    <div 
+                      className={`${selectedElement === element.id ? 'ring-2 ring-blue-500 rounded p-2' : 'p-2'}`}
+                      onClick={() => setSelectedElement(selectedElement === element.id ? null : element.id)}
+                    >
+                      {selectedElement === element.id ? (
+                        <div className="relative">
+                          <textarea
+                            value={element.content}
+                            onChange={(e) => updateTextContent(element.id, e.target.value)}
+                            className="w-full p-3 border border-secondary-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows={Math.max(3, element.content.split('\n').length)}
+                            placeholder="Escribe tu texto aquí..."
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeElement(element.id);
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-lg"
+                            title="Eliminar texto"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="prose max-w-none cursor-pointer hover:bg-secondary-50 rounded p-2 transition-colors">
+                          {element.content.split('\n').map((line, lineIndex) => {
+                            if (line.startsWith('## ')) {
+                              return (
+                                <h2 key={lineIndex} className="text-2xl font-bold text-secondary-900 mt-6 mb-4 first:mt-0">
+                                  {line.replace('## ', '')}
+                                </h2>
+                              );
+                            } else if (line.startsWith('### ')) {
+                              return (
+                                <h3 key={lineIndex} className="text-xl font-bold text-secondary-900 mt-4 mb-3">
+                                  {line.replace('### ', '')}
+                                </h3>
+                              );
+                            } else if (line.trim()) {
+                              return (
+                                <p key={lineIndex} className="text-secondary-700 mb-3 leading-relaxed">
+                                  {line}
+                                </p>
+                              );
+                            }
+                            return <div key={lineIndex} className="h-2" />;
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Insert buttons between elements */}
+                  <div className="flex justify-center space-x-2 my-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => addTextBlock(index + 1)}
+                      className="flex items-center px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Texto
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Imagen
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-secondary-400 italic text-center py-8">
-                  La vista previa aparecerá aquí cuando escribas contenido...
-                </div>
-              )}
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
       {/* Instructions */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+      <div className="bg-green-50 p-4 rounded-lg">
+        <h4 className="font-medium text-green-900 mb-2 flex items-center">
           <ImageIcon className="h-4 w-4 mr-2" />
-          Cómo usar el editor:
+          ¡Perfecto! Ahora solo verás imágenes:
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
           <div>
-            <h5 className="font-medium mb-1">Insertar imágenes:</h5>
+            <h5 className="font-medium mb-1">✅ Lo que VES:</h5>
             <ul className="space-y-1">
-              <li>• Coloca el cursor donde quieres la imagen</li>
-              <li>• Arrastra la imagen al área de carga</li>
-              <li>• La imagen se insertará automáticamente</li>
+              <li>• Solo las imágenes reales</li>
+              <li>• Texto formateado visualmente</li>
+              <li>• Controles cuando seleccionas</li>
             </ul>
           </div>
           <div>
-            <h5 className="font-medium mb-1">Editar imágenes:</h5>
+            <h5 className="font-medium mb-1">❌ Lo que NO verás:</h5>
             <ul className="space-y-1">
-              <li>• Haz clic en una imagen para seleccionarla</li>
-              <li>• Arrastra desde la esquina para redimensionar</li>
-              <li>• Usa el botón X para eliminar</li>
+              <li>• Código markdown</li>
+              <li>• URLs de imágenes</li>
+              <li>• Texto base64</li>
             </ul>
           </div>
         </div>
