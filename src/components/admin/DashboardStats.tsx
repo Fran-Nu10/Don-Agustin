@@ -33,7 +33,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     labels: stats.popularDestinations.map((d) => d.destination),
     datasets: [
       {
-        label: 'Viajes por destino',
+        label: 'Reservas por destino',
         data: stats.popularDestinations.map((d) => d.count),
         backgroundColor: '#FF6B00',
         borderColor: '#E66B00',
@@ -50,7 +50,15 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       },
       title: {
         display: true,
-        text: 'Destinos populares',
+        text: 'Destinos más reservados',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
       },
     },
   };
@@ -126,12 +134,49 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       {/* Chart */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="font-heading font-bold text-lg mb-4">Destinos populares</h3>
-          <div className="h-64">
-            <Bar data={chartData} options={chartOptions} />
-          </div>
+          <h3 className="font-heading font-bold text-lg mb-4">Destinos más populares</h3>
+          {stats.popularDestinations.length > 0 ? (
+            <div className="h-64">
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-secondary-500">
+              <div className="text-center">
+                <Map className="h-12 w-12 mx-auto mb-4 text-secondary-300" />
+                <p className="text-lg font-medium mb-2">Sin reservas aún</p>
+                <p className="text-sm">Las estadísticas aparecerán cuando los clientes hagan reservas</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Popular Destinations List */}
+      {stats.popularDestinations.length > 0 && (
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="font-heading font-bold text-lg mb-4">Ranking de destinos</h3>
+            <div className="space-y-3">
+              {stats.popularDestinations.map((destination, index) => (
+                <div key={destination.destination} className="flex items-center justify-between p-3 bg-secondary-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-primary-950 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                      {index + 1}
+                    </div>
+                    <span className="font-medium text-secondary-900">{destination.destination}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-primary-950">{destination.count}</span>
+                    <span className="text-sm text-secondary-500 ml-1">
+                      {destination.count === 1 ? 'reserva' : 'reservas'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

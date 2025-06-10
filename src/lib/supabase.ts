@@ -288,36 +288,89 @@ export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
 
 // Stats functions
 export async function getStats(): Promise<Stats> {
-  // Get total trips
-  const { count: totalTrips } = await supabase
-    .from('trips')
-    .select('*', { count: 'exact', head: true });
+  try {
+    // Get total trips
+    const { count: totalTrips } = await supabase
+      .from('trips')
+      .select('*', { count: 'exact', head: true });
 
-  // Get total bookings
-  const { count: totalBookings } = await supabase
-    .from('bookings')
-    .select('*', { count: 'exact', head: true });
+    // Get total bookings
+    const { count: totalBookings } = await supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true });
 
-  // Get upcoming trips
-  const { count: upcomingTrips } = await supabase
-    .from('trips')
-    .select('*', { count: 'exact', head: true })
-    .gt('departure_date', new Date().toISOString());
+    // Get upcoming trips
+    const { count: upcomingTrips } = await supabase
+      .from('trips')
+      .select('*', { count: 'exact', head: true })
+      .gt('departure_date', new Date().toISOString());
 
-  // Get popular destinations
-  const { data: popularDestinations } = await supabase
-    .from('trips')
-    .select('destination')
-    .order('available_spots', { ascending: true })
-    .limit(3);
+    // Get popular destinations based on actual bookings
+    const { data: bookingsWithTrips, error: bookingsError } = await supabase
+      .from('bookings')
+      .select(`
+        id,
+        trip:trips!inner(
+          id,
+          destination
+        )
+      `);
 
-  return {
-    totalTrips: totalTrips || 0,
-    totalBookings: totalBookings || 0,
-    upcomingTrips: upcomingTrips || 0,
-    popularDestinations: (popularDestinations || []).map(trip => ({
-      destination: trip.destination,
-      count: 1,
-    })),
-  };
+    if (bookingsError) {
+      console.error('Error fetching bookings for stats:', bookingsError);
+    }
+
+    // Count bookings by destination
+    const destinationCounts: { [key: string]: number } = {};
+    
+    if (bookingsWithTrips) {
+      bookingsWithTrips.forEach(booking => {
+        if (booking.trip && booking.trip.destination) {
+          const destination = booking.trip.destination;
+          destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
+        }
+      });
+    }
+
+    // Convert to array and sort by count
+    const popularDestinations = Object.entries(destinationCounts)
+      .map(([destination, count]) => ({ destination, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Top 5 destinations
+
+    // If no bookings yet, show some default destinations
+    if (popularDestinations.length === 0) {
+      // Get some trips to show as examples
+      const { data: sampleTrips } = await supabase
+        .from('trips')
+        .select('destination')
+        .limit(3);
+
+      if (sampleTrips) {
+        sampleTrips.forEach(trip => {
+          popularDestinations.push({
+            destination: trip.destination,
+            count: 0
+          });
+        });
+      }
+    }
+
+    return {
+      totalTrips: totalTrips || 0,
+      totalBookings: totalBookings || 0,
+      upcomingTrips: upcomingTrips || 0,
+      popularDestinations,
+    };
+  } catch (error) {
+    console.error('Error getting stats:', error);
+    
+    // Return default stats if there's an error
+    return {
+      totalTrips: 0,
+      totalBookings: 0,
+      upcomingTrips: 0,
+      popularDestinations: [],
+    };
+  }
 }
