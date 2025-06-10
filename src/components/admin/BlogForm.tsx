@@ -4,7 +4,8 @@ import { BlogFormData } from '../../types/blog';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { Upload, X, Image as ImageIcon, Plus } from 'lucide-react';
+import { VisualBlogEditor } from './VisualBlogEditor';
+import { Image as ImageIcon, Type, Eye } from 'lucide-react';
 
 interface BlogFormProps {
   initialData?: BlogFormData;
@@ -22,10 +23,7 @@ const BLOG_CATEGORIES = [
 ];
 
 export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps) {
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [editorMode, setEditorMode] = useState<'visual' | 'text'>('visual');
 
   const {
     register,
@@ -39,78 +37,8 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
 
   const watchContent = watch('content', '');
 
-  // Handle drag events
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-
-  // Handle drop event
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  // Handle file input change
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      handleFiles(e.target.files);
-    }
-  };
-
-  // Process uploaded files
-  const handleFiles = (files: FileList) => {
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imageUrl = e.target?.result as string;
-          setUploadedImages(prev => [...prev, imageUrl]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  };
-
-  // Insert image into content
-  const insertImageIntoContent = (imageUrl: string) => {
-    const textarea = contentTextareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentContent = watchContent;
-    
-    const imageMarkdown = `\n![Imagen](${imageUrl})\n`;
-    const newContent = currentContent.substring(0, start) + imageMarkdown + currentContent.substring(end);
-    
-    setValue('content', newContent);
-    
-    // Set cursor position after the inserted image
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + imageMarkdown.length, start + imageMarkdown.length);
-    }, 0);
-  };
-
-  // Remove uploaded image
-  const removeUploadedImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // Open file dialog
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
+  const handleContentChange = (content: string) => {
+    setValue('content', content);
   };
 
   return (
@@ -142,94 +70,55 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         {...register('excerpt', { required: 'El resumen es obligatorio' })}
       />
 
-      {/* Content with Image Upload */}
+      {/* Content Editor with Mode Toggle */}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-secondary-900">
-          Contenido
-        </label>
-        
-        {/* Image Upload Area */}
-        <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-            dragActive 
-              ? 'border-primary-500 bg-primary-50' 
-              : 'border-secondary-300 hover:border-secondary-400'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <div className="flex flex-col items-center">
-            <Upload className="h-8 w-8 text-secondary-400 mb-2" />
-            <p className="text-secondary-600 mb-2">
-              Arrastra imágenes aquí o{' '}
-              <button
-                type="button"
-                onClick={openFileDialog}
-                className="text-primary-950 hover:underline"
-              >
-                selecciona archivos
-              </button>
-            </p>
-            <p className="text-xs text-secondary-500">
-              Las imágenes se insertarán en el contenido donde esté el cursor
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-medium text-secondary-900">
+            Contenido
+          </label>
           
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileInput}
-            className="hidden"
-          />
+          <div className="flex items-center bg-secondary-100 rounded-lg p-1">
+            <button
+              type="button"
+              onClick={() => setEditorMode('visual')}
+              className={`flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                editorMode === 'visual'
+                  ? 'bg-white text-primary-950 shadow-sm'
+                  : 'text-secondary-600 hover:text-secondary-900'
+              }`}
+            >
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Visual
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode('text')}
+              className={`flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                editorMode === 'text'
+                  ? 'bg-white text-primary-950 shadow-sm'
+                  : 'text-secondary-600 hover:text-secondary-900'
+              }`}
+            >
+              <Type className="h-4 w-4 mr-2" />
+              Texto
+            </button>
+          </div>
         </div>
 
-        {/* Uploaded Images Preview */}
-        {uploadedImages.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {uploadedImages.map((imageUrl, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={imageUrl}
-                  alt={`Uploaded ${index + 1}`}
-                  className="w-full h-24 object-cover rounded-lg border border-secondary-200"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => insertImageIntoContent(imageUrl)}
-                      className="bg-primary-950 text-white p-2 rounded-full hover:bg-primary-800 transition-colors"
-                      title="Insertar en contenido"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeUploadedImage(index)}
-                      className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"
-                      title="Eliminar imagen"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {editorMode === 'visual' ? (
+          <VisualBlogEditor
+            content={watchContent}
+            onChange={handleContentChange}
+          />
+        ) : (
+          <Textarea
+            id="content"
+            rows={20}
+            fullWidth
+            error={errors.content?.message}
+            {...register('content', { required: 'El contenido es obligatorio' })}
+          />
         )}
-
-        <Textarea
-          ref={contentTextareaRef}
-          id="content"
-          rows={20}
-          fullWidth
-          error={errors.content?.message}
-          {...register('content', { required: 'El contenido es obligatorio' })}
-        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,10 +161,19 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       {/* Writing Tips */}
       <div className="bg-secondary-50 p-6 rounded-lg">
         <h4 className="font-medium text-secondary-900 mb-3 flex items-center">
-          <ImageIcon className="h-5 w-5 mr-2" />
+          <Eye className="h-5 w-5 mr-2" />
           Consejos para escribir
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-secondary-600">
+          <div>
+            <h5 className="font-medium text-secondary-800 mb-2">Editor Visual:</h5>
+            <ul className="space-y-1">
+              <li>• Arrastra imágenes directamente al contenido</li>
+              <li>• Haz clic en una imagen para seleccionarla</li>
+              <li>• Redimensiona arrastrando desde la esquina</li>
+              <li>• Mueve imágenes con el ícono azul</li>
+            </ul>
+          </div>
           <div>
             <h5 className="font-medium text-secondary-800 mb-2">Formato de texto:</h5>
             <ul className="space-y-1">
@@ -283,15 +181,6 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
               <li>• Usa "### " para subtítulos</li>
               <li>• Separa párrafos con líneas en blanco</li>
               <li>• Mantén un tono conversacional y amigable</li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-medium text-secondary-800 mb-2">Imágenes:</h5>
-            <ul className="space-y-1">
-              <li>• Arrastra imágenes al área de carga</li>
-              <li>• Haz clic en "+" para insertar en el contenido</li>
-              <li>• Las imágenes se insertan donde esté el cursor</li>
-              <li>• Incluye consejos prácticos y experiencias</li>
             </ul>
           </div>
         </div>
