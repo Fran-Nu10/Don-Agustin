@@ -25,6 +25,11 @@ export function ContactPage() {
     formState: { errors },
   } = useForm<ContactFormData>();
 
+  // Scroll to top when component mounts
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     

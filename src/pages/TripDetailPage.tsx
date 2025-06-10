@@ -21,6 +21,11 @@ export function TripDetailPage() {
   const [loading, setLoading] = useState(true);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     async function loadData() {
       if (!id) return;
@@ -67,14 +72,19 @@ export function TripDetailPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-grow flex flex-col items-center justify-center">
-          <p className="text-xl text-secondary-600 mb-6">
-            El viaje solicitado no existe o ha sido eliminado.
-          </p>
-          <Link to="/viajes">
-            <Button variant="primary">Ver todos los viajes</Button>
-          </Link>
-        </div>
+        <main className="flex-grow flex flex-col items-center justify-center bg-secondary-50">
+          <div className="text-center max-w-md mx-auto px-4">
+            <h1 className="text-3xl font-bold text-secondary-900 mb-4">
+              Viaje no encontrado
+            </h1>
+            <p className="text-secondary-600 mb-6">
+              El viaje que buscas no existe o ha sido eliminado.
+            </p>
+            <Link to="/viajes">
+              <Button variant="primary">Ver todos los viajes</Button>
+            </Link>
+          </div>
+        </main>
         <Footer />
       </div>
     );

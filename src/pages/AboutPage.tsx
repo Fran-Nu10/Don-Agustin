@@ -1,10 +1,15 @@
-import React from 'react';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, Users, Target, Shield, MapPin, Clock, Star, Heart } from 'lucide-react';
+import { Navbar } from '../components/layout/Navbar';
+import { Footer } from '../components/layout/Footer';
 
 export function AboutPage() {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

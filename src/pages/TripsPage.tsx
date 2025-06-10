@@ -1,30 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { TripCard } from '../components/trips/TripCard';
 import { Input } from '../components/ui/Input';
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, AlertCircle } from 'lucide-react';
 import { useTrips } from '../hooks/useTrips';
 import { Trip } from '../types';
 
 export function TripsPage() {
   const { trips, loading } = useTrips();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDestination, setSelectedDestination] = useState<string>('');
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Get search parameters from URL
+  useEffect(() => {
+    const keyword = searchParams.get('keyword') || '';
+    const destination = searchParams.get('destination') || '';
+    
+    setSearchTerm(keyword);
+    setSelectedDestination(destination);
+  }, [searchParams]);
 
   // Get unique destinations
   const destinations = [...new Set(trips.map((trip) => trip.destination))].sort();
 
-  // Filter trips based on search and destination
-  const filteredTrips = trips.filter((trip) => {
-    const matchesSearch = trip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          trip.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          trip.destination.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDestination = selectedDestination ? trip.destination === selectedDestination : true;
-    
-    return matchesSearch && matchesDestination;
-  });
+  // Enhanced search function
+  const searchTrips = (trips: Trip[], searchTerm: string, selectedDestination: string) => {
+    let filtered = trips;
+
+    // Filter by destination first
+    if (selectedDestination) {
+      filtered = filtered.filter((trip) => trip.destination === selectedDestination);
+    }
+
+    // Then filter by search term if provided
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      
+      filtered = filtered.filter((trip) => {
+        // Search in multiple fields
+        const searchableText = [
+          trip.title,
+          trip.description,
+          trip.destination,
+          trip.category
+        ].join(' ').toLowerCase();
+        
+        // Split search term into words for better matching
+        const searchWords = searchLower.split(' ').filter(word => word.length > 0);
+        
+        // Check if all search words are found
+        return searchWords.every(word => searchableText.includes(word));
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredTrips = searchTrips(trips, searchTerm, selectedDestination);
+
+  // Check if we have search criteria
+  const hasSearchCriteria = searchTerm.trim() || selectedDestination;
+  const hasResults = filteredTrips.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -76,22 +120,84 @@ export function TripsPage() {
             </div>
           </div>
           
+          {/* Search Results Info */}
+          {hasSearchCriteria && (
+            <div className="mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <Search className="h-5 w-5 text-blue-600 mr-2" />
+                  <div>
+                    <p className="text-blue-800 font-medium">
+                      {hasResults ? (
+                        <>Encontramos {filteredTrips.length} {filteredTrips.length === 1 ? 'viaje' : 'viajes'}</>
+                      ) : (
+                        <>No encontramos viajes</>
+                      )}
+                      {searchTerm && (
+                        <> para "{searchTerm}"</>
+                      )}
+                      {selectedDestination && (
+                        <> en {selectedDestination}</>
+                      )}
+                    </p>
+                    {!hasResults && (
+                      <p className="text-blue-600 text-sm mt-1">
+                        Te mostramos todos nuestros viajes disponibles
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Trips Grid */}
           {loading ? (
             <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
               <p className="text-secondary-500">Cargando viajes...</p>
             </div>
-          ) : filteredTrips.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <p className="text-secondary-500">No se encontraron viajes que coincidan con tu búsqueda.</p>
-              <p className="text-secondary-400 mt-2">Intenta con otros términos o destinos.</p>
-            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTrips.map((trip) => (
-                <TripCard key={trip.id} trip={trip} />
-              ))}
-            </div>
+            <>
+              {/* Show filtered results or all trips if no results */}
+              {hasResults || !hasSearchCriteria ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {(hasResults ? filteredTrips : trips).map((trip) => (
+                    <TripCard key={trip.id} trip={trip} />
+                  ))}
+                </div>
+              ) : (
+                /* No results found - show message and all trips */
+                <div className="space-y-8">
+                  {/* No results message */}
+                  <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-orange-200">
+                    <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                    <h3 className="font-heading font-bold text-xl text-secondary-900 mb-2">
+                      No encontramos viajes con esas características
+                    </h3>
+                    <p className="text-secondary-600 mb-4">
+                      No hay viajes que coincidan con tu búsqueda "{searchTerm}"
+                      {selectedDestination && ` en ${selectedDestination}`}.
+                    </p>
+                    <p className="text-secondary-500">
+                      Te mostramos todos nuestros viajes disponibles para que puedas explorar otras opciones.
+                    </p>
+                  </div>
+
+                  {/* Show all trips */}
+                  <div>
+                    <h2 className="font-heading font-bold text-2xl text-secondary-900 mb-6 text-center">
+                      Todos nuestros viajes
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {trips.map((trip) => (
+                        <TripCard key={trip.id} trip={trip} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

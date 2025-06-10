@@ -19,6 +19,9 @@ export function TripSearch({ destinations }: TripSearchProps) {
     if (data.date) params.append('date', data.date);
     if (data.keyword) params.append('keyword', data.keyword);
     
+    // Scroll to top before navigating
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     navigate(`/viajes?${params.toString()}`);
   };
 
