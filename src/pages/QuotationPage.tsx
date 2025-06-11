@@ -118,28 +118,28 @@ export function QuotationPage() {
       <Navbar />
       
       <main className="flex-grow relative py-12 main-content">
-        {/* Background Image */}
+        {/* Background Image - Más sutil */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.pexels.com/photos/590478/pexels-photo-590478.jpeg"
+            src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg"
             alt="Quotation Background"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-900/85 via-primary-800/80 to-secondary-900/85"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-secondary-50/90"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
-          {/* Hero Section */}
+          {/* Hero Section - Más separado del techo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            className="text-center mb-12 pt-8"
           >
-            <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
+            <h1 className="font-heading font-bold text-4xl md:text-5xl text-secondary-900 mb-6">
               Solicitar Cotización
             </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+            <p className="text-xl text-secondary-700 max-w-3xl mx-auto">
               Cuéntanos sobre tu viaje soñado y te enviaremos una propuesta personalizada 
               con los mejores precios y servicios.
             </p>
