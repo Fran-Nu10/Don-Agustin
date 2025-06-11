@@ -1,10 +1,17 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { BookingFormData, Trip } from '../../types';
+import { Trip } from '../../types';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { createBooking } from '../../lib/supabase';
+import { createClient } from '../../lib/supabase/clients';
 import { toast } from 'react-hot-toast';
+
+interface BookingFormData {
+  name: string;
+  email: string;
+  phone: string;
+  message?: string;
+}
 
 interface BookingFormProps {
   trip: Trip;
@@ -30,15 +37,16 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
     try {
       setIsSubmitting(true);
       
-      // Create booking
-      await createBooking({
-        trip_id: trip.id,
+      // Create client in CRM with trip information
+      await createClient({
         name: data.name,
         email: data.email,
         phone: data.phone,
+        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
+        status: 'nuevo'
       });
       
-      toast.success('¡Reserva realizada con éxito!');
+      toast.success('¡Reserva realizada con éxito! Nos pondremos en contacto contigo pronto.');
       reset();
       onSuccess();
     } catch (error) {
@@ -58,54 +66,66 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="font-heading font-bold text-xl mb-4 text-secondary-900">Reserva tu lugar</h3>
       
-      <Input
-        label="Nombre completo"
-        id="name"
-        type="text"
-        placeholder="Juan Pérez"
-        fullWidth
-        error={errors.name?.message}
-        {...register('name', { required: 'El nombre es obligatorio' })}
-      />
-      
-      <Input
-        label="Correo electrónico"
-        id="email"
-        type="email"
-        placeholder="juan@ejemplo.com"
-        fullWidth
-        error={errors.email?.message}
-        {...register('email', { 
-          required: 'El correo es obligatorio',
-          pattern: {
-            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            message: 'Correo electrónico inválido',
-          },
-        })}
-      />
-      
-      <Input
-        label="Teléfono"
-        id="phone"
-        type="tel"
-        placeholder="099 123 456"
-        fullWidth
-        error={errors.phone?.message}
-        {...register('phone', { required: 'El teléfono es obligatorio' })}
-      />
-      
-      <div className="mt-6">
-        <Button type="submit" fullWidth isLoading={isSubmitting}>
-          Reservar
-        </Button>
-      </div>
-      
-      <p className="text-xs text-secondary-500 mt-4">
-        Al reservar, aceptas nuestros términos y condiciones. Te contactaremos para coordinar el pago y brindarte más detalles sobre el viaje.
-      </p>
-    </form>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Input
+          label="Nombre completo"
+          id="name"
+          type="text"
+          placeholder="Juan Pérez"
+          fullWidth
+          error={errors.name?.message}
+          {...register('name', { required: 'El nombre es obligatorio' })}
+        />
+        
+        <Input
+          label="Correo electrónico"
+          id="email"
+          type="email"
+          placeholder="juan@ejemplo.com"
+          fullWidth
+          error={errors.email?.message}
+          {...register('email', { 
+            required: 'El correo es obligatorio',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: 'Correo electrónico inválido',
+            },
+          })}
+        />
+        
+        <Input
+          label="Teléfono"
+          id="phone"
+          type="tel"
+          placeholder="099 123 456"
+          fullWidth
+          error={errors.phone?.message}
+          {...register('phone', { required: 'El teléfono es obligatorio' })}
+        />
+
+        <Input
+          label="Mensaje adicional (opcional)"
+          id="message"
+          type="text"
+          placeholder="Alguna consulta específica sobre el viaje..."
+          fullWidth
+          error={errors.message?.message}
+          {...register('message')}
+        />
+        
+        <div className="mt-6">
+          <Button type="submit" fullWidth isLoading={isSubmitting}>
+            Reservar
+          </Button>
+        </div>
+        
+        <p className="text-xs text-secondary-500 mt-4">
+          Al reservar, aceptas nuestros términos y condiciones. Te contactaremos para coordinar el pago y brindarte más detalles sobre el viaje.
+        </p>
+      </form>
+    </div>
   );
 }

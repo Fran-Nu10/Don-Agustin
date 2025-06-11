@@ -73,23 +73,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </SidebarLink>
               
               {isOwner() && (
-                <>
-                  <SidebarLink
-                    to="/admin/agendados"
-                    icon={<Users className="h-5 w-5" />}
-                    isActive={isActive('/admin/agendados')}
-                  >
-                    Agendados
-                  </SidebarLink>
-                  
-                  <SidebarLink
-                    to="/admin/blog"
-                    icon={<FileText className="h-5 w-5" />}
-                    isActive={isActive('/admin/blog')}
-                  >
-                    Blog
-                  </SidebarLink>
-                </>
+                <SidebarLink
+                  to="/admin/blog"
+                  icon={<FileText className="h-5 w-5" />}
+                  isActive={isActive('/admin/blog')}
+                >
+                  Blog
+                </SidebarLink>
               )}
             </>
           )}
@@ -175,7 +165,7 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
 
   return (
     <div className="relative">
-      <Button variant="ghost\" size="sm\" onClick={() => setIsOpen(!isOpen)}>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
         <span className="sr-only">Open menu</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -226,22 +216,13 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
                 Cotizaciones
               </Link>
               {isOwner && (
-                <>
-                  <Link
-                    to="/admin/agendados"
-                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Agendados
-                  </Link>
-                  <Link
-                    to="/admin/blog"
-                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Blog
-                  </Link>
-                </>
+                <Link
+                  to="/admin/blog"
+                  className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Blog
+                </Link>
               )}
             </>
           )}

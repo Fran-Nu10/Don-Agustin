@@ -6,6 +6,7 @@ import { Textarea } from '../components/ui/Textarea';
 import { Button } from '../components/ui/Button';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { createClient } from '../lib/supabase/clients';
 import { toast } from 'react-hot-toast';
 
 interface ContactFormData {
@@ -31,14 +32,26 @@ export function ContactPage() {
   } = useForm<ContactFormData>();
 
   const onSubmit = async (data: ContactFormData) => {
-    setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast.success('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.');
-    reset();
-    setIsSubmitting(false);
+    try {
+      setIsSubmitting(true);
+      
+      // Create client in CRM
+      await createClient({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        message: data.message,
+        status: 'nuevo'
+      });
+      
+      toast.success('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.');
+      reset();
+    } catch (error) {
+      console.error('Error creating client:', error);
+      toast.error('Ocurrió un error al enviar tu mensaje. Por favor, intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
