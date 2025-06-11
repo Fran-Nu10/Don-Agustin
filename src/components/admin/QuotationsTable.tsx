@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Quotation } from '../../types/quotation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { generateQuotationPDF } from '../../utils/pdfGenerator';
 
 interface QuotationsTableProps {
   quotations: Quotation[];
@@ -24,6 +25,11 @@ export function QuotationsTable({ quotations, onViewQuotation }: QuotationsTable
       setSortField(field);
       setSortDirection('asc');
     }
+  };
+
+  const handleDownloadPDF = (quotation: Quotation, event: React.MouseEvent) => {
+    event.stopPropagation();
+    generateQuotationPDF(quotation);
   };
 
   const sortedQuotations = [...quotations].sort((a, b) => {
@@ -208,14 +214,25 @@ export function QuotationsTable({ quotations, onViewQuotation }: QuotationsTable
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewQuotation(quotation)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onViewQuotation(quotation)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDownloadPDF(quotation, e)}
+                        className="text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                        title="Descargar PDF"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))

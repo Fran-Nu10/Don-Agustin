@@ -5,9 +5,10 @@ import { QuotationModal } from '../../components/admin/QuotationModal';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Search, Filter, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, FileText, Clock, CheckCircle, XCircle, Download, BarChart3 } from 'lucide-react';
 import { Quotation, QuotationFilters, QuotationFormData } from '../../types/quotation';
 import { getQuotations, updateQuotation } from '../../lib/supabase/quotations';
+import { generateQuotationsSummaryPDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -31,7 +32,7 @@ export function QuotationsPage() {
 
   // Redirect if not admin
   if (!isOwner() && !isEmployee()) {
-    return <Navigate to="/admin/dashboard\" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   useEffect(() => {
@@ -101,6 +102,11 @@ export function QuotationsPage() {
     }
   };
 
+  const handleDownloadSummary = () => {
+    generateQuotationsSummaryPDF(filteredQuotations);
+    toast.success('Reporte descargado exitosamente');
+  };
+
   const handleFilterChange = (field: keyof QuotationFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -133,13 +139,23 @@ export function QuotationsPage() {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
-        <h1 className="font-heading font-bold text-2xl text-secondary-900">
-          Gestión de Cotizaciones
-        </h1>
-        <p className="text-secondary-500">
-          Administra las solicitudes de cotización de los clientes
-        </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading font-bold text-2xl text-secondary-900">
+            Gestión de Cotizaciones
+          </h1>
+          <p className="text-secondary-500">
+            Administra las solicitudes de cotización de los clientes
+          </p>
+        </div>
+        
+        <Button
+          onClick={handleDownloadSummary}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Descargar Reporte PDF
+        </Button>
       </div>
 
       {/* Stats Cards */}

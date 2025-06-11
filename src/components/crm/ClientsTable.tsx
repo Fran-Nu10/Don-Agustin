@@ -63,9 +63,11 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     switch (status) {
       case 'nuevo':
         return 'bg-blue-100 text-blue-800';
-      case 'en_proceso':
+      case 'presupuesto_enviado':
+        return 'bg-purple-100 text-purple-800';
+      case 'en_seguimiento':
         return 'bg-yellow-100 text-yellow-800';
-      case 'cerrado':
+      case 'cliente_cerrado':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -76,10 +78,12 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     switch (status) {
       case 'nuevo':
         return 'Nuevo';
-      case 'en_proceso':
-        return 'En Proceso';
-      case 'cerrado':
-        return 'Cerrado';
+      case 'presupuesto_enviado':
+        return 'Presupuesto Enviado';
+      case 'en_seguimiento':
+        return 'En Seguimiento';
+      case 'cliente_cerrado':
+        return 'Cliente Cerrado';
       default:
         return status;
     }
@@ -177,7 +181,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(client.status)}`}>
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(client.status)}`}>
                       {getStatusLabel(client.status)}
                     </span>
                   </td>
