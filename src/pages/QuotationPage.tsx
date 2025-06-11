@@ -67,7 +67,7 @@ export function QuotationPage() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <img
-              src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg"
+              src="https://images.pexels.com/photos/1835718/pexels-photo-1835718.jpeg"
               alt="Success Background"
               className="w-full h-full object-cover"
             />
@@ -121,7 +121,7 @@ export function QuotationPage() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg"
+            src="https://images.pexels.com/photos/590478/pexels-photo-590478.jpeg"
             alt="Quotation Background"
             className="w-full h-full object-cover"
           />
