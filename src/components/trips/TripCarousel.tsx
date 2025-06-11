@@ -120,7 +120,8 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
           {/* Trips Grid with Touch Support */}
           <div 
             ref={containerRef}
-            className="overflow-hidden touch-pan-x"
+            className="overflow-hidden"
+            style={{ touchAction: 'pan-x pan-y' }} // Allow both horizontal swipe and vertical scroll
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -133,9 +134,12 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                style={{ touchAction: 'auto' }} // Allow all touch actions on the grid
               >
                 {currentTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                  <div key={trip.id} style={{ touchAction: 'auto' }}>
+                    <TripCard trip={trip} />
+                  </div>
                 ))}
               </motion.div>
             </AnimatePresence>

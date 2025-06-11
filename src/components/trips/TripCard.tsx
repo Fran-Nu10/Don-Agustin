@@ -22,7 +22,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="touch-pan-y" // Allow vertical scrolling when touching the card
+      style={{ touchAction: 'auto' }} // Allow all touch actions including scroll
     >
       <Card className="h-full flex flex-col">
         <div className="relative h-48 overflow-hidden">
@@ -30,13 +30,14 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             src={trip.image_url}
             alt={trip.title}
             className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+            style={{ touchAction: 'auto' }} // Ensure image allows scrolling
           />
           <div className="absolute top-0 right-0 bg-primary-600 text-white py-1 px-3 font-medium rounded-bl-lg">
             ${trip.price.toLocaleString('es-UY')}
           </div>
         </div>
         
-        <CardContent className="flex-grow">
+        <CardContent className="flex-grow" style={{ touchAction: 'auto' }}>
           <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900">{trip.title}</h3>
           
           <div className="flex items-center text-secondary-600 mb-2">
@@ -62,7 +63,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
         </CardContent>
         
         {showActions && (
-          <CardFooter>
+          <CardFooter style={{ touchAction: 'auto' }}>
             <Link to={`/viajes/${trip.id}`} className="w-full">
               <Button variant="primary" fullWidth>
                 Ver detalles
