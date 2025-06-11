@@ -91,7 +91,7 @@ export function TripsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-secondary-400" />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-secondary-400 z-10" />
                 <Input
                   placeholder="Buscar por título, destino o descripción..."
                   value={searchTerm}
@@ -103,11 +103,11 @@ export function TripsPage() {
               
               {/* Destination Filter */}
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-5 w-5 text-secondary-400" />
+                <MapPin className="absolute left-3 top-3 h-5 w-5 text-secondary-400 z-10 pointer-events-none" />
                 <select
                   value={selectedDestination}
                   onChange={(e) => setSelectedDestination(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                  className="block w-full pl-10 pr-8 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors appearance-none"
                 >
                   <option value="">Todos los destinos</option>
                   {destinations.map((destination) => (
@@ -116,6 +116,12 @@ export function TripsPage() {
                     </option>
                   ))}
                 </select>
+                {/* Custom dropdown arrow */}
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="h-4 w-4 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>

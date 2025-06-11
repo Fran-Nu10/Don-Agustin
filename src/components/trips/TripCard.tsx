@@ -22,6 +22,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="touch-pan-y" // Allow vertical scrolling when touching the card
     >
       <Card className="h-full flex flex-col">
         <div className="relative h-48 overflow-hidden">
@@ -39,19 +40,19 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
           <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900">{trip.title}</h3>
           
           <div className="flex items-center text-secondary-600 mb-2">
-            <MapPin className="h-4 w-4 mr-1 text-primary-600" />
-            <span className="text-sm">{trip.destination}</span>
+            <MapPin className="h-4 w-4 mr-1 text-primary-600 flex-shrink-0" />
+            <span className="text-sm truncate">{trip.destination}</span>
           </div>
           
           <div className="flex items-center text-secondary-600 mb-2">
-            <Calendar className="h-4 w-4 mr-1 text-primary-600" />
+            <Calendar className="h-4 w-4 mr-1 text-primary-600 flex-shrink-0" />
             <span className="text-sm">
               {formattedDepartureDate} - {formattedReturnDate}
             </span>
           </div>
           
           <div className="flex items-center text-secondary-600 mb-4">
-            <Tag className="h-4 w-4 mr-1 text-primary-600" />
+            <Tag className="h-4 w-4 mr-1 text-primary-600 flex-shrink-0" />
             <span className="text-sm">
               {trip.available_spots} {trip.available_spots === 1 ? 'cupo disponible' : 'cupos disponibles'}
             </span>

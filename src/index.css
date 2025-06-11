@@ -14,6 +14,10 @@ html, body {
   touch-action: pan-x;
 }
 
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
 /* Add padding to body to prevent content from being hidden behind fixed navbar */
 body {
   padding-top: 0;
@@ -37,4 +41,15 @@ body {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Improve mobile scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix mobile touch scrolling issues */
+.touch-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

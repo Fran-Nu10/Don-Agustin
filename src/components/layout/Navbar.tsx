@@ -21,7 +21,7 @@ export function Navbar() {
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
-    // Only apply smart navbar behavior on non-home pages and desktop
+    // Always show navbar on home page
     if (isHomePage) {
       setShowNavbar(true);
       return;
@@ -92,7 +92,7 @@ export function Navbar() {
 
   return (
     <AnimatePresence>
-      {(showNavbar || isHomePage) && (
+      {showNavbar && (
         <motion.header
           initial={isHomePage ? { opacity: 1, y: 0 } : { opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,7 +104,7 @@ export function Navbar() {
             <div className="flex items-center justify-between h-20">
               {/* Logo - Only on home page */}
               {isHomePage && (
-                <Link to="/\" className="flex items-center">
+                <Link to="/" className="flex items-center">
                   <img 
                     src="/image.png" 
                     alt="Don Agustín Viajes" 
