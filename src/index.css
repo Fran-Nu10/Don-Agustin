@@ -21,7 +21,7 @@ body {
 
 /* Add padding to main content on non-home pages to account for fixed navbar */
 .main-content {
-  padding-top: 6rem; /* 96px - más espacio para el navbar */
+  padding-top: 5rem; /* 80px - height of navbar */
 }
 
 /* Line clamp utilities */

@@ -78,8 +78,9 @@ export function Navbar() {
     };
   }, [lastScrollY, mouseY, isHomePage]);
 
-  // Navbar classes - SIEMPRE transparente
-  const navbarClasses = "fixed top-0 left-0 right-0 z-50";
+  const navbarClasses = isHomePage 
+    ? "absolute top-0 left-0 right-0 z-50" 
+    : "fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm";
 
   const linkClasses = isHomePage 
     ? "text-white/80 hover:text-primary-300" 
@@ -103,7 +104,7 @@ export function Navbar() {
             <div className="flex items-center justify-between h-20">
               {/* Logo - Only on home page */}
               {isHomePage && (
-                <Link to="/" className="flex items-center">
+                <Link to="/\" className="flex items-center">
                   <img 
                     src="/image.png" 
                     alt="Don Agustín Viajes" 
@@ -224,7 +225,7 @@ export function Navbar() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`md:hidden pb-4 px-4 ${isHomePage ? 'bg-black/90 backdrop-blur-sm' : 'bg-white/95 backdrop-blur-sm border-t border-secondary-200'}`}
+              className={`md:hidden pb-4 px-4 ${isHomePage ? 'bg-black/90 backdrop-blur-sm' : 'bg-white border-t border-secondary-200'}`}
             >
               <div className="flex flex-col space-y-3">
                 <MobileNavLink
