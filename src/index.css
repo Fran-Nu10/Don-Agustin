@@ -18,6 +18,11 @@ html, body {
   touch-action: pan-y;
 }
 
+/* Custom touch action for horizontal-only panning */
+.touch-pan-x-only {
+  touch-action: pan-x pinch-zoom;
+}
+
 /* Add padding to body to prevent content from being hidden behind fixed navbar */
 body {
   padding-top: 0;
@@ -50,6 +55,14 @@ body {
 
 /* Fix mobile touch scrolling issues */
 .touch-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Ensure cards allow vertical scrolling */
+.trip-card-container {
+  touch-action: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

@@ -40,6 +40,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Only handle horizontal swipes, allow vertical scrolling
     setTouchStart(e.touches[0].clientX);
   };
 
@@ -53,6 +54,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
 
+    // Only trigger page change for significant horizontal swipes
     if (Math.abs(distance) > minSwipeDistance) {
       if (distance > 0) {
         nextPage();
@@ -100,13 +102,14 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
             <ChevronRight className="h-6 w-6 text-secondary-600" />
           </button>
 
-          {/* Trips Carousel */}
+          {/* Trips Carousel - IMPROVED FOR VERTICAL SCROLLING */}
           <div 
             ref={containerRef}
-            className="overflow-hidden touch-pan-x"
+            className="overflow-hidden touch-pan-x-only" // Custom class for horizontal-only touch
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            style={{ touchAction: 'pan-x pinch-zoom' }} // Allow horizontal pan and pinch, but not vertical pan
           >
             <AnimatePresence mode="wait">
               {currentTrips.map((trip) => (
@@ -116,6 +119,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ duration: 0.3 }}
+                  style={{ touchAction: 'auto' }} // Allow normal touch behavior on the content
                 >
                   <div className="bg-white rounded-lg overflow-hidden shadow-card">
                     <div className="grid grid-cols-1 md:grid-cols-2">
@@ -131,21 +135,21 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         </div>
                       </div>
                       
-                      {/* Content with matching height */}
-                      <div className="p-6 md:p-8 flex flex-col min-h-64 md:min-h-80 lg:min-h-96">
+                      {/* Content with matching height - SCROLLABLE */}
+                      <div className="p-6 md:p-8 flex flex-col min-h-64 md:min-h-80 lg:min-h-96 touch-scroll">
                         <h3 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
                           {trip.title}
                         </h3>
                         
                         <div className="flex items-center text-secondary-600 mb-2">
-                          <Calendar className="h-5 w-5 mr-2 text-primary-950" />
+                          <Calendar className="h-5 w-5 mr-2 text-primary-950 flex-shrink-0" />
                           <span>
                             {format(new Date(trip.departure_date), 'dd MMM yyyy', { locale: es })}
                           </span>
                         </div>
                         
                         <div className="flex items-center text-secondary-600 mb-4">
-                          <Clock className="h-5 w-5 mr-2 text-primary-950" />
+                          <Clock className="h-5 w-5 mr-2 text-primary-950 flex-shrink-0" />
                           <span>
                             {Math.ceil(
                               (new Date(trip.return_date).getTime() - new Date(trip.departure_date).getTime()) / 
@@ -154,9 +158,11 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                           </span>
                         </div>
                         
-                        <p className="text-secondary-600 mb-6 flex-grow line-clamp-4">
-                          {trip.description}
-                        </p>
+                        <div className="flex-grow overflow-y-auto touch-scroll">
+                          <p className="text-secondary-600 mb-6">
+                            {trip.description}
+                          </p>
+                        </div>
                         
                         <div className="mt-auto">
                           <Link to={`/viajes/${trip.id}`}>

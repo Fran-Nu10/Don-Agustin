@@ -53,6 +53,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Only handle horizontal swipes, allow vertical scrolling
     setTouchStart(e.touches[0].clientX);
   };
 
@@ -66,6 +67,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
 
+    // Only trigger page change for significant horizontal swipes
     if (Math.abs(distance) > minSwipeDistance) {
       if (distance > 0) {
         nextPage();
@@ -117,13 +119,14 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
             </>
           )}
 
-          {/* Trips Grid with Touch Support */}
+          {/* Trips Grid with Touch Support - IMPROVED FOR VERTICAL SCROLLING */}
           <div 
             ref={containerRef}
-            className="overflow-hidden touch-pan-x"
+            className="overflow-hidden touch-pan-x-only" // Custom class for horizontal-only touch
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            style={{ touchAction: 'pan-x pinch-zoom' }} // Allow horizontal pan and pinch, but not vertical pan
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -133,9 +136,12 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                style={{ touchAction: 'auto' }} // Allow normal touch behavior on the grid
               >
                 {currentTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                  <div key={trip.id} style={{ touchAction: 'auto' }}>
+                    <TripCard trip={trip} />
+                  </div>
                 ))}
               </motion.div>
             </AnimatePresence>
