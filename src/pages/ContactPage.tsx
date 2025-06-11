@@ -48,8 +48,8 @@ export function ContactPage() {
       <main className="flex-grow bg-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           {/* Page Header */}
-          <div className="mb-10 text-center">
-            <h1 className="font-heading font-bold text-4xl mb-4 text-secondary-900">
+          <div className="mb-10 text-center pt-12">
+            <h1 className="font-heading font-bold text-4xl mb-6 text-secondary-900">
               Contáctanos
             </h1>
             <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
@@ -142,8 +142,8 @@ export function ContactPage() {
                         Dirección
                       </h3>
                       <p className="text-secondary-600">
-                        Av. 18 de Julio 1234<br />
-                        Montevideo, Uruguay
+                        18 de Julio 1236<br />
+                        11100 Montevideo, Uruguay
                       </p>
                     </div>
                   </div>
@@ -200,18 +200,35 @@ export function ContactPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full Width Map Section */}
+        <div className="mt-12">
+          <div className="w-full">
+            <div className="bg-white py-8">
+              <div className="container mx-auto px-4 mb-6">
+                <h2 className="font-heading font-bold text-2xl text-center text-secondary-900 mb-2">
+                  Nuestra Ubicación
+                </h2>
+                <p className="text-center text-secondary-600">
+                  Visítanos en nuestras oficinas en el corazón de Montevideo
+                </p>
+              </div>
               
-              {/* Map */}
-              <div className="mt-6 bg-white rounded-lg shadow-card p-4">
-                <div className="aspect-[4/3] rounded-md overflow-hidden">
+              {/* Responsive Map Container */}
+              <div className="w-full">
+                <div className="aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9]">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.9592486761903!2d-56.18651592348943!3d-34.90679257293424!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f81cb6a6d5a2b%3A0x6f59787d31ca4e49!2sAv.%2018%20de%20Julio%2C%20Montevideo%2C%20Uruguay!5e0!3m2!1ses!2sus!4v1700533222777!5m2!1ses!2sus"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.9592486761903!2d-56.18651592348943!3d-34.90679257293424!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f81cb6a6d5a2b%3A0x6f59787d31ca4e49!2s18%20de%20Julio%201236%2C%2011100%20Montevideo%2C%20Departamento%20de%20Montevideo%2C%20Uruguay!5e0!3m2!1ses!2sus!4v1700533222777!5m2!1ses!2sus"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full"
                   ></iframe>
                 </div>
               </div>

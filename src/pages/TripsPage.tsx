@@ -77,8 +77,8 @@ export function TripsPage() {
       <main className="flex-grow bg-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           {/* Page Header */}
-          <div className="mb-10 text-center">
-            <h1 className="font-heading font-bold text-4xl mb-4 text-secondary-900">
+          <div className="mb-10 text-center pt-12">
+            <h1 className="font-heading font-bold text-4xl mb-6 text-secondary-900">
               Nuestros Viajes
             </h1>
             <p className="text-xl text-secondary-600 max-w-3xl mx-auto">

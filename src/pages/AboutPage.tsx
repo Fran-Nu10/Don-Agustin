@@ -31,8 +31,9 @@ export function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="pt-12"
             >
-              <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
+              <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-6">
                 Sobre Nosotros
               </h1>
               <p className="text-xl text-white/90 max-w-3xl mx-auto">

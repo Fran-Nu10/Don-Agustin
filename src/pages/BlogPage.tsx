@@ -61,7 +61,7 @@ export function BlogPage() {
         <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
-              src="https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg"
+              src="https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg"
               alt="Blog Hero"
               className="w-full h-full object-cover"
             />
@@ -73,8 +73,9 @@ export function BlogPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="pt-12"
             >
-              <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
+              <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-6">
                 Blog de Viajes
               </h1>
               <p className="text-xl text-white/90 max-w-3xl mx-auto">
