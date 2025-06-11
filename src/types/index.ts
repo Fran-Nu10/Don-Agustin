@@ -97,9 +97,20 @@ export interface SearchFormData {
   keyword: string;
 }
 
+export interface CategoryDistribution {
+  category: string;
+  count: number;
+  percentage: number;
+}
+
 export interface Stats {
   totalTrips: number;
   totalBookings: number;
   upcomingTrips: number;
   popularDestinations: { destination: string; count: number }[];
+  bookingTrend?: number;
+  averageBookingsPerDay?: number;
+  categoryDistribution?: CategoryDistribution[];
+  recentBookingsCount?: number;
+  conversionRate?: number;
 }

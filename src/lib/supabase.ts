@@ -286,7 +286,7 @@ export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
   return data || [];
 }
 
-// Stats functions
+// Enhanced Stats functions
 export async function getStats(): Promise<Stats> {
   try {
     // Get total trips
@@ -310,9 +310,12 @@ export async function getStats(): Promise<Stats> {
       .from('bookings')
       .select(`
         id,
+        created_at,
         trip:trips!inner(
           id,
-          destination
+          destination,
+          category,
+          price
         )
       `);
 
@@ -356,11 +359,15 @@ export async function getStats(): Promise<Stats> {
       }
     }
 
+    // Calculate additional metrics
+    const additionalMetrics = await calculateAdditionalMetrics(bookingsWithTrips || []);
+
     return {
       totalTrips: totalTrips || 0,
       totalBookings: totalBookings || 0,
       upcomingTrips: upcomingTrips || 0,
       popularDestinations,
+      ...additionalMetrics,
     };
   } catch (error) {
     console.error('Error getting stats:', error);
@@ -371,6 +378,78 @@ export async function getStats(): Promise<Stats> {
       totalBookings: 0,
       upcomingTrips: 0,
       popularDestinations: [],
+      bookingTrend: 0,
+      averageBookingsPerDay: 0,
+      categoryDistribution: [],
+      recentBookingsCount: 0,
+      conversionRate: 0,
     };
   }
+}
+
+// Calculate additional metrics for enhanced dashboard
+async function calculateAdditionalMetrics(bookingsWithTrips: any[]) {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // Recent bookings (last 7 days)
+  const recentBookings = bookingsWithTrips.filter(booking => 
+    new Date(booking.created_at) >= sevenDaysAgo
+  );
+
+  // Bookings from previous 7 days (for trend calculation)
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const previousWeekBookings = bookingsWithTrips.filter(booking => {
+    const bookingDate = new Date(booking.created_at);
+    return bookingDate >= fourteenDaysAgo && bookingDate < sevenDaysAgo;
+  });
+
+  // Calculate booking trend (percentage change)
+  const currentWeekCount = recentBookings.length;
+  const previousWeekCount = previousWeekBookings.length;
+  const bookingTrend = previousWeekCount > 0 
+    ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100 
+    : currentWeekCount > 0 ? 100 : 0;
+
+  // Average bookings per day (last 30 days)
+  const last30DaysBookings = bookingsWithTrips.filter(booking => 
+    new Date(booking.created_at) >= thirtyDaysAgo
+  );
+  const averageBookingsPerDay = last30DaysBookings.length / 30;
+
+  // Category distribution
+  const categoryCount: { [key: string]: number } = {};
+  bookingsWithTrips.forEach(booking => {
+    if (booking.trip && booking.trip.category) {
+      const category = booking.trip.category;
+      categoryCount[category] = (categoryCount[category] || 0) + 1;
+    }
+  });
+
+  const categoryDistribution = Object.entries(categoryCount).map(([category, count]) => ({
+    category: category === 'nacional' ? 'Nacional' : 
+              category === 'internacional' ? 'Internacional' : 
+              category === 'grupal' ? 'Grupal' : category,
+    count,
+    percentage: bookingsWithTrips.length > 0 ? (count / bookingsWithTrips.length) * 100 : 0
+  }));
+
+  // Get total trips for conversion rate calculation
+  const { count: totalTrips } = await supabase
+    .from('trips')
+    .select('*', { count: 'exact', head: true });
+
+  // Simple conversion rate: bookings per trip
+  const conversionRate = totalTrips && totalTrips > 0 
+    ? (bookingsWithTrips.length / totalTrips) * 100 
+    : 0;
+
+  return {
+    bookingTrend: Math.round(bookingTrend * 10) / 10, // Round to 1 decimal
+    averageBookingsPerDay: Math.round(averageBookingsPerDay * 10) / 10,
+    categoryDistribution,
+    recentBookingsCount: currentWeekCount,
+    conversionRate: Math.round(conversionRate * 10) / 10,
+  };
 }
