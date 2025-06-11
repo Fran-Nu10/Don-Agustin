@@ -52,22 +52,34 @@ export function Navbar() {
       }
     };
 
-    // Add listeners for both desktop and mobile
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    
-    // For mobile, also listen to touch events
-    window.addEventListener('touchstart', () => setShowNavbar(true), { passive: true });
+    // Only add listeners on desktop (screen width > 768px)
+    const checkScreenSize = () => {
+      if (window.innerWidth > 768) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+      } else {
+        // On mobile, always show navbar
+        setShowNavbar(true);
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+
+    // Initial check
+    checkScreenSize();
+
+    // Listen for resize events
+    window.addEventListener('resize', checkScreenSize);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchstart', () => setShowNavbar(true));
+      window.removeEventListener('resize', checkScreenSize);
     };
   }, [lastScrollY, mouseY, isHomePage]);
 
   const navbarClasses = isHomePage 
-    ? "fixed top-0 left-0 right-0 z-50" 
+    ? "absolute top-0 left-0 right-0 z-50" 
     : "fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm";
 
   const linkClasses = isHomePage 

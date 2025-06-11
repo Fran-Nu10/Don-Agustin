@@ -43,26 +43,13 @@ body {
   overflow: hidden;
 }
 
-/* Improve mobile scrolling - REMOVE conflicting rules */
-/* Remove the global touch-action rule that was preventing scroll */
+/* Improve mobile scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Fix mobile touch scrolling issues */
 .touch-scroll {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-/* Ensure cards allow scrolling */
-.trip-card {
-  touch-action: auto !important;
-}
-
-/* Fix for mobile scroll issues */
-* {
-  /* Remove any global touch-action restrictions */
-}
-
-/* Allow scrolling on all elements by default */
-body, html {
-  touch-action: auto;
 }
