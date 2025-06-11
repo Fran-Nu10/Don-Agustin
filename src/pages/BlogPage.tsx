@@ -57,15 +57,15 @@ export function BlogPage() {
       <Navbar />
       
       <main className="flex-grow bg-secondary-50 main-content">
-        {/* Hero Section */}
-        <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden">
+        {/* Hero Section with Background */}
+        <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
               src="https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg"
               alt="Blog Hero"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-900/80 via-primary-800/70 to-secondary-900/80"></div>
           </div>
           
           <div className="container mx-auto px-4 relative z-10 text-center">
@@ -77,7 +77,7 @@ export function BlogPage() {
               <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
                 Blog de Viajes
               </h1>
-              <p className="text-xl text-white max-w-3xl mx-auto">
+              <p className="text-xl text-white/90 max-w-3xl mx-auto">
                 Inspiración, consejos y experiencias para tu próxima aventura
               </p>
             </motion.div>
@@ -119,6 +119,7 @@ export function BlogPage() {
           {/* Blog Posts Grid */}
           {loading ? (
             <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
               <p className="text-secondary-500">Cargando artículos...</p>
             </div>
           ) : filteredPosts.length === 0 ? (

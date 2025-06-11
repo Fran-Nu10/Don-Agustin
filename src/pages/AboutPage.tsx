@@ -15,15 +15,15 @@ export function AboutPage() {
       <Navbar />
       
       <main className="flex-grow main-content">
-        {/* Hero Section */}
-        <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden">
+        {/* Hero Section with Background */}
+        <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
               src="https://images.pexels.com/photos/2325446/pexels-photo-2325446.jpeg"
               alt="Don Agustín Viajes Office"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary-900/80 via-secondary-800/70 to-primary-900/80"></div>
           </div>
           
           <div className="container mx-auto px-4 relative z-10 text-center">
@@ -35,7 +35,7 @@ export function AboutPage() {
               <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
                 Sobre Nosotros
               </h1>
-              <p className="text-xl text-white max-w-3xl mx-auto">
+              <p className="text-xl text-white/90 max-w-3xl mx-auto">
                 Más de 25 años creando experiencias inolvidables
               </p>
             </motion.div>
@@ -88,9 +88,18 @@ export function AboutPage() {
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="py-16 bg-secondary-50">
-          <div className="container mx-auto px-4">
+        {/* Values Section with Background */}
+        <section className="relative py-16 overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg"
+              alt="Values Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/85 to-secondary-900/90"></div>
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -98,10 +107,10 @@ export function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-4">
+              <h2 className="font-heading font-bold text-3xl text-white mb-4">
                 Nuestros Valores
               </h2>
-              <p className="text-lg text-secondary-600 max-w-3xl mx-auto">
+              <p className="text-lg text-white/90 max-w-3xl mx-auto">
                 Los pilares que guían nuestro trabajo diario y nos ayudan a brindar 
                 el mejor servicio a nuestros clientes
               </p>
@@ -266,7 +275,7 @@ function ValueCard({ icon, title, description }: ValueCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className="bg-white p-6 rounded-lg shadow-card"
+      className="bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-card"
     >
       <div className="bg-primary-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
         <div className="text-primary-600">

@@ -63,15 +63,25 @@ export function QuotationPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         
-        <main className="flex-grow bg-gradient-to-br from-primary-50 to-secondary-50 py-12 main-content">
-          <div className="container mx-auto px-4">
+        <main className="flex-grow relative py-12 main-content">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg"
+              alt="Success Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-green-900/80 via-green-800/70 to-green-900/80"></div>
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="max-w-2xl mx-auto text-center"
             >
-              <div className="bg-white rounded-2xl shadow-xl p-12">
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-12">
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
@@ -107,8 +117,18 @@ export function QuotationPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-gradient-to-br from-primary-50 to-secondary-50 py-12 main-content">
-        <div className="container mx-auto px-4">
+      <main className="flex-grow relative py-12 main-content">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg"
+            alt="Quotation Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-900/85 via-primary-800/80 to-secondary-900/85"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -116,10 +136,10 @@ export function QuotationPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h1 className="font-heading font-bold text-4xl md:text-5xl text-secondary-900 mb-4">
+            <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-4">
               Solicitar Cotización
             </h1>
-            <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
               Cuéntanos sobre tu viaje soñado y te enviaremos una propuesta personalizada 
               con los mejores precios y servicios.
             </p>
@@ -132,7 +152,7 @@ export function QuotationPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
               {/* Form Header */}
               <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-8 text-white">
                 <h2 className="font-heading font-bold text-2xl mb-2">
@@ -385,7 +405,7 @@ interface BenefitCardProps {
 
 function BenefitCard({ icon, title, description }: BenefitCardProps) {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-card text-center">
+    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-card text-center">
       <div className="flex justify-center mb-4">{icon}</div>
       <h4 className="font-heading font-bold text-lg text-secondary-900 mb-2">
         {title}

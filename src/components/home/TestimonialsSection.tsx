@@ -28,8 +28,18 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="relative py-16 overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg"
+          alt="Testimonials Background"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary-900/85 via-secondary-800/80 to-primary-900/85"></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -37,10 +47,10 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-4">
+          <h2 className="font-heading font-bold text-3xl text-white mb-4">
             Lo que dicen nuestros clientes
           </h2>
-          <p className="text-lg text-secondary-600">
+          <p className="text-lg text-white/90">
             Experiencias reales de viajeros que confiaron en nosotros
           </p>
         </motion.div>
@@ -53,7 +63,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
               viewport={{ once: true }}
-              className="bg-secondary-50 rounded-lg p-6 shadow-card"
+              className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-card"
             >
               <div className="flex mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
