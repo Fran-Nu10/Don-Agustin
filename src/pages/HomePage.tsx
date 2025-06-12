@@ -33,8 +33,8 @@ export function HomePage() {
         <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img
-              src="https://images.pexels.com/photos/3935702/pexels-photo-3935702.jpeg"
-              alt="Viajes Don Agustín"
+              src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg"
+              alt="Playa paradisíaca - Don Agustín Viajes"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
