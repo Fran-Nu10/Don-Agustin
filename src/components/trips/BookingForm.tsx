@@ -37,16 +37,17 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
     try {
       setIsSubmitting(true);
       
-      // Create client in CRM with trip information
+      // Create client in CRM with trip information - NO scheduled_date for public bookings
       const clientData = {
         name: data.name,
         email: data.email,
         phone: data.phone || '',
         message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
-        status: 'nuevo' as const
+        status: 'nuevo' as const,
+        // NO incluir scheduled_date - esto es solo para uso interno del CRM
       };
 
-      console.log('Attempting to create client with data:', clientData);
+      console.log('Creating client with data:', clientData);
       
       await createClient(clientData);
       

@@ -39,6 +39,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         compareB = b.email.toLowerCase();
         break;
       case 'scheduled_date':
+        // Handle null scheduled_date properly
         compareA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
         compareB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
         break;
@@ -86,6 +87,18 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         return 'Cliente Cerrado';
       default:
         return status;
+    }
+  };
+
+  // Helper function to format scheduled date safely
+  const formatScheduledDate = (scheduledDate: string | null | undefined) => {
+    if (!scheduledDate) return null;
+    
+    try {
+      return format(new Date(scheduledDate), 'dd MMM yyyy, HH:mm', { locale: es });
+    } catch (error) {
+      console.error('Error formatting scheduled date:', error);
+      return 'Fecha inválida';
     }
   };
 
@@ -189,12 +202,15 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                     {client.scheduled_date ? (
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-secondary-400" />
-                        {format(new Date(client.scheduled_date), 'dd MMM yyyy, HH:mm', {
-                          locale: es,
-                        })}
+                        <span className="text-green-600 font-medium">
+                          {formatScheduledDate(client.scheduled_date)}
+                        </span>
                       </div>
                     ) : (
-                      <span className="text-secondary-400">Sin agendar</span>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-secondary-300" />
+                        <span className="text-secondary-400 italic">Sin agendar</span>
+                      </div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">

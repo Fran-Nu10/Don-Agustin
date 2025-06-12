@@ -4,7 +4,7 @@ import { Client, ClientFormData } from '../../types/client';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { X, Calendar, Phone, Mail, User, MessageSquare, FileText } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -32,7 +32,9 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
       message: client.message || '',
       status: client.status,
       internal_notes: client.internal_notes || '',
-      scheduled_date: client.scheduled_date ? client.scheduled_date.split('T')[0] : '',
+      scheduled_date: client.scheduled_date ? 
+        // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
+        new Date(client.scheduled_date).toISOString().slice(0, 16) : '',
     } : undefined,
   });
 
@@ -45,7 +47,9 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
         message: client.message || '',
         status: client.status,
         internal_notes: client.internal_notes || '',
-        scheduled_date: client.scheduled_date ? client.scheduled_date.split('T')[0] : '',
+        scheduled_date: client.scheduled_date ? 
+          // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
+          new Date(client.scheduled_date).toISOString().slice(0, 16) : '',
       });
     }
   }, [client, reset]);
@@ -54,7 +58,14 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
     if (!client) return;
     
     try {
-      await onSave(client.id, data);
+      // Convert scheduled_date back to ISO string if provided
+      const submitData = {
+        ...data,
+        scheduled_date: data.scheduled_date ? 
+          new Date(data.scheduled_date).toISOString() : null,
+      };
+      
+      await onSave(client.id, submitData);
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating client:', error);
@@ -88,6 +99,18 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
         return 'Cliente Cerrado';
       default:
         return status;
+    }
+  };
+
+  // Helper function to format scheduled date safely
+  const formatScheduledDate = (scheduledDate: string | null | undefined) => {
+    if (!scheduledDate) return null;
+    
+    try {
+      return format(new Date(scheduledDate), 'dd MMM yyyy, HH:mm', { locale: es });
+    } catch (error) {
+      console.error('Error formatting scheduled date:', error);
+      return 'Fecha inválida';
     }
   };
 
@@ -157,17 +180,22 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
                     </span>
                   </div>
                   
-                  {client.scheduled_date && (
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-primary-950 mr-3" />
-                      <div>
-                        <p className="text-sm text-secondary-500">Fecha Agendada</p>
-                        <p className="font-medium text-secondary-900">
-                          {format(new Date(client.scheduled_date), 'dd MMM yyyy, HH:mm', { locale: es })}
+                  <div className="flex items-start">
+                    <Calendar className="h-5 w-5 text-primary-950 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-secondary-500">Fecha Agendada</p>
+                      {client.scheduled_date ? (
+                        <p className="font-medium text-green-600">
+                          {formatScheduledDate(client.scheduled_date)}
                         </p>
-                      </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <AlertCircle className="h-4 w-4 text-orange-500 mr-1" />
+                          <p className="text-orange-600 italic text-sm">Sin fecha agendada</p>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
@@ -267,14 +295,19 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
                 </div>
               </div>
 
-              <Input
-                label="Fecha Agendada"
-                id="scheduled_date"
-                type="datetime-local"
-                fullWidth
-                error={errors.scheduled_date?.message}
-                {...register('scheduled_date')}
-              />
+              <div>
+                <Input
+                  label="Fecha Agendada (opcional)"
+                  id="scheduled_date"
+                  type="datetime-local"
+                  fullWidth
+                  error={errors.scheduled_date?.message}
+                  {...register('scheduled_date')}
+                />
+                <p className="text-xs text-secondary-500 mt-1">
+                  Esta fecha es para uso interno del CRM. Los clientes que hacen reservas públicas no tienen fecha agendada automáticamente.
+                </p>
+              </div>
 
               <Textarea
                 label="Mensaje del Cliente"

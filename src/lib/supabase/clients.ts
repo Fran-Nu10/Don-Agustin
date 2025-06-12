@@ -25,17 +25,19 @@ export async function getClient(id: string): Promise<Client | null> {
   return data;
 }
 
-export async function createClient(clientData: Omit<ClientFormData, 'internal_notes'>): Promise<Client> {
+export async function createClient(clientData: Omit<ClientFormData, 'internal_notes' | 'scheduled_date'>): Promise<Client> {
   try {
     console.log('Creating client with data:', clientData);
     
-    // Ensure status is properly cast
+    // Ensure status is properly cast and NO scheduled_date for public bookings
     const dataToInsert = {
       name: clientData.name,
       email: clientData.email,
       phone: clientData.phone || null,
       message: clientData.message || null,
       status: clientData.status || 'nuevo',
+      // NO scheduled_date - this is only for internal CRM use
+      // internal_notes will be null by default
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -62,12 +64,17 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
 }
 
 export async function updateClient(id: string, clientData: Partial<ClientFormData>): Promise<Client> {
+  // Handle scheduled_date properly - convert to ISO string or set to null
+  const updateData = {
+    ...clientData,
+    scheduled_date: clientData.scheduled_date ? 
+      (typeof clientData.scheduled_date === 'string' ? clientData.scheduled_date : null) : null,
+    updated_at: new Date().toISOString(),
+  };
+
   const { data, error } = await supabase
     .from('clients')
-    .update({
-      ...clientData,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();
