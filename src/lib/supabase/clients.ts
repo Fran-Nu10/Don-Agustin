@@ -68,9 +68,11 @@ export async function updateClient(id: string, clientData: Partial<ClientFormDat
   const updateData = {
     ...clientData,
     scheduled_date: clientData.scheduled_date ? 
-      (typeof clientData.scheduled_date === 'string' ? clientData.scheduled_date : null) : null,
+      new Date(clientData.scheduled_date).toISOString() : null,
     updated_at: new Date().toISOString(),
   };
+
+  console.log('Updating client with data:', updateData);
 
   const { data, error } = await supabase
     .from('clients')
@@ -79,7 +81,12 @@ export async function updateClient(id: string, clientData: Partial<ClientFormDat
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating client:', error);
+    throw error;
+  }
+  
+  console.log('Client updated successfully:', data);
   return data;
 }
 

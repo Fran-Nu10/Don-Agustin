@@ -34,7 +34,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
       internal_notes: client.internal_notes || '',
       scheduled_date: client.scheduled_date ? 
         // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
-        new Date(client.scheduled_date).toISOString().slice(0, 16) : '',
+        format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
     } : undefined,
   });
 
@@ -49,7 +49,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
         internal_notes: client.internal_notes || '',
         scheduled_date: client.scheduled_date ? 
           // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
-          new Date(client.scheduled_date).toISOString().slice(0, 16) : '',
+          format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
       });
     }
   }, [client, reset]);
@@ -107,7 +107,12 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
     if (!scheduledDate) return null;
     
     try {
-      return format(new Date(scheduledDate), 'dd MMM yyyy, HH:mm', { locale: es });
+      const date = new Date(scheduledDate);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+      return format(date, 'dd MMM yyyy, HH:mm', { locale: es });
     } catch (error) {
       console.error('Error formatting scheduled date:', error);
       return 'Fecha inválida';
