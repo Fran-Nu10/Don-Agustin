@@ -26,18 +26,39 @@ export async function getClient(id: string): Promise<Client | null> {
 }
 
 export async function createClient(clientData: Omit<ClientFormData, 'internal_notes'>): Promise<Client> {
-  const { data, error } = await supabase
-    .from('clients')
-    .insert([{
-      ...clientData,
+  try {
+    console.log('Creating client with data:', clientData);
+    
+    // Ensure status is properly cast
+    const dataToInsert = {
+      name: clientData.name,
+      email: clientData.email,
+      phone: clientData.phone || null,
+      message: clientData.message || null,
+      status: clientData.status || 'nuevo',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }])
-    .select()
-    .single();
+    };
 
-  if (error) throw error;
-  return data;
+    console.log('Data to insert:', dataToInsert);
+
+    const { data, error } = await supabase
+      .from('clients')
+      .insert([dataToInsert])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    console.log('Client created successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in createClient function:', error);
+    throw error;
+  }
 }
 
 export async function updateClient(id: string, clientData: Partial<ClientFormData>): Promise<Client> {

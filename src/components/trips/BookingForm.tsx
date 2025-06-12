@@ -38,20 +38,37 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
       setIsSubmitting(true);
       
       // Create client in CRM with trip information
-      await createClient({
+      const clientData = {
         name: data.name,
         email: data.email,
-        phone: data.phone,
+        phone: data.phone || '',
         message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
-        status: 'nuevo'
-      });
+        status: 'nuevo' as const
+      };
+
+      console.log('Attempting to create client with data:', clientData);
+      
+      await createClient(clientData);
       
       toast.success('¡Reserva realizada con éxito! Nos pondremos en contacto contigo pronto.');
       reset();
       onSuccess();
     } catch (error) {
       console.error('Error creating booking:', error);
-      toast.error('Ocurrió un error al procesar tu reserva. Por favor, intenta nuevamente.');
+      
+      // More detailed error handling
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as any).message;
+        if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+          toast.error('Error de autorización. Por favor, intenta nuevamente en unos momentos.');
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        } else {
+          toast.error(`Error al procesar tu reserva: ${errorMessage}`);
+        }
+      } else {
+        toast.error('Ocurrió un error al procesar tu reserva. Por favor, intenta nuevamente.');
+      }
     } finally {
       setIsSubmitting(false);
     }
