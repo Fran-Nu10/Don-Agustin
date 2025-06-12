@@ -22,24 +22,6 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Helper function to map old status values to new valid ones
-  const mapStatusToValid = (status: string): Client['status'] => {
-    switch (status) {
-      case 'en_proceso':
-        return 'en_seguimiento';
-      case 'cerrado':
-        return 'cliente_cerrado';
-      case 'nuevo':
-      case 'presupuesto_enviado':
-      case 'en_seguimiento':
-      case 'cliente_cerrado':
-        return status as Client['status'];
-      default:
-        // Default to 'nuevo' for any unknown status
-        return 'nuevo';
-    }
-  };
-  
   const {
     register,
     handleSubmit,
@@ -51,7 +33,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
       email: client.email,
       phone: client.phone || '',
       message: client.message || '',
-      status: mapStatusToValid(client.status),
+      status: client.status,
       internal_notes: client.internal_notes || '',
       scheduled_date: client.scheduled_date ? 
         // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
@@ -66,7 +48,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         email: client.email,
         phone: client.phone || '',
         message: client.message || '',
-        status: mapStatusToValid(client.status),
+        status: client.status,
         internal_notes: client.internal_notes || '',
         scheduled_date: client.scheduled_date ? 
           // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
@@ -82,7 +64,6 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
       // Convert scheduled_date back to ISO string if provided
       const submitData = {
         ...data,
-        status: mapStatusToValid(data.status),
         scheduled_date: data.scheduled_date ? 
           new Date(data.scheduled_date).toISOString() : null,
       };
@@ -113,11 +94,9 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     switch (status) {
       case 'nuevo':
         return 'bg-blue-100 text-blue-800';
-      case 'presupuesto_enviado':
-        return 'bg-purple-100 text-purple-800';
-      case 'en_seguimiento':
+      case 'en_proceso':
         return 'bg-yellow-100 text-yellow-800';
-      case 'cliente_cerrado':
+      case 'cerrado':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -128,12 +107,10 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     switch (status) {
       case 'nuevo':
         return 'Nuevo';
-      case 'presupuesto_enviado':
-        return 'Presupuesto Enviado';
-      case 'en_seguimiento':
-        return 'En Seguimiento';
-      case 'cliente_cerrado':
-        return 'Cliente Cerrado';
+      case 'en_proceso':
+        return 'En Proceso';
+      case 'cerrado':
+        return 'Cerrado';
       default:
         return status;
     }
@@ -157,9 +134,6 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
   };
 
   if (!isOpen || !client) return null;
-
-  // Get the mapped status for display
-  const displayStatus = mapStatusToValid(client.status);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -220,8 +194,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-secondary-500 mb-1">Estado</p>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(displayStatus)}`}>
-                      {getStatusLabel(displayStatus)}
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(client.status)}`}>
+                      {getStatusLabel(client.status)}
                     </span>
                   </div>
                   
@@ -341,9 +315,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="nuevo">Nuevo</option>
-                    <option value="presupuesto_enviado">Presupuesto Enviado</option>
-                    <option value="en_seguimiento">En Seguimiento</option>
-                    <option value="cliente_cerrado">Cliente Cerrado</option>
+                    <option value="en_proceso">En Proceso</option>
+                    <option value="cerrado">Cerrado</option>
                   </select>
                   {errors.status && (
                     <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
