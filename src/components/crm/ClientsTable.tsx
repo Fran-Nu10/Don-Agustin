@@ -95,9 +95,15 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     if (!scheduledDate) return null;
     
     try {
-      return format(new Date(scheduledDate), 'dd MMM yyyy, HH:mm', { locale: es });
+      const date = new Date(scheduledDate);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', scheduledDate);
+        return 'Fecha inválida';
+      }
+      return format(date, 'dd MMM yyyy, HH:mm', { locale: es });
     } catch (error) {
-      console.error('Error formatting scheduled date:', error);
+      console.error('Error formatting scheduled date:', error, 'Date value:', scheduledDate);
       return 'Fecha inválida';
     }
   };
@@ -159,77 +165,82 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                 </td>
               </tr>
             ) : (
-              sortedClients.map((client) => (
-                <tr key={client.id} className="hover:bg-secondary-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-primary-950 font-medium text-sm">
-                            {client.name.charAt(0).toUpperCase()}
+              sortedClients.map((client) => {
+                const formattedScheduledDate = formatScheduledDate(client.scheduled_date);
+                console.log('Client:', client.name, 'Scheduled date raw:', client.scheduled_date, 'Formatted:', formattedScheduledDate);
+                
+                return (
+                  <tr key={client.id} className="hover:bg-secondary-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span className="text-primary-950 font-medium text-sm">
+                              {client.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-secondary-900">
+                            {client.name}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-secondary-900">
+                        <Mail className="h-4 w-4 mr-2 text-secondary-400" />
+                        {client.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                      {client.phone ? (
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-secondary-400" />
+                          {client.phone}
+                        </div>
+                      ) : (
+                        <span className="text-secondary-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(client.status)}`}>
+                        {getStatusLabel(client.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                      {formattedScheduledDate ? (
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-green-600" />
+                          <span className="text-green-600 font-medium">
+                            {formattedScheduledDate}
                           </span>
                         </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-secondary-900">
-                          {client.name}
+                      ) : (
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-secondary-300" />
+                          <span className="text-secondary-400 italic">Sin agendar</span>
                         </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-secondary-900">
-                      <Mail className="h-4 w-4 mr-2 text-secondary-400" />
-                      {client.email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                    {client.phone ? (
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-secondary-400" />
-                        {client.phone}
-                      </div>
-                    ) : (
-                      <span className="text-secondary-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(client.status)}`}>
-                      {getStatusLabel(client.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                    {client.scheduled_date ? (
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-secondary-400" />
-                        <span className="text-green-600 font-medium">
-                          {formatScheduledDate(client.scheduled_date)}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-secondary-300" />
-                        <span className="text-secondary-400 italic">Sin agendar</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                    {format(new Date(client.created_at), 'dd MMM yyyy', {
-                      locale: es,
-                    })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewClient(client)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver
-                    </Button>
-                  </td>
-                </tr>
-              ))
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                      {format(new Date(client.created_at), 'dd MMM yyyy', {
+                        locale: es,
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onViewClient(client)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

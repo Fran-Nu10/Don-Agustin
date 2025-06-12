@@ -29,20 +29,20 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
   try {
     console.log('Creating client with data:', clientData);
     
-    // Ensure status is properly cast and NO scheduled_date for public bookings
+    // Establecer scheduled_date automáticamente al momento actual para reservas públicas
     const dataToInsert = {
       name: clientData.name,
       email: clientData.email,
       phone: clientData.phone || null,
       message: clientData.message || null,
       status: clientData.status || 'nuevo',
-      // NO scheduled_date - this is only for internal CRM use
-      // internal_notes will be null by default
+      // Establecer fecha agendada automáticamente al momento actual
+      scheduled_date: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    console.log('Data to insert:', dataToInsert);
+    console.log('Data to insert with scheduled_date:', dataToInsert);
 
     const { data, error } = await supabase
       .from('clients')
@@ -55,7 +55,7 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
       throw error;
     }
 
-    console.log('Client created successfully:', data);
+    console.log('Client created successfully with scheduled_date:', data);
     return data;
   } catch (error) {
     console.error('Error in createClient function:', error);
