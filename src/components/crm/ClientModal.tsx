@@ -4,7 +4,7 @@ import { Client, ClientFormData } from '../../types/client';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -13,11 +13,14 @@ interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, data: Partial<ClientFormData>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   isSubmitting: boolean;
 }
 
-export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: ClientModalProps) {
+export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmitting }: ClientModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const {
     register,
@@ -69,6 +72,21 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating client:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!client) return;
+    
+    try {
+      setIsDeleting(true);
+      await onDelete(client.id);
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -233,13 +251,24 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-secondary-200">
-                <Button variant="outline" onClick={onClose}>
-                  Cerrar
+              <div className="flex justify-between items-center pt-4 border-t border-secondary-200">
+                <Button
+                  variant="danger"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar Cliente
                 </Button>
-                <Button onClick={() => setIsEditing(true)}>
-                  Editar Cliente
-                </Button>
+                
+                <div className="flex space-x-3">
+                  <Button variant="outline" onClick={onClose}>
+                    Cerrar
+                  </Button>
+                  <Button onClick={() => setIsEditing(true)}>
+                    Editar Cliente
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
@@ -351,6 +380,51 @@ export function ClientModal({ client, isOpen, onClose, onSave, isSubmitting }: C
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-lg text-secondary-900">
+                  Eliminar Cliente
+                </h3>
+                <p className="text-secondary-600">
+                  Esta acción no se puede deshacer
+                </p>
+              </div>
+            </div>
+            
+            <p className="text-secondary-700 mb-6">
+              ¿Estás seguro de que deseas eliminar a <strong>{client.name}</strong>? 
+              Se perderán todos los datos asociados a este cliente.
+            </p>
+            
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDelete}
+                isLoading={isDeleting}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar Cliente
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

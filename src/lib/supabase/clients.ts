@@ -91,10 +91,17 @@ export async function updateClient(id: string, clientData: Partial<ClientFormDat
 }
 
 export async function deleteClient(id: string): Promise<void> {
+  console.log('Deleting client with id:', id);
+  
   const { error } = await supabase
     .from('clients')
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error deleting client:', error);
+    throw error;
+  }
+  
+  console.log('Client deleted successfully');
 }

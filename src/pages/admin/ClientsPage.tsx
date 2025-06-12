@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Search, Filter, Users, Clock, CheckCircle, AlertCircle, Send, Target, Download, BarChart3 } from 'lucide-react';
 import { Client, ClientFilters, ClientFormData } from '../../types/client';
-import { getClients, updateClient } from '../../lib/supabase/clients';
+import { getClients, updateClient, deleteClient } from '../../lib/supabase/clients';
 import { generateClientsSummaryPDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -93,6 +93,17 @@ export function ClientsPage() {
       toast.error('Error al actualizar el cliente');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteClient = async (id: string) => {
+    try {
+      await deleteClient(id);
+      await loadClients(); // Refresh the clients list
+      toast.success('Cliente eliminado con éxito');
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast.error('Error al eliminar el cliente');
     }
   };
 
@@ -337,6 +348,7 @@ export function ClientsPage() {
           setSelectedClient(null);
         }}
         onSave={handleUpdateClient}
+        onDelete={handleDeleteClient}
         isSubmitting={isSubmitting}
       />
     </AdminLayout>
