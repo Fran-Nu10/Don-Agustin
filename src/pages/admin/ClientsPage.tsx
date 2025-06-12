@@ -130,6 +130,9 @@ export function ClientsPage() {
   const stats = {
     total: clients.length,
     nuevo: clients.filter(c => c.status === 'nuevo').length,
+    presupuesto_enviado: clients.filter(c => c.status === 'presupuesto_enviado').length,
+    en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
+    cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
     en_proceso: clients.filter(c => c.status === 'en_proceso').length,
     cerrado: clients.filter(c => c.status === 'cerrado').length,
   };
@@ -194,12 +197,12 @@ export function ClientsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <div className="p-2 rounded-full bg-yellow-100 mr-4">
-                <Clock className="h-6 w-6 text-yellow-600" />
+              <div className="p-2 rounded-full bg-purple-100 mr-4">
+                <Send className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-500">En Proceso</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.en_proceso}</h4>
+                <p className="text-sm font-medium text-secondary-500">Presupuesto Enviado</p>
+                <h4 className="text-2xl font-bold text-secondary-900">{stats.presupuesto_enviado}</h4>
               </div>
             </div>
           </CardContent>
@@ -212,8 +215,39 @@ export function ClientsPage() {
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-500">Cerrados</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.cerrado}</h4>
+                <p className="text-sm font-medium text-secondary-500">Cliente Cerrado</p>
+                <h4 className="text-2xl font-bold text-secondary-900">{stats.cliente_cerrado}</h4>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-full bg-yellow-100 mr-4">
+                <Target className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-secondary-500">En Seguimiento</p>
+                <h4 className="text-2xl font-bold text-secondary-900">{stats.en_seguimiento}</h4>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 rounded-full bg-orange-100 mr-4">
+                <Clock className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-secondary-500">En Proceso</p>
+                <h4 className="text-2xl font-bold text-secondary-900">{stats.en_proceso}</h4>
               </div>
             </div>
           </CardContent>
@@ -247,6 +281,9 @@ export function ClientsPage() {
             >
               <option value="">Todos los estados</option>
               <option value="nuevo">Nuevo</option>
+              <option value="presupuesto_enviado">Presupuesto Enviado</option>
+              <option value="en_seguimiento">En Seguimiento</option>
+              <option value="cliente_cerrado">Cliente Cerrado</option>
               <option value="en_proceso">En Proceso</option>
               <option value="cerrado">Cerrado</option>
             </select>
