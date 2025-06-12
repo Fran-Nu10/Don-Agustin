@@ -219,99 +219,118 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className={`md:hidden pb-4 px-4 ${isHomePage ? 'bg-black/90 backdrop-blur-sm' : 'bg-white border-t border-secondary-200'}`}
-            >
-              <div className="flex flex-col space-y-3">
-                <MobileNavLink
-                  to="/"
-                  isActive={isActive('/')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Inicio
-                </MobileNavLink>
-                <MobileNavLink
-                  to="/viajes"
-                  isActive={isActive('/viajes')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Viajes
-                </MobileNavLink>
-                <MobileNavLink
-                  to="/sobre-nosotros"
-                  isActive={isActive('/sobre-nosotros')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Sobre Nosotros
-                </MobileNavLink>
-                <MobileNavLink
-                  to="/blog"
-                  isActive={isActive('/blog')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Blog
-                </MobileNavLink>
-                <MobileNavLink
-                  to="/cotizacion"
-                  isActive={isActive('/cotizacion')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Cotización
-                </MobileNavLink>
-                <MobileNavLink
-                  to="/contacto"
-                  isActive={isActive('/contacto')}
-                  onClick={() => setIsMenuOpen(false)}
-                  isHomePage={isHomePage}
-                >
-                  Contacto
-                </MobileNavLink>
-                
-                {user ? (
-                  <>
+          {/* Mobile Navigation - MEJORADO */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className={`md:hidden overflow-hidden ${
+                  isHomePage 
+                    ? 'bg-white/95 backdrop-blur-md border-t border-white/20' 
+                    : 'bg-white border-t border-secondary-200 shadow-lg'
+                }`}
+              >
+                <div className="container mx-auto px-4 py-6">
+                  <div className="flex flex-col space-y-4">
                     <MobileNavLink
-                      to="/admin/dashboard"
-                      isActive={isActive('/admin/dashboard')}
+                      to="/"
+                      isActive={isActive('/')}
                       onClick={() => setIsMenuOpen(false)}
                       isHomePage={isHomePage}
                     >
-                      Panel Admin
+                      Inicio
                     </MobileNavLink>
-                    <Button
-                      variant="ghost"
-                      fullWidth
-                      onClick={() => {
-                        logout();
-                        setIsMenuOpen(false);
-                      }}
-                      className={isHomePage ? "text-white hover:bg-white/10" : "text-secondary-600 hover:bg-secondary-100"}
+                    <MobileNavLink
+                      to="/viajes"
+                      isActive={isActive('/viajes')}
+                      onClick={() => setIsMenuOpen(false)}
+                      isHomePage={isHomePage}
                     >
-                      Cerrar Sesión
-                    </Button>
-                  </>
-                ) : (
-                  <MobileNavLink
-                    to="/login"
-                    isActive={isActive('/login')}
-                    onClick={() => setIsMenuOpen(false)}
-                    isHomePage={isHomePage}
-                  >
-                    Iniciar Sesión
-                  </MobileNavLink>
-                )}
-              </div>
-            </motion.div>
-          )}
+                      Viajes
+                    </MobileNavLink>
+                    <MobileNavLink
+                      to="/sobre-nosotros"
+                      isActive={isActive('/sobre-nosotros')}
+                      onClick={() => setIsMenuOpen(false)}
+                      isHomePage={isHomePage}
+                    >
+                      Sobre Nosotros
+                    </MobileNavLink>
+                    <MobileNavLink
+                      to="/blog"
+                      isActive={isActive('/blog')}
+                      onClick={() => setIsMenuOpen(false)}
+                      isHomePage={isHomePage}
+                    >
+                      Blog
+                    </MobileNavLink>
+                    <MobileNavLink
+                      to="/cotizacion"
+                      isActive={isActive('/cotizacion')}
+                      onClick={() => setIsMenuOpen(false)}
+                      isHomePage={isHomePage}
+                    >
+                      Cotización
+                    </MobileNavLink>
+                    <MobileNavLink
+                      to="/contacto"
+                      isActive={isActive('/contacto')}
+                      onClick={() => setIsMenuOpen(false)}
+                      isHomePage={isHomePage}
+                    >
+                      Contacto
+                    </MobileNavLink>
+                    
+                    {/* Separador visual */}
+                    <div className={`border-t ${isHomePage ? 'border-secondary-300' : 'border-secondary-200'} my-2`}></div>
+                    
+                    {user ? (
+                      <div className="flex flex-col space-y-3">
+                        <MobileNavLink
+                          to="/admin/dashboard"
+                          isActive={isActive('/admin/dashboard')}
+                          onClick={() => setIsMenuOpen(false)}
+                          isHomePage={isHomePage}
+                        >
+                          Panel Admin
+                        </MobileNavLink>
+                        <Button
+                          variant="ghost"
+                          fullWidth
+                          onClick={() => {
+                            logout();
+                            setIsMenuOpen(false);
+                          }}
+                          className={`justify-start ${
+                            isHomePage 
+                              ? "text-secondary-700 hover:bg-secondary-100" 
+                              : "text-secondary-600 hover:bg-secondary-100"
+                          }`}
+                        >
+                          Cerrar Sesión
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="pt-2">
+                        <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                          <Button 
+                            variant="primary" 
+                            fullWidth 
+                            className="bg-primary-600 hover:bg-primary-700 text-white"
+                          >
+                            Iniciar Sesión
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.header>
       )}
     </AnimatePresence>
@@ -355,14 +374,12 @@ function MobileNavLink({ to, isActive, onClick, children, isHomePage }: MobileNa
   return (
     <Link
       to={to}
-      className={`block py-2 px-3 rounded-md font-medium ${
+      className={`block py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
         isActive
-          ? isHomePage 
-            ? 'bg-primary-600 text-white' 
-            : 'bg-primary-100 text-primary-600'
+          ? 'bg-primary-600 text-white shadow-md'
           : isHomePage 
-            ? 'text-white/80 hover:bg-white/10 hover:text-white' 
-            : 'text-secondary-600 hover:bg-secondary-100'
+            ? 'text-secondary-700 hover:bg-secondary-100 hover:text-secondary-900' 
+            : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
       }`}
       onClick={onClick}
     >
