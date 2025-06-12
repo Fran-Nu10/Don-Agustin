@@ -233,12 +233,76 @@ export async function updateTrip(id: string, tripData: TripFormData): Promise<Tr
 }
 
 export async function deleteTrip(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('trips')
-    .delete()
-    .eq('id', id);
+  console.log('Attempting to delete trip with id:', id);
+  
+  try {
+    // First, get the current user to check permissions
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('Current user:', user?.id);
+    
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
 
-  if (error) throw error;
+    // Get user role from our users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (userError) {
+      console.error('Error getting user data:', userError);
+      throw new Error('Error verificando permisos de usuario');
+    }
+
+    console.log('User role:', userData?.role);
+
+    // Check if user has permission to delete trips
+    if (!userData || !['owner', 'employee'].includes(userData.role)) {
+      throw new Error('No tienes permisos para eliminar viajes');
+    }
+
+    // Delete related data first (due to foreign key constraints)
+    console.log('Deleting itinerary days...');
+    const { error: itineraryError } = await supabase
+      .from('itinerary_days')
+      .delete()
+      .eq('trip_id', id);
+
+    if (itineraryError) {
+      console.error('Error deleting itinerary:', itineraryError);
+      throw new Error('Error eliminando itinerario del viaje');
+    }
+
+    console.log('Deleting included services...');
+    const { error: servicesError } = await supabase
+      .from('included_services')
+      .delete()
+      .eq('trip_id', id);
+
+    if (servicesError) {
+      console.error('Error deleting services:', servicesError);
+      throw new Error('Error eliminando servicios del viaje');
+    }
+
+    // Finally delete the trip
+    console.log('Deleting trip...');
+    const { error: tripError } = await supabase
+      .from('trips')
+      .delete()
+      .eq('id', id);
+
+    if (tripError) {
+      console.error('Error deleting trip:', tripError);
+      throw new Error('Error eliminando el viaje: ' + tripError.message);
+    }
+
+    console.log('Trip deleted successfully');
+  } catch (error) {
+    console.error('Delete trip error:', error);
+    throw error;
+  }
 }
 
 // Booking functions
