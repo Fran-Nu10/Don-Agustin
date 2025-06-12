@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Quotation } from '../types/quotation';
+import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -37,8 +38,8 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.text(`Fecha: ${format(new Date(quotation.created_at), 'dd/MM/yyyy', { locale: es })}`, 20, 74);
   
   // Estado
-  const statusLabel = getStatusLabel(quotation.status);
-  const statusColor = getStatusColor(quotation.status);
+  const statusLabel = getQuotationStatusLabel(quotation.status);
+  const statusColor = getQuotationStatusColor(quotation.status);
   doc.setTextColor(statusColor.r, statusColor.g, statusColor.b);
   doc.text(`Estado: ${statusLabel}`, 120, 68);
   
@@ -186,7 +187,7 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
     q.email,
     q.destination || 'A definir',
     `${q.adults}A${q.children > 0 ? ` + ${q.children}N` : ''}`,
-    getStatusLabel(q.status),
+    getQuotationStatusLabel(q.status),
     format(new Date(q.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
@@ -224,7 +225,243 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   doc.save(`reporte-cotizaciones-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 }
 
-function getStatusLabel(status: Quotation['status']): string {
+// ===== NUEVAS FUNCIONES PARA CLIENTES CRM =====
+
+export function generateClientPDF(client: Client) {
+  const doc = new jsPDF();
+  
+  // Configurar fuente
+  doc.setFont('helvetica');
+  
+  // Header con logo y título
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text('Don Agustín Viajes', 20, 25);
+  
+  doc.setFontSize(12);
+  doc.setTextColor(100, 100, 100);
+  doc.text('18 de Julio 1236, Montevideo, Uruguay', 20, 32);
+  doc.text('Tel: +598 2345 6789 | Email: info@donagustinviajes.com.uy', 20, 38);
+  
+  // Línea separadora
+  doc.setDrawColor(255, 107, 0); // Color primario
+  doc.setLineWidth(2);
+  doc.line(20, 45, 190, 45);
+  
+  // Título del documento
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('FICHA DE CLIENTE CRM', 20, 60);
+  
+  // Información del cliente
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Cliente #${client.id.slice(0, 8)}`, 20, 68);
+  doc.text(`Fecha de registro: ${format(new Date(client.created_at), 'dd/MM/yyyy', { locale: es })}`, 20, 74);
+  
+  // Estado
+  const statusLabel = getClientStatusLabel(client.status);
+  const statusColor = getClientStatusColor(client.status);
+  doc.setTextColor(statusColor.r, statusColor.g, statusColor.b);
+  doc.text(`Estado: ${statusLabel}`, 120, 68);
+  
+  // Información personal
+  doc.setFontSize(14);
+  doc.setTextColor(40, 40, 40);
+  doc.text('INFORMACIÓN PERSONAL', 20, 90);
+  
+  const personalData = [
+    ['Nombre completo:', client.name],
+    ['Email:', client.email],
+    ['Teléfono:', client.phone || 'No especificado'],
+    ['Fecha de registro:', format(new Date(client.created_at), 'dd/MM/yyyy HH:mm', { locale: es })],
+    ['Última actualización:', format(new Date(client.updated_at), 'dd/MM/yyyy HH:mm', { locale: es })],
+  ];
+  
+  autoTable(doc, {
+    startY: 95,
+    body: personalData,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 2,
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 40 },
+      1: { cellWidth: 70 },
+    },
+  });
+  
+  // Información de seguimiento
+  const followUpY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFontSize(14);
+  doc.setTextColor(40, 40, 40);
+  doc.text('INFORMACIÓN DE SEGUIMIENTO', 20, followUpY);
+  
+  const followUpData = [
+    ['Estado actual:', statusLabel],
+    ['Fecha agendada:', client.scheduled_date ? format(new Date(client.scheduled_date), 'dd/MM/yyyy HH:mm', { locale: es }) : 'Sin agendar'],
+  ];
+  
+  autoTable(doc, {
+    startY: followUpY + 5,
+    body: followUpData,
+    theme: 'plain',
+    styles: {
+      fontSize: 10,
+      cellPadding: 2,
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 40 },
+      1: { cellWidth: 70 },
+    },
+  });
+  
+  // Mensaje del cliente
+  if (client.message) {
+    const messageY = (doc as any).lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text('MENSAJE DEL CLIENTE', 20, messageY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    const splitText = doc.splitTextToSize(client.message, 170);
+    doc.text(splitText, 20, messageY + 8);
+  }
+  
+  // Notas internas
+  if (client.internal_notes) {
+    const notesY = client.message ? (doc as any).lastAutoTable.finalY + 35 : (doc as any).lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setTextColor(40, 40, 40);
+    doc.text('NOTAS INTERNAS', 20, notesY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    const splitText = doc.splitTextToSize(client.internal_notes, 170);
+    doc.text(splitText, 20, notesY + 8);
+  }
+  
+  // Footer
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Don Agustín Viajes - Documento confidencial del CRM', 20, pageHeight - 20);
+  doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`, 20, pageHeight - 15);
+  
+  // Descargar el PDF
+  doc.save(`cliente-${client.name.replace(/\s+/g, '-').toLowerCase()}-${client.id.slice(0, 8)}.pdf`);
+}
+
+export function generateClientsSummaryPDF(clients: Client[]) {
+  const doc = new jsPDF();
+  
+  // Header
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text('Don Agustín Viajes', 20, 25);
+  
+  doc.setFontSize(12);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Reporte de Clientes CRM', 20, 32);
+  doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`, 20, 38);
+  
+  // Línea separadora
+  doc.setDrawColor(255, 107, 0);
+  doc.setLineWidth(2);
+  doc.line(20, 45, 190, 45);
+  
+  // Estadísticas
+  const stats = {
+    total: clients.length,
+    nuevo: clients.filter(c => c.status === 'nuevo').length,
+    presupuesto_enviado: clients.filter(c => c.status === 'presupuesto_enviado').length,
+    en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
+    cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
+    con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
+  };
+  
+  doc.setFontSize(14);
+  doc.setTextColor(40, 40, 40);
+  doc.text('RESUMEN ESTADÍSTICO', 20, 60);
+  
+  const statsData = [
+    ['Total de clientes:', stats.total.toString()],
+    ['Nuevos:', stats.nuevo.toString()],
+    ['Presupuesto enviado:', stats.presupuesto_enviado.toString()],
+    ['En seguimiento:', stats.en_seguimiento.toString()],
+    ['Clientes cerrados:', stats.cliente_cerrado.toString()],
+    ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
+  ];
+  
+  autoTable(doc, {
+    startY: 65,
+    body: statsData,
+    theme: 'striped',
+    headStyles: { fillColor: [255, 107, 0] },
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+    },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 50 },
+      1: { cellWidth: 30, halign: 'center' },
+    },
+  });
+  
+  // Tabla de clientes
+  const tableY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFontSize(14);
+  doc.setTextColor(40, 40, 40);
+  doc.text('LISTADO DE CLIENTES', 20, tableY);
+  
+  const tableData = clients.map(c => [
+    c.name,
+    c.email,
+    c.phone || '-',
+    getClientStatusLabel(c.status),
+    c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
+    format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
+  ]);
+  
+  autoTable(doc, {
+    startY: tableY + 5,
+    head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Fecha Agendada', 'Registro']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: { 
+      fillColor: [255, 107, 0],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+    },
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+    },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 25, halign: 'center' },
+      4: { cellWidth: 30, halign: 'center' },
+      5: { cellWidth: 20, halign: 'center' },
+    },
+  });
+  
+  // Footer
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Don Agustín Viajes - Reporte confidencial del CRM', 20, pageHeight - 15);
+  
+  // Descargar el PDF
+  doc.save(`reporte-clientes-crm-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+}
+
+// ===== FUNCIONES AUXILIARES =====
+
+function getQuotationStatusLabel(status: Quotation['status']): string {
   switch (status) {
     case 'pending':
       return 'Pendiente';
@@ -239,7 +476,7 @@ function getStatusLabel(status: Quotation['status']): string {
   }
 }
 
-function getStatusColor(status: Quotation['status']): { r: number; g: number; b: number } {
+function getQuotationStatusColor(status: Quotation['status']): { r: number; g: number; b: number } {
   switch (status) {
     case 'pending':
       return { r: 251, g: 191, b: 36 }; // Yellow
@@ -251,5 +488,35 @@ function getStatusColor(status: Quotation['status']): { r: number; g: number; b:
       return { r: 107, g: 114, b: 128 }; // Gray
     default:
       return { r: 107, g: 114, b: 128 };
+  }
+}
+
+function getClientStatusLabel(status: Client['status']): string {
+  switch (status) {
+    case 'nuevo':
+      return 'Nuevo';
+    case 'presupuesto_enviado':
+      return 'Presupuesto Enviado';
+    case 'en_seguimiento':
+      return 'En Seguimiento';
+    case 'cliente_cerrado':
+      return 'Cliente Cerrado';
+    default:
+      return status;
+  }
+}
+
+function getClientStatusColor(status: Client['status']): { r: number; g: number; b: number } {
+  switch (status) {
+    case 'nuevo':
+      return { r: 59, g: 130, b: 246 }; // Blue
+    case 'presupuesto_enviado':
+      return { r: 147, g: 51, b: 234 }; // Purple
+    case 'en_seguimiento':
+      return { r: 251, g: 191, b: 36 }; // Yellow
+    case 'cliente_cerrado':
+      return { r: 34, g: 197, b: 94 }; // Green
+    default:
+      return { r: 107, g: 114, b: 128 }; // Gray
   }
 }

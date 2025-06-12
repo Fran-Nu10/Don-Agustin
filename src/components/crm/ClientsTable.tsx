@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Client } from '../../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowUpDown, Eye, Calendar, Phone, Mail } from 'lucide-react';
+import { ArrowUpDown, Eye, Calendar, Phone, Mail, Download } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { generateClientPDF } from '../../utils/pdfGenerator';
 
 interface ClientsTableProps {
   clients: Client[];
@@ -24,6 +25,11 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
       setSortField(field);
       setSortDirection('asc');
     }
+  };
+
+  const handleDownloadPDF = (client: Client, event: React.MouseEvent) => {
+    event.stopPropagation();
+    generateClientPDF(client);
   };
 
   const sortedClients = [...clients].sort((a, b) => {
@@ -229,14 +235,25 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewClient(client)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver
-                      </Button>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onViewClient(client)}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDownloadPDF(client, e)}
+                          className="text-primary-600 hover:text-primary-700 hover:bg-primary-50"
+                          title="Descargar PDF"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );

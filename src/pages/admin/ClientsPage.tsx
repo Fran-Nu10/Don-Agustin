@@ -5,9 +5,10 @@ import { ClientModal } from '../../components/crm/ClientModal';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Search, Filter, Users, Clock, CheckCircle, AlertCircle, Send, Target } from 'lucide-react';
+import { Search, Filter, Users, Clock, CheckCircle, AlertCircle, Send, Target, Download, BarChart3 } from 'lucide-react';
 import { Client, ClientFilters, ClientFormData } from '../../types/client';
 import { getClients, updateClient } from '../../lib/supabase/clients';
+import { generateClientsSummaryPDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -95,6 +96,11 @@ export function ClientsPage() {
     }
   };
 
+  const handleDownloadSummary = () => {
+    generateClientsSummaryPDF(filteredClients);
+    toast.success('Reporte descargado exitosamente');
+  };
+
   const handleFilterChange = (field: keyof ClientFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -126,13 +132,23 @@ export function ClientsPage() {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
-        <h1 className="font-heading font-bold text-2xl text-secondary-900">
-          Panel CRM - Clientes
-        </h1>
-        <p className="text-secondary-500">
-          Gestiona los clientes agendados y sus consultas
-        </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading font-bold text-2xl text-secondary-900">
+            Panel CRM - Clientes
+          </h1>
+          <p className="text-secondary-500">
+            Gestiona los clientes agendados y sus consultas
+          </p>
+        </div>
+        
+        <Button
+          onClick={handleDownloadSummary}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Descargar Reporte PDF
+        </Button>
       </div>
 
       {/* Stats Cards */}
