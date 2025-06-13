@@ -21,12 +21,6 @@ export function Navbar() {
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
-    // Always show navbar on home page
-    if (isHomePage) {
-      setShowNavbar(true);
-      return;
-    }
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -76,12 +70,10 @@ export function Navbar() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', checkScreenSize);
     };
-  }, [lastScrollY, mouseY, isHomePage]);
+  }, [lastScrollY, mouseY]);
 
   // Navbar classes - always orange background with shadow
-  const navbarClasses = isHomePage 
-    ? "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg" 
-    : "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg";
+  const navbarClasses = "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg";
 
   // Link classes - always white text on orange background
   const linkClasses = "text-white/90 hover:text-white";
@@ -91,7 +83,7 @@ export function Navbar() {
     <AnimatePresence>
       {showNavbar && (
         <motion.header
-          initial={isHomePage ? { opacity: 1, y: 0 } : { opacity: 0, y: -100 }}
+          initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -100 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
