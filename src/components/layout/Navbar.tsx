@@ -17,7 +17,7 @@ export function Navbar() {
     return location.pathname === path;
   };
 
-  // Only show logo on home page
+  // Check if we're on home page
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
@@ -78,17 +78,14 @@ export function Navbar() {
     };
   }, [lastScrollY, mouseY, isHomePage]);
 
+  // Navbar classes - always orange background with shadow
   const navbarClasses = isHomePage 
-    ? "absolute top-0 left-0 right-0 z-50" 
-    : "fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm";
+    ? "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg" 
+    : "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg";
 
-  const linkClasses = isHomePage 
-    ? "text-white/80 hover:text-primary-300" 
-    : "text-secondary-600 hover:text-primary-600";
-
-  const activeLinkClasses = isHomePage 
-    ? "text-white" 
-    : "text-primary-600";
+  // Link classes - always white text on orange background
+  const linkClasses = "text-white/90 hover:text-white";
+  const activeLinkClasses = "text-white font-semibold";
 
   return (
     <AnimatePresence>
@@ -101,24 +98,24 @@ export function Navbar() {
           className={navbarClasses}
         >
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-20">
-              {/* Logo - Only on home page */}
-              {isHomePage && (
-                <Link to="/" className="flex items-center">
-                  <img 
-                    src="/image.png" 
-                    alt="Don Agustín Viajes" 
-                    className="h-12 w-12"
-                  />
-                </Link>
-              )}
+            <div className="flex items-center justify-between h-16">
+              {/* Logo - Always visible */}
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="/image.png" 
+                  alt="Don Agustín Viajes" 
+                  className="h-10 w-10 mr-3"
+                />
+                <span className="font-heading font-bold text-xl text-white">
+                  Don Agustín Viajes
+                </span>
+              </Link>
 
               {/* Desktop Navigation */}
-              <nav className={`hidden md:flex items-center space-x-8 ${!isHomePage ? 'ml-0' : ''}`}>
+              <nav className="hidden md:flex items-center space-x-8">
                 <NavLink 
                   to="/" 
                   isActive={isActive('/')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -127,7 +124,6 @@ export function Navbar() {
                 <NavLink 
                   to="/viajes" 
                   isActive={isActive('/viajes')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -136,7 +132,6 @@ export function Navbar() {
                 <NavLink 
                   to="/sobre-nosotros" 
                   isActive={isActive('/sobre-nosotros')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -145,7 +140,6 @@ export function Navbar() {
                 <NavLink 
                   to="/blog" 
                   isActive={isActive('/blog')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -154,7 +148,6 @@ export function Navbar() {
                 <NavLink 
                   to="/cotizacion" 
                   isActive={isActive('/cotizacion')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -163,7 +156,6 @@ export function Navbar() {
                 <NavLink 
                   to="/contacto" 
                   isActive={isActive('/contacto')} 
-                  isHomePage={isHomePage}
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
@@ -176,10 +168,7 @@ export function Navbar() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className={isHomePage 
-                          ? "text-white border-white hover:bg-white hover:text-primary-600" 
-                          : "text-primary-600 border-primary-600 hover:bg-primary-50"
-                        }
+                        className="text-white border-white hover:bg-white hover:text-primary-600"
                       >
                         Panel Admin
                       </Button>
@@ -188,17 +177,18 @@ export function Navbar() {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => logout()} 
-                      className={isHomePage 
-                        ? "text-white hover:bg-white/10" 
-                        : "text-secondary-600 hover:bg-secondary-100"
-                      }
+                      className="text-white hover:bg-white/10"
                     >
                       Cerrar Sesión
                     </Button>
                   </div>
                 ) : (
                   <Link to="/login">
-                    <Button variant="primary" size="sm" className="bg-primary-600 hover:bg-primary-700">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="bg-white text-primary-600 hover:bg-white/90"
+                    >
                       Iniciar Sesión
                     </Button>
                   </Link>
@@ -207,7 +197,7 @@ export function Navbar() {
 
               {/* Mobile Menu Button */}
               <button
-                className={`md:hidden focus:outline-none ${isHomePage ? 'text-white' : 'text-secondary-900'}`}
+                className="md:hidden focus:outline-none text-white"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? (
@@ -219,7 +209,7 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Navigation - MEJORADO */}
+          {/* Mobile Navigation */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
@@ -227,11 +217,7 @@ export function Navbar() {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className={`md:hidden overflow-hidden ${
-                  isHomePage 
-                    ? 'bg-white/95 backdrop-blur-md border-t border-white/20' 
-                    : 'bg-white border-t border-secondary-200 shadow-lg'
-                }`}
+                className="md:hidden overflow-hidden bg-primary-700 border-t border-primary-500"
               >
                 <div className="container mx-auto px-4 py-6">
                   <div className="flex flex-col space-y-4">
@@ -239,7 +225,6 @@ export function Navbar() {
                       to="/"
                       isActive={isActive('/')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Inicio
                     </MobileNavLink>
@@ -247,7 +232,6 @@ export function Navbar() {
                       to="/viajes"
                       isActive={isActive('/viajes')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Viajes
                     </MobileNavLink>
@@ -255,7 +239,6 @@ export function Navbar() {
                       to="/sobre-nosotros"
                       isActive={isActive('/sobre-nosotros')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Sobre Nosotros
                     </MobileNavLink>
@@ -263,7 +246,6 @@ export function Navbar() {
                       to="/blog"
                       isActive={isActive('/blog')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Blog
                     </MobileNavLink>
@@ -271,7 +253,6 @@ export function Navbar() {
                       to="/cotizacion"
                       isActive={isActive('/cotizacion')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Cotización
                     </MobileNavLink>
@@ -279,13 +260,12 @@ export function Navbar() {
                       to="/contacto"
                       isActive={isActive('/contacto')}
                       onClick={() => setIsMenuOpen(false)}
-                      isHomePage={isHomePage}
                     >
                       Contacto
                     </MobileNavLink>
                     
                     {/* Separador visual */}
-                    <div className={`border-t ${isHomePage ? 'border-secondary-300' : 'border-secondary-200'} my-2`}></div>
+                    <div className="border-t border-primary-500 my-2"></div>
                     
                     {user ? (
                       <div className="flex flex-col space-y-3">
@@ -293,7 +273,6 @@ export function Navbar() {
                           to="/admin/dashboard"
                           isActive={isActive('/admin/dashboard')}
                           onClick={() => setIsMenuOpen(false)}
-                          isHomePage={isHomePage}
                         >
                           Panel Admin
                         </MobileNavLink>
@@ -304,11 +283,7 @@ export function Navbar() {
                             logout();
                             setIsMenuOpen(false);
                           }}
-                          className={`justify-start ${
-                            isHomePage 
-                              ? "text-secondary-700 hover:bg-secondary-100" 
-                              : "text-secondary-600 hover:bg-secondary-100"
-                          }`}
+                          className="justify-start text-white hover:bg-white/10"
                         >
                           Cerrar Sesión
                         </Button>
@@ -317,9 +292,9 @@ export function Navbar() {
                       <div className="pt-2">
                         <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                           <Button 
-                            variant="primary" 
+                            variant="secondary" 
                             fullWidth 
-                            className="bg-primary-600 hover:bg-primary-700 text-white"
+                            className="bg-white text-primary-600 hover:bg-white/90"
                           >
                             Iniciar Sesión
                           </Button>
@@ -341,12 +316,11 @@ interface NavLinkProps {
   to: string;
   isActive: boolean;
   children: React.ReactNode;
-  isHomePage: boolean;
   linkClasses: string;
   activeLinkClasses: string;
 }
 
-function NavLink({ to, isActive, children, isHomePage, linkClasses, activeLinkClasses }: NavLinkProps) {
+function NavLink({ to, isActive, children, linkClasses, activeLinkClasses }: NavLinkProps) {
   return (
     <Link
       to={to}
@@ -356,7 +330,7 @@ function NavLink({ to, isActive, children, isHomePage, linkClasses, activeLinkCl
     >
       {children}
       {isActive && (
-        <span className="absolute inset-x-0 -bottom-2 h-0.5 bg-primary-600" />
+        <span className="absolute inset-x-0 -bottom-2 h-0.5 bg-white" />
       )}
     </Link>
   );
@@ -367,19 +341,16 @@ interface MobileNavLinkProps {
   isActive: boolean;
   onClick: () => void;
   children: React.ReactNode;
-  isHomePage: boolean;
 }
 
-function MobileNavLink({ to, isActive, onClick, children, isHomePage }: MobileNavLinkProps) {
+function MobileNavLink({ to, isActive, onClick, children }: MobileNavLinkProps) {
   return (
     <Link
       to={to}
       className={`block py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
         isActive
-          ? 'bg-primary-600 text-white shadow-md'
-          : isHomePage 
-            ? 'text-secondary-700 hover:bg-secondary-100 hover:text-secondary-900' 
-            : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
+          ? 'bg-white text-primary-600 shadow-md'
+          : 'text-white hover:bg-white/10 hover:text-white'
       }`}
       onClick={onClick}
     >

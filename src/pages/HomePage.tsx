@@ -29,18 +29,24 @@ export function HomePage() {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <img
-              src="https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg"
-              alt="Playa paradisíaca - Don Agustín Viajes"
-              className="w-full h-full object-cover"
-            />
+        {/* Hero Section with Parallax Effect */}
+        <section className="relative h-[100vh] flex items-center justify-center overflow-hidden">
+          {/* Parallax Background */}
+          <div 
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: 'url(https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
           </div>
           
-          <div className="container mx-auto px-4 relative z-10">
+          {/* Content with padding top to account for fixed navbar */}
+          <div className="container mx-auto px-4 relative z-10 pt-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

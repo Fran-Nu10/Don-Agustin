@@ -30,7 +30,7 @@ body {
 
 /* Add padding to main content on non-home pages to account for fixed navbar */
 .main-content {
-  padding-top: 5rem; /* 80px - height of navbar */
+  padding-top: 4rem; /* 64px - height of navbar */
 }
 
 /* Line clamp utilities */
@@ -65,4 +65,18 @@ body {
   touch-action: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Parallax effect support */
+@supports (background-attachment: fixed) {
+  .parallax-bg {
+    background-attachment: fixed;
+  }
+}
+
+/* Fallback for devices that don't support parallax */
+@media (max-width: 768px) {
+  .parallax-bg {
+    background-attachment: scroll !important;
+  }
 }
