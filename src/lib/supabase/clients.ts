@@ -29,34 +29,46 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
   try {
     console.log('Creating client with data:', clientData);
     
-    // Establecer scheduled_date automáticamente al momento actual para reservas públicas
+    // Prepare data for insertion - only include fields that are allowed for public insertion
     const dataToInsert = {
       name: clientData.name,
       email: clientData.email,
       phone: clientData.phone || null,
       message: clientData.message || null,
       status: clientData.status || 'nuevo',
-      // Establecer fecha agendada automáticamente al momento actual
+      // Set scheduled_date automatically for public bookings
       scheduled_date: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
 
-    console.log('Data to insert with scheduled_date:', dataToInsert);
+    console.log('Data to insert:', dataToInsert);
 
-    const { data, error } = await supabase
+    // Insert without trying to select the result immediately
+    // This avoids potential RLS issues with SELECT after INSERT for anonymous users
+    const { error } = await supabase
       .from('clients')
-      .insert([dataToInsert])
-      .select()
-      .single();
+      .insert([dataToInsert]);
 
     if (error) {
       console.error('Supabase error:', error);
       throw error;
     }
 
-    console.log('Client created successfully with scheduled_date:', data);
-    return data;
+    console.log('Client created successfully');
+    
+    // Return a mock client object since we can't select the inserted row
+    // This is acceptable for public forms where we just need to confirm creation
+    return {
+      id: 'created', // Placeholder ID
+      name: dataToInsert.name,
+      email: dataToInsert.email,
+      phone: dataToInsert.phone,
+      message: dataToInsert.message,
+      status: dataToInsert.status,
+      internal_notes: null,
+      scheduled_date: dataToInsert.scheduled_date,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as Client;
   } catch (error) {
     console.error('Error in createClient function:', error);
     throw error;
