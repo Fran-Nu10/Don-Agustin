@@ -4,8 +4,21 @@ import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+}
+
+// Check if the URL is still a placeholder
+if (supabaseUrl === 'your-supabase-project-url' || supabaseAnonKey === 'your-supabase-anon-key') {
+  throw new Error('Please update your .env file with actual Supabase credentials. Click "Connect to Supabase" in the top right to set up your project.');
+}
+
+// Validate URL format
+try {
+  new URL(supabaseUrl);
+} catch {
+  throw new Error('Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in the .env file.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
