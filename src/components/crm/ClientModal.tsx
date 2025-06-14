@@ -132,13 +132,13 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'urgent':
+      case 'urgente':
         return 'bg-red-100 text-red-800';
-      case 'high':
+      case 'alta':
         return 'bg-orange-100 text-orange-800';
-      case 'medium':
+      case 'media':
         return 'bg-yellow-100 text-yellow-800';
-      case 'low':
+      case 'baja':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-600';
@@ -147,13 +147,13 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
 
   const getPriorityLabel = (priority?: string) => {
     switch (priority) {
-      case 'urgent':
+      case 'urgente':
         return 'Urgente';
-      case 'high':
+      case 'alta':
         return 'Alta';
-      case 'medium':
+      case 'media':
         return 'Media';
-      case 'low':
+      case 'baja':
         return 'Baja';
       default:
         return 'Normal';
@@ -387,11 +387,11 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     {...register('priority')}
                     className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
-                    <option value="low">Baja</option>
+                    <option value="baja">Baja</option>
                     <option value="normal">Normal</option>
-                    <option value="medium">Media</option>
-                    <option value="high">Alta</option>
-                    <option value="urgent">Urgente</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                    <option value="urgente">Urgente</option>
                   </select>
                 </div>
 

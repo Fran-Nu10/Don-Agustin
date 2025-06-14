@@ -65,7 +65,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
             <div>
               <p className="text-sm font-medium text-secondary-500">Alta Prioridad</p>
               <h4 className="text-2xl font-bold text-secondary-900">
-                {(stats.byPriority.high || 0) + (stats.byPriority.urgent || 0)}
+                {(stats.byPriority.alta || 0) + (stats.byPriority.urgente || 0)}
               </h4>
             </div>
           </div>
@@ -113,20 +113,20 @@ export function ClientStats({ stats }: ClientStatsProps) {
             {Object.entries(stats.byPriority).map(([priority, count]) => (
               <div key={priority} className="flex items-center justify-between">
                 <span className="text-sm text-secondary-600 capitalize">
-                  {priority === 'urgent' ? 'Urgente' : 
-                   priority === 'high' ? 'Alta' : 
-                   priority === 'medium' ? 'Media' : 
-                   priority === 'low' ? 'Baja' : 
+                  {priority === 'urgente' ? 'Urgente' : 
+                   priority === 'alta' ? 'Alta' : 
+                   priority === 'media' ? 'Media' : 
+                   priority === 'baja' ? 'Baja' : 
                    priority === 'normal' ? 'Normal' : priority}
                 </span>
                 <div className="flex items-center">
                   <div className="w-20 bg-secondary-200 rounded-full h-2 mr-3">
                     <div
                       className={`h-2 rounded-full ${
-                        priority === 'urgent' ? 'bg-red-600' :
-                        priority === 'high' ? 'bg-orange-600' :
-                        priority === 'medium' ? 'bg-yellow-600' :
-                        priority === 'low' ? 'bg-green-600' :
+                        priority === 'urgente' ? 'bg-red-600' :
+                        priority === 'alta' ? 'bg-orange-600' :
+                        priority === 'media' ? 'bg-yellow-600' :
+                        priority === 'baja' ? 'bg-green-600' :
                         'bg-gray-600'
                       }`}
                       style={{ width: `${(count / stats.total) * 100}%` }}

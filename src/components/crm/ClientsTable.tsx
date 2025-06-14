@@ -57,7 +57,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         compareB = b.status;
         break;
       case 'priority':
-        const priorityOrder = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+        const priorityOrder = { 'urgente': 4, 'alta': 3, 'media': 2, 'baja': 1, 'normal': 0 };
         compareA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
         compareB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
         break;
@@ -114,13 +114,13 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'urgent':
+      case 'urgente':
         return 'bg-red-100 text-red-800';
-      case 'high':
+      case 'alta':
         return 'bg-orange-100 text-orange-800';
-      case 'medium':
+      case 'media':
         return 'bg-yellow-100 text-yellow-800';
-      case 'low':
+      case 'baja':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-600';
@@ -129,28 +129,28 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
 
   const getPriorityLabel = (priority?: string) => {
     switch (priority) {
-      case 'urgent':
+      case 'urgente':
         return 'Urgente';
-      case 'high':
+      case 'alta':
         return 'Alta';
-      case 'medium':
+      case 'media':
         return 'Media';
-      case 'low':
+      case 'baja':
         return 'Baja';
       default:
-        return 'Sin definir';
+        return 'Normal';
     }
   };
 
   const getPriorityIcon = (priority?: string) => {
     switch (priority) {
-      case 'urgent':
+      case 'urgente':
         return <AlertTriangle className="h-4 w-4" />;
-      case 'high':
+      case 'alta':
         return <Star className="h-4 w-4" />;
-      case 'medium':
+      case 'media':
         return <Clock className="h-4 w-4" />;
-      case 'low':
+      case 'baja':
         return <Calendar className="h-4 w-4" />;
       default:
         return null;

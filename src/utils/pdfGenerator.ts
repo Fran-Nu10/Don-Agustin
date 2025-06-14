@@ -400,7 +400,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
     cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
-    alta_prioridad: clients.filter(c => c.priority === 'high' || c.priority === 'urgent').length,
+    alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
   };
   
   doc.setFontSize(14);
@@ -695,13 +695,13 @@ function getClientStatusColor(status: Client['status']): { r: number; g: number;
 
 function getPriorityLabel(priority: string): string {
   switch (priority) {
-    case 'urgent':
+    case 'urgente':
       return 'Urgente';
-    case 'high':
+    case 'alta':
       return 'Alta';
-    case 'medium':
+    case 'media':
       return 'Media';
-    case 'low':
+    case 'baja':
       return 'Baja';
     default:
       return priority;
