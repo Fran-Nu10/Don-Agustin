@@ -9,7 +9,7 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
+  const [scrollDirection, setScrollDirection] = useState('up');
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -24,56 +24,48 @@ export function Navbar() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Show navbar when scrolling up or at the top
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        setShowNavbar(true);
+      // Determine scroll direction
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setScrollDirection('down');
+        setShowNavbar(false);
       } else {
-        // Hide navbar when scrolling down (only if mouse is not near top)
-        if (mouseY > 100) {
-          setShowNavbar(false);
-        }
+        // Scrolling up or at the top
+        setScrollDirection('up');
+        setShowNavbar(true);
       }
       
       setLastScrollY(currentScrollY);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setMouseY(e.clientY);
-      
-      // Show navbar when mouse is near the top (within 100px)
-      if (e.clientY <= 100) {
-        setShowNavbar(true);
-      }
-    };
-
-    // Only add listeners on desktop (screen width > 768px)
-    const checkScreenSize = () => {
-      if (window.innerWidth > 768) {
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('mousemove', handleMouseMove, { passive: true });
-      } else {
-        // On mobile, always show navbar
-        setShowNavbar(true);
-        window.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('mousemove', handleMouseMove);
-      }
-    };
-
-    // Initial check
-    checkScreenSize();
+    // Only add scroll listener on desktop and tablet
+    if (window.innerWidth >= 768) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      // On mobile, always show navbar
+      setShowNavbar(true);
+    }
 
     // Listen for resize events
-    window.addEventListener('resize', checkScreenSize);
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setShowNavbar(true);
+        window.removeEventListener('scroll', handleScroll);
+      } else {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', checkScreenSize);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [lastScrollY, mouseY]);
+  }, [lastScrollY]);
 
   // Navbar classes - always orange background with shadow
-  const navbarClasses = "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg";
+  const navbarClasses = "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg transition-transform duration-300";
 
   // Link classes - always white text on orange background
   const linkClasses = "text-white/90 hover:text-white";
@@ -88,6 +80,7 @@ export function Navbar() {
           exit={{ opacity: 0, y: -100 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className={navbarClasses}
+          style={{ transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)' }}
         >
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between h-16">
@@ -201,7 +194,7 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Navigation with Beautiful Orange Gradient */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
@@ -209,7 +202,10 @@ export function Navbar() {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="md:hidden overflow-hidden bg-primary-700 border-t border-primary-500"
+                className="md:hidden overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, #F2940A 0%, #EB951C 25%, #FF6B00 50%, #E66B00 75%, #C4730A 100%)'
+                }}
               >
                 <div className="container mx-auto px-4 py-6">
                   <div className="flex flex-col space-y-4">
@@ -256,8 +252,8 @@ export function Navbar() {
                       Contacto
                     </MobileNavLink>
                     
-                    {/* Separador visual */}
-                    <div className="border-t border-primary-500 my-2"></div>
+                    {/* Separador visual con gradiente sutil */}
+                    <div className="border-t border-white/20 my-2"></div>
                     
                     {user ? (
                       <div className="flex flex-col space-y-3">
@@ -286,7 +282,7 @@ export function Navbar() {
                           <Button 
                             variant="secondary" 
                             fullWidth 
-                            className="bg-white text-primary-600 hover:bg-white/90"
+                            className="bg-white text-primary-600 hover:bg-white/90 shadow-lg"
                           >
                             Iniciar Sesión
                           </Button>
@@ -341,8 +337,8 @@ function MobileNavLink({ to, isActive, onClick, children }: MobileNavLinkProps) 
       to={to}
       className={`block py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
         isActive
-          ? 'bg-white text-primary-600 shadow-md'
-          : 'text-white hover:bg-white/10 hover:text-white'
+          ? 'bg-white text-primary-600 shadow-md transform scale-105'
+          : 'text-white hover:bg-white/10 hover:text-white hover:transform hover:scale-105'
       }`}
       onClick={onClick}
     >
