@@ -4,28 +4,97 @@ import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+// Enhanced validation for environment variables
+function validateSupabaseConfig() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('❌ Missing Supabase environment variables. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+  }
+
+  // Check if the URL is still a placeholder
+  if (supabaseUrl === 'your-supabase-project-url' || supabaseUrl.includes('your-supabase-project-url')) {
+    throw new Error('🔧 Please update your .env file with actual Supabase credentials. Click "Connect to Supabase" in the top right to set up your project.');
+  }
+
+  if (supabaseAnonKey === 'your-supabase-anon-key' || supabaseAnonKey.includes('your-supabase-anon-key')) {
+    throw new Error('🔧 Please update your .env file with actual Supabase credentials. Click "Connect to Supabase" in the top right to set up your project.');
+  }
+
+  // Validate URL format
+  try {
+    const url = new URL(supabaseUrl);
+    if (!url.hostname.includes('supabase')) {
+      throw new Error('🌐 Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in the .env file.');
+    }
+  } catch (urlError) {
+    throw new Error('🌐 Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in the .env file.');
+  }
+
+  // Validate anon key format (should be a JWT-like string)
+  if (supabaseAnonKey.length < 100 || !supabaseAnonKey.includes('.')) {
+    throw new Error('🔑 Invalid Supabase anonymous key format. Please check your VITE_SUPABASE_ANON_KEY in the .env file.');
+  }
 }
 
-// Check if the URL is still a placeholder
-if (supabaseUrl === 'your-supabase-project-url' || supabaseAnonKey === 'your-supabase-anon-key') {
-  throw new Error('Please update your .env file with actual Supabase credentials. Click "Connect to Supabase" in the top right to set up your project.');
-}
-
-// Validate URL format
+// Validate configuration before creating client
 try {
-  new URL(supabaseUrl);
-} catch {
-  throw new Error('Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in the .env file.');
+  validateSupabaseConfig();
+} catch (error) {
+  console.error('Supabase Configuration Error:', error);
+  throw error;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey,
+    },
+  },
+});
+
+// Test connection function
+export async function testSupabaseConnection() {
+  try {
+    const { data, error } = await supabase.from('trips').select('count', { count: 'exact', head: true });
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+      return false;
+    }
+    console.log('✅ Supabase connection successful');
+    return true;
+  } catch (error) {
+    console.error('❌ Supabase connection test failed:', error);
+    return false;
+  }
+}
+
+// Enhanced error handling wrapper
+async function handleSupabaseError<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
+  try {
+    return await operation();
+  } catch (error: any) {
+    console.error(`${operationName} error:`, error);
+    
+    // Check for common connection errors
+    if (error.message?.includes('Failed to fetch') || error.message?.includes('fetch')) {
+      throw new Error(`🌐 Connection failed. Please check your internet connection and Supabase configuration. Original error: ${error.message}`);
+    }
+    
+    if (error.message?.includes('Invalid API key') || error.message?.includes('unauthorized')) {
+      throw new Error(`🔑 Authentication failed. Please check your Supabase credentials in the .env file.`);
+    }
+    
+    throw error;
+  }
+}
 
 // Authentication functions
 export async function signIn(email: string, password: string) {
-  try {
+  return handleSupabaseError(async () => {
     // First authenticate with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -60,19 +129,18 @@ export async function signIn(email: string, password: string) {
     }
 
     return { user: userData };
-  } catch (error) {
-    console.error('Sign in error:', error);
-    throw error;
-  }
+  }, 'Sign in');
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  return handleSupabaseError(async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }, 'Sign out');
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  try {
+  return handleSupabaseError(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -101,154 +169,159 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     return data;
-  } catch (error) {
-    console.error('Get current user error:', error);
-    throw error;
-  }
+  }, 'Get current user');
 }
 
 // Trip functions
 export async function getTrips(): Promise<Trip[]> {
-  const { data, error } = await supabase
-    .from('trips')
-    .select(`
-      *,
-      itinerary:itinerary_days(*),
-      included_services(*)
-    `)
-    .order('created_at', { ascending: false });
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select(`
+        *,
+        itinerary:itinerary_days(*),
+        included_services(*)
+      `)
+      .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+    if (error) throw error;
+    return data || [];
+  }, 'Get trips');
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {
-  const { data, error } = await supabase
-    .from('trips')
-    .select(`
-      *,
-      itinerary:itinerary_days(*),
-      included_services(*)
-    `)
-    .eq('id', id)
-    .single();
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select(`
+        *,
+        itinerary:itinerary_days(*),
+        included_services(*)
+      `)
+      .eq('id', id)
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
+  }, 'Get trip');
 }
 
 export async function createTrip(tripData: TripFormData): Promise<Trip> {
-  const { itinerary, included_services, ...tripInfo } = tripData;
-  
-  // Create the trip first
-  const { data: trip, error: tripError } = await supabase
-    .from('trips')
-    .insert([{
-      ...tripInfo,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }])
-    .select()
-    .single();
+  return handleSupabaseError(async () => {
+    const { itinerary, included_services, ...tripInfo } = tripData;
+    
+    // Create the trip first
+    const { data: trip, error: tripError } = await supabase
+      .from('trips')
+      .insert([{
+        ...tripInfo,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }])
+      .select()
+      .single();
 
-  if (tripError) throw tripError;
+    if (tripError) throw tripError;
 
-  // Create itinerary days
-  if (itinerary && itinerary.length > 0) {
-    const itineraryData = itinerary.map((day, index) => ({
-      trip_id: trip.id,
-      day: index + 1,
-      title: day.title,
-      description: day.description,
-    }));
+    // Create itinerary days
+    if (itinerary && itinerary.length > 0) {
+      const itineraryData = itinerary.map((day, index) => ({
+        trip_id: trip.id,
+        day: index + 1,
+        title: day.title,
+        description: day.description,
+      }));
 
-    const { error: itineraryError } = await supabase
-      .from('itinerary_days')
-      .insert(itineraryData);
+      const { error: itineraryError } = await supabase
+        .from('itinerary_days')
+        .insert(itineraryData);
 
-    if (itineraryError) throw itineraryError;
-  }
+      if (itineraryError) throw itineraryError;
+    }
 
-  // Create included services
-  if (included_services && included_services.length > 0) {
-    const servicesData = included_services.map((service) => ({
-      trip_id: trip.id,
-      icon: service.icon,
-      title: service.title,
-      description: service.description,
-    }));
+    // Create included services
+    if (included_services && included_services.length > 0) {
+      const servicesData = included_services.map((service) => ({
+        trip_id: trip.id,
+        icon: service.icon,
+        title: service.title,
+        description: service.description,
+      }));
 
-    const { error: servicesError } = await supabase
-      .from('included_services')
-      .insert(servicesData);
+      const { error: servicesError } = await supabase
+        .from('included_services')
+        .insert(servicesData);
 
-    if (servicesError) throw servicesError;
-  }
+      if (servicesError) throw servicesError;
+    }
 
-  // Return the complete trip with relations
-  return getTrip(trip.id) as Promise<Trip>;
+    // Return the complete trip with relations
+    return getTrip(trip.id) as Promise<Trip>;
+  }, 'Create trip');
 }
 
 export async function updateTrip(id: string, tripData: TripFormData): Promise<Trip> {
-  const { itinerary, included_services, ...tripInfo } = tripData;
-  
-  // Update the trip
-  const { data: trip, error: tripError } = await supabase
-    .from('trips')
-    .update({
-      ...tripInfo,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select()
-    .single();
+  return handleSupabaseError(async () => {
+    const { itinerary, included_services, ...tripInfo } = tripData;
+    
+    // Update the trip
+    const { data: trip, error: tripError } = await supabase
+      .from('trips')
+      .update({
+        ...tripInfo,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-  if (tripError) throw tripError;
+    if (tripError) throw tripError;
 
-  // Delete existing itinerary and services
-  await supabase.from('itinerary_days').delete().eq('trip_id', id);
-  await supabase.from('included_services').delete().eq('trip_id', id);
+    // Delete existing itinerary and services
+    await supabase.from('itinerary_days').delete().eq('trip_id', id);
+    await supabase.from('included_services').delete().eq('trip_id', id);
 
-  // Create new itinerary days
-  if (itinerary && itinerary.length > 0) {
-    const itineraryData = itinerary.map((day, index) => ({
-      trip_id: id,
-      day: index + 1,
-      title: day.title,
-      description: day.description,
-    }));
+    // Create new itinerary days
+    if (itinerary && itinerary.length > 0) {
+      const itineraryData = itinerary.map((day, index) => ({
+        trip_id: id,
+        day: index + 1,
+        title: day.title,
+        description: day.description,
+      }));
 
-    const { error: itineraryError } = await supabase
-      .from('itinerary_days')
-      .insert(itineraryData);
+      const { error: itineraryError } = await supabase
+        .from('itinerary_days')
+        .insert(itineraryData);
 
-    if (itineraryError) throw itineraryError;
-  }
+      if (itineraryError) throw itineraryError;
+    }
 
-  // Create new included services
-  if (included_services && included_services.length > 0) {
-    const servicesData = included_services.map((service) => ({
-      trip_id: id,
-      icon: service.icon,
-      title: service.title,
-      description: service.description,
-    }));
+    // Create new included services
+    if (included_services && included_services.length > 0) {
+      const servicesData = included_services.map((service) => ({
+        trip_id: id,
+        icon: service.icon,
+        title: service.title,
+        description: service.description,
+      }));
 
-    const { error: servicesError } = await supabase
-      .from('included_services')
-      .insert(servicesData);
+      const { error: servicesError } = await supabase
+        .from('included_services')
+        .insert(servicesData);
 
-    if (servicesError) throw servicesError;
-  }
+      if (servicesError) throw servicesError;
+    }
 
-  // Return the complete trip with relations
-  return getTrip(id) as Promise<Trip>;
+    // Return the complete trip with relations
+    return getTrip(id) as Promise<Trip>;
+  }, 'Update trip');
 }
 
 export async function deleteTrip(id: string): Promise<void> {
-  console.log('Attempting to delete trip with id:', id);
-  
-  try {
+  return handleSupabaseError(async () => {
+    console.log('Attempting to delete trip with id:', id);
+    
     // First, get the current user to check permissions
     const { data: { user } } = await supabase.auth.getUser();
     console.log('Current user:', user?.id);
@@ -312,60 +385,63 @@ export async function deleteTrip(id: string): Promise<void> {
     }
 
     console.log('Trip deleted successfully');
-  } catch (error) {
-    console.error('Delete trip error:', error);
-    throw error;
-  }
+  }, 'Delete trip');
 }
 
 // Booking functions
 export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Promise<Booking> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert([{
-      ...booking,
-      created_at: new Date().toISOString(),
-    }])
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .single();
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([{
+        ...booking,
+        created_at: new Date().toISOString(),
+      }])
+      .select(`
+        *,
+        trip:trips(*)
+      `)
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
+  }, 'Create booking');
 }
 
 export async function getBookings(): Promise<Booking[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .order('created_at', { ascending: false });
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        trip:trips(*)
+      `)
+      .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+    if (error) throw error;
+    return data || [];
+  }, 'Get bookings');
 }
 
 export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select(`
-      *,
-      trip:trips(*)
-    `)
-    .eq('trip_id', tripId)
-    .order('created_at', { ascending: false });
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        trip:trips(*)
+      `)
+      .eq('trip_id', tripId)
+      .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+    if (error) throw error;
+    return data || [];
+  }, 'Get bookings by trip');
 }
 
 // Enhanced Stats functions
 export async function getStats(): Promise<Stats> {
-  try {
+  return handleSupabaseError(async () => {
     // Get total trips
     const { count: totalTrips } = await supabase
       .from('trips')
@@ -446,22 +522,7 @@ export async function getStats(): Promise<Stats> {
       popularDestinations,
       ...additionalMetrics,
     };
-  } catch (error) {
-    console.error('Error getting stats:', error);
-    
-    // Return default stats if there's an error
-    return {
-      totalTrips: 0,
-      totalBookings: 0,
-      upcomingTrips: 0,
-      popularDestinations: [],
-      bookingTrend: 0,
-      averageBookingsPerDay: 0,
-      categoryDistribution: [],
-      recentBookingsCount: 0,
-      conversionRate: 0,
-    };
-  }
+  }, 'Get stats');
 }
 
 // Calculate additional metrics for enhanced dashboard
