@@ -102,7 +102,7 @@ export function ClientsPage() {
       filtered = filtered.filter(client => client.priority === filters.priority);
     }
 
-    // Filter by destination
+    // Filter by destination - usar preferred_destination del cliente
     if (filters.destination) {
       filtered = filtered.filter(client => client.preferred_destination === filters.destination);
     }

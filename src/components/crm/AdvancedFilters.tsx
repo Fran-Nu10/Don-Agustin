@@ -90,24 +90,6 @@ export function AdvancedFilters({
           </select>
         </div>
 
-        {/* Source filter */}
-        <div className="relative">
-          <Tag className="absolute left-3 top-3 h-4 w-4 text-secondary-400 pointer-events-none" />
-          <select
-            value={filters.source}
-            onChange={(e) => onFilterChange('source', e.target.value)}
-            className="block w-full pl-10 pr-8 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
-          >
-            <option value="">Todas las fuentes</option>
-            <option value="website">Sitio Web</option>
-            <option value="referral">Referido</option>
-            <option value="social_media">Redes Sociales</option>
-            <option value="phone">Teléfono</option>
-            <option value="email">Email</option>
-            <option value="walk_in">Visita Directa</option>
-          </select>
-        </div>
-
         {/* Priority filter */}
         <div className="relative">
           <AlertTriangle className="absolute left-3 top-3 h-4 w-4 text-secondary-400 pointer-events-none" />
@@ -117,10 +99,11 @@ export function AdvancedFilters({
             className="block w-full pl-10 pr-8 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
           >
             <option value="">Todas las prioridades</option>
-            <option value="urgent">Urgente</option>
-            <option value="high">Alta</option>
-            <option value="medium">Media</option>
-            <option value="low">Baja</option>
+            <option value="baja">Baja</option>
+            <option value="normal">Normal</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
           </select>
         </div>
 
@@ -184,6 +167,24 @@ export function AdvancedFilters({
             <option value="30">Últimos 30 días</option>
             <option value="90">Últimos 90 días</option>
             <option value="never">Sin contacto</option>
+          </select>
+        </div>
+
+        {/* Source filter */}
+        <div className="relative">
+          <Tag className="absolute left-3 top-3 h-4 w-4 text-secondary-400 pointer-events-none" />
+          <select
+            value={filters.source}
+            onChange={(e) => onFilterChange('source', e.target.value)}
+            className="block w-full pl-10 pr-8 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
+          >
+            <option value="">Todas las fuentes</option>
+            <option value="website">Sitio Web</option>
+            <option value="referral">Referido</option>
+            <option value="social_media">Redes Sociales</option>
+            <option value="phone">Teléfono</option>
+            <option value="email">Email</option>
+            <option value="walk_in">Visita Directa</option>
           </select>
         </div>
       </div>
