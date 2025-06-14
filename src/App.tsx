@@ -15,6 +15,7 @@ import { AdminTripsPage } from './pages/admin/TripsPage';
 import { BlogsPage } from './pages/admin/BlogsPage';
 import { ClientsPage } from './pages/admin/ClientsPage';
 import { QuotationsPage } from './pages/admin/QuotationsPage';
+import { ReportsPage } from './pages/admin/ReportsPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/admin/viajes" element={<AdminTripsPage />} />
         <Route path="/admin/clientes" element={<ClientsPage />} />
         <Route path="/admin/cotizaciones" element={<QuotationsPage />} />
+        <Route path="/admin/reportes" element={<ReportsPage />} />
         <Route path="/admin/blog" element={<BlogsPage />} />
       </Routes>
     </AuthProvider>

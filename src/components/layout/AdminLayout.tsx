@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator } from 'lucide-react';
+import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 
@@ -71,15 +71,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               >
                 Cotizaciones
               </SidebarLink>
-              
+
               {isOwner() && (
-                <SidebarLink
-                  to="/admin/blog"
-                  icon={<FileText className="h-5 w-5" />}
-                  isActive={isActive('/admin/blog')}
-                >
-                  Blog
-                </SidebarLink>
+                <>
+                  <SidebarLink
+                    to="/admin/reportes"
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    isActive={isActive('/admin/reportes')}
+                  >
+                    Reportes Financieros
+                  </SidebarLink>
+                  
+                  <SidebarLink
+                    to="/admin/blog"
+                    icon={<FileText className="h-5 w-5" />}
+                    isActive={isActive('/admin/blog')}
+                  >
+                    Blog
+                  </SidebarLink>
+                </>
               )}
             </>
           )}
@@ -216,13 +226,22 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
                 Cotizaciones
               </Link>
               {isOwner && (
-                <Link
-                  to="/admin/blog"
-                  className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Blog
-                </Link>
+                <>
+                  <Link
+                    to="/admin/reportes"
+                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Reportes Financieros
+                  </Link>
+                  <Link
+                    to="/admin/blog"
+                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Blog
+                  </Link>
+                </>
               )}
             </>
           )}

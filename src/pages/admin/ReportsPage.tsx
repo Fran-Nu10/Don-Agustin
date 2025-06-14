@@ -1,0 +1,433 @@
+import React, { useState, useEffect } from 'react';
+import { AdminLayout } from '../../components/layout/AdminLayout';
+import { ReportsOverview } from '../../components/reports/ReportsOverview';
+import { Card, CardContent, CardHeader } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { BarChart3, TrendingUp, DollarSign, Users, Target, Download, Calendar, Filter } from 'lucide-react';
+import { ReportsData, RevenueMetrics, ReportFilters } from '../../types/reports';
+import { getReportsData } from '../../lib/supabase/reports';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+export function ReportsPage() {
+  const { isOwner, isEmployee } = useAuth();
+  const [reportsData, setReportsData] = useState<ReportsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
+  const [filters, setFilters] = useState<ReportFilters>({
+    dateRange: {
+      start: format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd'),
+      end: format(new Date(), 'yyyy-MM-dd'),
+    },
+    category: '',
+    period: 'monthly',
+    comparison: 'previous_period',
+  });
+
+  // Redirect if not admin
+  if (!isOwner() && !isEmployee()) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  useEffect(() => {
+    loadReportsData();
+  }, [filters]);
+
+  async function loadReportsData() {
+    try {
+      setLoading(true);
+      const data = await getReportsData(filters);
+      setReportsData(data);
+    } catch (error) {
+      console.error('Error loading reports data:', error);
+      toast.error('Error al cargar los datos de reportes');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleFilterChange = (field: keyof ReportFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleExportReport = () => {
+    // TODO: Implement PDF export functionality
+    toast.success('Funcionalidad de exportación en desarrollo');
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
+          <p className="text-secondary-500">Cargando reportes...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading font-bold text-2xl text-secondary-900">
+            Reportes Financieros
+          </h1>
+          <p className="text-secondary-500">
+            Análisis detallado de ingresos, conversiones y rendimiento
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            onClick={handleExportReport}
+            className="bg-green-600 hover:bg-green-700 text-white border-green-600"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card className="mb-6">
+        <CardHeader>
+          <h3 className="font-heading font-bold text-lg flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Filtros de Reporte
+          </h3>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-2">
+                Fecha de inicio
+              </label>
+              <Input
+                type="date"
+                value={filters.dateRange.start}
+                onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, start: e.target.value })}
+                fullWidth
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-2">
+                Fecha de fin
+              </label>
+              <Input
+                type="date"
+                value={filters.dateRange.end}
+                onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, end: e.target.value })}
+                fullWidth
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-2">
+                Categoría
+              </label>
+              <select
+                value={filters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+                className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Todas las categorías</option>
+                <option value="nacional">Nacional</option>
+                <option value="internacional">Internacional</option>
+                <option value="grupal">Grupal</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-secondary-700 mb-2">
+                Período
+              </label>
+              <select
+                value={filters.period}
+                onChange={(e) => handleFilterChange('period', e.target.value)}
+                className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="daily">Diario</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensual</option>
+                <option value="quarterly">Trimestral</option>
+                <option value="yearly">Anual</option>
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reports Overview */}
+      {reportsData && (
+        <>
+          <ReportsOverview metrics={reportsData.metrics} />
+          
+          {/* Revenue History Chart */}
+          <Card className="mb-6">
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2" />
+                Evolución de Ingresos
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.revenueHistory.length > 0 ? (
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-secondary-500">Gráfico de evolución de ingresos (en desarrollo)</p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <p className="text-secondary-500">No hay datos históricos disponibles</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Category Performance */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <h3 className="font-heading font-bold text-lg flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  Rendimiento por Categoría
+                </h3>
+              </CardHeader>
+              <CardContent>
+                {reportsData.categoryPerformance.length > 0 ? (
+                  <div className="space-y-4">
+                    {reportsData.categoryPerformance.map((category, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+                        <div>
+                          <h4 className="font-medium text-secondary-900">{category.category}</h4>
+                          <p className="text-sm text-secondary-600">
+                            {category.bookings} reservas • {category.marketShare.toFixed(1)}% del mercado
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-primary-950">
+                            ${category.revenue.toLocaleString('es-UY')}
+                          </p>
+                          <p className={`text-sm ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {category.growth >= 0 ? '+' : ''}{category.growth.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                    <p className="text-secondary-500">No hay datos de categorías disponibles</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Revenue Sources */}
+            <Card>
+              <CardHeader>
+                <h3 className="font-heading font-bold text-lg flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Fuentes de Ingresos
+                </h3>
+              </CardHeader>
+              <CardContent>
+                {reportsData.revenueSources.length > 0 ? (
+                  <div className="space-y-4">
+                    {reportsData.revenueSources.map((source, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+                        <div>
+                          <h4 className="font-medium text-secondary-900">{source.source}</h4>
+                          <p className="text-sm text-secondary-600">
+                            {source.bookings} reservas • ROI: {source.roi}%
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-primary-950">
+                            ${source.amount.toLocaleString('es-UY')}
+                          </p>
+                          <p className="text-sm text-secondary-600">
+                            {source.percentage.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                    <p className="text-secondary-500">No hay datos de fuentes disponibles</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sales Performance */}
+          <Card className="mb-6">
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <Target className="h-5 w-5 mr-2" />
+                Rendimiento de Ventas
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.salesPerformance.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-secondary-200">
+                    <thead className="bg-secondary-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Vendedor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Leads
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Oportunidades
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Ingresos
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Conversión
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                          Ticket Promedio
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-secondary-200">
+                      {reportsData.salesPerformance.map((performance, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">
+                            {performance.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                            {performance.leads}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                            {performance.opportunities}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                            ${performance.revenue.toLocaleString('es-UY')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                            {performance.conversionRate.toFixed(1)}%
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                            ${performance.averageDealSize.toLocaleString('es-UY')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Target className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <p className="text-secondary-500">No hay datos de rendimiento disponibles</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Financial Targets */}
+          <Card>
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <Target className="h-5 w-5 mr-2" />
+                Objetivos Financieros
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.targets.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {reportsData.targets.map((target, index) => (
+                    <div key={index} className="bg-secondary-50 p-6 rounded-lg">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-secondary-900 capitalize">
+                          {target.targetType} - {target.targetPeriod}
+                        </h4>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          target.achievementRate >= 100 ? 'bg-green-100 text-green-800' :
+                          target.achievementRate >= 75 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {target.achievementRate.toFixed(1)}%
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-secondary-600">Ingresos</span>
+                            <span className="font-medium">
+                              ${target.actualRevenue.toLocaleString('es-UY')} / ${target.revenueTarget.toLocaleString('es-UY')}
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min((target.actualRevenue / target.revenueTarget) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-secondary-600">Reservas</span>
+                            <span className="font-medium">
+                              {target.actualBookings} / {target.bookingsTarget}
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min((target.actualBookings / target.bookingsTarget) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-secondary-600">Leads</span>
+                            <span className="font-medium">
+                              {target.actualLeads} / {target.leadsTarget}
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min((target.actualLeads / target.leadsTarget) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Target className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <p className="text-secondary-500">No hay objetivos configurados</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </AdminLayout>
+  );
+}
