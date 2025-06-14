@@ -9,6 +9,15 @@ export interface Client {
   scheduled_date?: string;
   created_at: string;
   updated_at: string;
+  // New fields for enhanced CRM
+  source?: string; // 'website', 'referral', 'social_media', 'phone', 'email'
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  budget_range?: string;
+  preferred_destination?: string;
+  travel_date?: string;
+  last_contact_date?: string;
+  next_follow_up?: string;
+  tags?: string[];
 }
 
 export interface ClientFormData {
@@ -19,9 +28,39 @@ export interface ClientFormData {
   status: Client['status'];
   internal_notes?: string;
   scheduled_date?: string;
+  source?: string;
+  priority?: Client['priority'];
+  budget_range?: string;
+  preferred_destination?: string;
+  travel_date?: string;
+  last_contact_date?: string;
+  next_follow_up?: string;
+  tags?: string[];
 }
 
 export interface ClientFilters {
   name: string;
   status: string;
+  source: string;
+  priority: string;
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  budgetRange: string;
+  destination: string;
+  tags: string[];
+  hasScheduledDate: string; // 'all', 'scheduled', 'unscheduled'
+  lastContactDays: string; // '7', '30', '90', 'all'
+}
+
+export interface ClientStats {
+  total: number;
+  byStatus: Record<string, number>;
+  bySource: Record<string, number>;
+  byPriority: Record<string, number>;
+  conversionRate: number;
+  avgResponseTime: number;
+  upcomingFollowUps: number;
+  overdueFollowUps: number;
 }

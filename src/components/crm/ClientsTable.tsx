@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Client } from '../../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowUpDown, Eye, Calendar, Phone, Mail, Download } from 'lucide-react';
+import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download, Tag, AlertTriangle, Clock, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { generateClientPDF } from '../../utils/pdfGenerator';
 
@@ -11,7 +11,7 @@ interface ClientsTableProps {
   onViewClient: (client: Client) => void;
 }
 
-type SortField = 'name' | 'email' | 'scheduled_date' | 'created_at' | 'status';
+type SortField = 'name' | 'email' | 'scheduled_date' | 'created_at' | 'status' | 'priority' | 'last_contact_date';
 type SortDirection = 'asc' | 'desc';
 
 export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
@@ -45,7 +45,6 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         compareB = b.email.toLowerCase();
         break;
       case 'scheduled_date':
-        // Handle null scheduled_date properly
         compareA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
         compareB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
         break;
@@ -56,6 +55,15 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
       case 'status':
         compareA = a.status;
         compareB = b.status;
+        break;
+      case 'priority':
+        const priorityOrder = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+        compareA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+        compareB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+        break;
+      case 'last_contact_date':
+        compareA = a.last_contact_date ? new Date(a.last_contact_date).getTime() : 0;
+        compareB = b.last_contact_date ? new Date(b.last_contact_date).getTime() : 0;
         break;
       default:
         return 0;
@@ -104,22 +112,69 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     }
   };
 
-  // Helper function to format scheduled date safely
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-100 text-red-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getPriorityLabel = (priority?: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'Urgente';
+      case 'high':
+        return 'Alta';
+      case 'medium':
+        return 'Media';
+      case 'low':
+        return 'Baja';
+      default:
+        return 'Sin definir';
+    }
+  };
+
+  const getPriorityIcon = (priority?: string) => {
+    switch (priority) {
+      case 'urgent':
+        return <AlertTriangle className="h-4 w-4" />;
+      case 'high':
+        return <Star className="h-4 w-4" />;
+      case 'medium':
+        return <Clock className="h-4 w-4" />;
+      case 'low':
+        return <Calendar className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
   const formatScheduledDate = (scheduledDate: string | null | undefined) => {
     if (!scheduledDate) return null;
     
     try {
       const date = new Date(scheduledDate);
-      // Check if date is valid
       if (isNaN(date.getTime())) {
-        console.error('Invalid date:', scheduledDate);
         return 'Fecha inválida';
       }
       return format(date, 'dd MMM yyyy, HH:mm', { locale: es });
     } catch (error) {
-      console.error('Error formatting scheduled date:', error, 'Date value:', scheduledDate);
+      console.error('Error formatting scheduled date:', error);
       return 'Fecha inválida';
     }
+  };
+
+  const isOverdue = (followUpDate?: string) => {
+    if (!followUpDate) return false;
+    return new Date(followUpDate) < new Date();
   };
 
   return (
@@ -153,8 +208,25 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                 onSort={handleSort}
               />
               <SortableHeader
+                label="Prioridad"
+                field="priority"
+                currentField={sortField}
+                direction={sortDirection}
+                onSort={handleSort}
+              />
+              <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                Destino Preferido
+              </th>
+              <SortableHeader
                 label="Fecha Agendada"
                 field="scheduled_date"
+                currentField={sortField}
+                direction={sortDirection}
+                onSort={handleSort}
+              />
+              <SortableHeader
+                label="Último Contacto"
+                field="last_contact_date"
                 currentField={sortField}
                 direction={sortDirection}
                 onSort={handleSort}
@@ -174,16 +246,17 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
           <tbody className="divide-y divide-secondary-200">
             {sortedClients.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-secondary-500">
+                <td colSpan={10} className="px-6 py-4 text-center text-secondary-500">
                   No hay clientes para mostrar
                 </td>
               </tr>
             ) : (
               sortedClients.map((client) => {
                 const formattedScheduledDate = formatScheduledDate(client.scheduled_date);
+                const isFollowUpOverdue = isOverdue(client.next_follow_up);
                 
                 return (
-                  <tr key={client.id} className="hover:bg-secondary-50">
+                  <tr key={client.id} className={`hover:bg-secondary-50 ${isFollowUpOverdue ? 'bg-red-50' : ''}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -196,7 +269,25 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                         <div className="ml-4">
                           <div className="text-sm font-medium text-secondary-900">
                             {client.name}
+                            {client.tags && client.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {client.tags.slice(0, 2).map((tag, index) => (
+                                  <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    <Tag className="h-3 w-3 mr-1" />
+                                    {tag}
+                                  </span>
+                                ))}
+                                {client.tags.length > 2 && (
+                                  <span className="text-xs text-secondary-500">+{client.tags.length - 2}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
+                          {client.source && (
+                            <div className="text-xs text-secondary-500">
+                              Fuente: {client.source}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -221,6 +312,22 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                         {getStatusLabel(client.status)}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(client.priority)}`}>
+                        {getPriorityIcon(client.priority)}
+                        <span className="ml-1">{getPriorityLabel(client.priority)}</span>
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                      {client.preferred_destination ? (
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2 text-secondary-400" />
+                          {client.preferred_destination}
+                        </div>
+                      ) : (
+                        <span className="text-secondary-400">-</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                       {formattedScheduledDate ? (
                         <div className="flex items-center">
@@ -234,6 +341,18 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                           <Calendar className="h-4 w-4 mr-2 text-secondary-300" />
                           <span className="text-secondary-400 italic">Sin agendar</span>
                         </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                      {client.last_contact_date ? (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-blue-600" />
+                          <span className="text-blue-600">
+                            {format(new Date(client.last_contact_date), 'dd MMM', { locale: es })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-secondary-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">

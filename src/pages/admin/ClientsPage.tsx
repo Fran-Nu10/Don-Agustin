@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 import { ClientsTable } from '../../components/crm/ClientsTable';
 import { ClientModal } from '../../components/crm/ClientModal';
+import { AdvancedFilters } from '../../components/crm/AdvancedFilters';
+import { ClientStats } from '../../components/crm/ClientStats';
 import { Card, CardContent } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Search, Filter, Users, Clock, CheckCircle, AlertCircle, Send, Target, Download, BarChart3 } from 'lucide-react';
-import { Client, ClientFilters, ClientFormData } from '../../types/client';
+import { Download, BarChart3, FileText, Users, Filter, Calendar, Plus } from 'lucide-react';
+import { Client, ClientFilters, ClientFormData, ClientStats as ClientStatsType } from '../../types/client';
 import { getClients, updateClient, deleteClient } from '../../lib/supabase/clients';
-import { generateClientsSummaryPDF } from '../../utils/pdfGenerator';
+import { generateClientPDF, generateClientsSummaryPDF, generateClientsByStatusPDF, generateClientsBySourcePDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -22,9 +23,19 @@ export function ClientsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [stats, setStats] = useState<ClientStatsType | null>(null);
   const [filters, setFilters] = useState<ClientFilters>({
     name: '',
     status: '',
+    source: '',
+    priority: '',
+    dateRange: { start: '', end: '' },
+    budgetRange: '',
+    destination: '',
+    tags: [],
+    hasScheduledDate: 'all',
+    lastContactDays: 'all',
   });
 
   const itemsPerPage = 10;
@@ -40,6 +51,7 @@ export function ClientsPage() {
 
   useEffect(() => {
     filterClients();
+    calculateStats();
   }, [clients, filters]);
 
   async function loadClients() {
@@ -58,7 +70,7 @@ export function ClientsPage() {
   function filterClients() {
     let filtered = [...clients];
 
-    // Filter by name
+    // Filter by name/email
     if (filters.name) {
       filtered = filtered.filter(client =>
         client.name.toLowerCase().includes(filters.name.toLowerCase()) ||
@@ -71,8 +83,126 @@ export function ClientsPage() {
       filtered = filtered.filter(client => client.status === filters.status);
     }
 
+    // Filter by source
+    if (filters.source) {
+      filtered = filtered.filter(client => client.source === filters.source);
+    }
+
+    // Filter by priority
+    if (filters.priority) {
+      filtered = filtered.filter(client => client.priority === filters.priority);
+    }
+
+    // Filter by destination
+    if (filters.destination) {
+      filtered = filtered.filter(client => client.preferred_destination === filters.destination);
+    }
+
+    // Filter by budget range
+    if (filters.budgetRange) {
+      filtered = filtered.filter(client => {
+        if (!client.budget_range) return false;
+        return client.budget_range === filters.budgetRange;
+      });
+    }
+
+    // Filter by scheduled date
+    if (filters.hasScheduledDate !== 'all') {
+      if (filters.hasScheduledDate === 'scheduled') {
+        filtered = filtered.filter(client => client.scheduled_date);
+      } else if (filters.hasScheduledDate === 'unscheduled') {
+        filtered = filtered.filter(client => !client.scheduled_date);
+      }
+    }
+
+    // Filter by last contact
+    if (filters.lastContactDays !== 'all') {
+      const now = new Date();
+      if (filters.lastContactDays === 'never') {
+        filtered = filtered.filter(client => !client.last_contact_date);
+      } else {
+        const days = parseInt(filters.lastContactDays);
+        const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(client => 
+          client.last_contact_date && new Date(client.last_contact_date) >= cutoffDate
+        );
+      }
+    }
+
+    // Filter by date range
+    if (filters.dateRange.start) {
+      filtered = filtered.filter(client => 
+        new Date(client.created_at) >= new Date(filters.dateRange.start)
+      );
+    }
+    if (filters.dateRange.end) {
+      filtered = filtered.filter(client => 
+        new Date(client.created_at) <= new Date(filters.dateRange.end)
+      );
+    }
+
+    // Filter by tags
+    if (filters.tags.length > 0) {
+      filtered = filtered.filter(client => 
+        client.tags && filters.tags.some(tag => client.tags!.includes(tag))
+      );
+    }
+
     setFilteredClients(filtered);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
+  }
+
+  function calculateStats() {
+    const total = clients.length;
+    
+    // Status distribution
+    const byStatus = clients.reduce((acc, client) => {
+      acc[client.status] = (acc[client.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Source distribution
+    const bySource = clients.reduce((acc, client) => {
+      const source = client.source || 'unknown';
+      acc[source] = (acc[source] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Priority distribution
+    const byPriority = clients.reduce((acc, client) => {
+      const priority = client.priority || 'undefined';
+      acc[priority] = (acc[priority] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Conversion rate (closed clients / total clients)
+    const closedClients = clients.filter(c => c.status === 'cliente_cerrado').length;
+    const conversionRate = total > 0 ? (closedClients / total) * 100 : 0;
+
+    // Upcoming follow-ups
+    const now = new Date();
+    const upcomingFollowUps = clients.filter(client => 
+      client.next_follow_up && new Date(client.next_follow_up) > now
+    ).length;
+
+    // Overdue follow-ups
+    const overdueFollowUps = clients.filter(client => 
+      client.next_follow_up && new Date(client.next_follow_up) < now
+    ).length;
+
+    // Average response time (mock calculation)
+    const avgResponseTime = 24; // This would be calculated based on actual response times
+
+    setStats({
+      total,
+      byStatus,
+      bySource,
+      byPriority,
+      conversionRate,
+      avgResponseTime,
+      upcomingFollowUps,
+      overdueFollowUps,
+    });
   }
 
   const handleViewClient = (client: Client) => {
@@ -84,7 +214,7 @@ export function ClientsPage() {
     try {
       setIsSubmitting(true);
       await updateClient(id, data);
-      await loadClients(); // Refresh the clients list
+      await loadClients();
       toast.success('Cliente actualizado con éxito');
       setIsModalOpen(false);
       setSelectedClient(null);
@@ -99,7 +229,7 @@ export function ClientsPage() {
   const handleDeleteClient = async (id: string) => {
     try {
       await deleteClient(id);
-      await loadClients(); // Refresh the clients list
+      await loadClients();
       toast.success('Cliente eliminado con éxito');
     } catch (error) {
       console.error('Error deleting client:', error);
@@ -107,12 +237,7 @@ export function ClientsPage() {
     }
   };
 
-  const handleDownloadSummary = () => {
-    generateClientsSummaryPDF(filteredClients);
-    toast.success('Reporte descargado exitosamente');
-  };
-
-  const handleFilterChange = (field: keyof ClientFilters, value: string) => {
+  const handleFilterChange = (field: keyof ClientFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
       [field]: value,
@@ -123,19 +248,20 @@ export function ClientsPage() {
     setFilters({
       name: '',
       status: '',
+      source: '',
+      priority: '',
+      dateRange: { start: '', end: '' },
+      budgetRange: '',
+      destination: '',
+      tags: [],
+      hasScheduledDate: 'all',
+      lastContactDays: 'all',
     });
   };
 
-  // Calculate stats
-  const stats = {
-    total: clients.length,
-    nuevo: clients.filter(c => c.status === 'nuevo').length,
-    presupuesto_enviado: clients.filter(c => c.status === 'presupuesto_enviado').length,
-    en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
-    cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
-    en_proceso: clients.filter(c => c.status === 'en_proceso').length,
-    cerrado: clients.filter(c => c.status === 'cerrado').length,
-  };
+  // Get unique destinations and tags for filters
+  const destinations = [...new Set(clients.map(c => c.preferred_destination).filter(Boolean))];
+  const availableTags = [...new Set(clients.flatMap(c => c.tags || []))];
 
   // Pagination
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
@@ -143,159 +269,118 @@ export function ClientsPage() {
   const endIndex = startIndex + itemsPerPage;
   const currentClients = filteredClients.slice(startIndex, endIndex);
 
+  // PDF Export functions
+  const handleDownloadSummary = () => {
+    generateClientsSummaryPDF(filteredClients);
+    toast.success('Reporte descargado exitosamente');
+  };
+
+  const handleDownloadByStatus = (status: string) => {
+    const clientsByStatus = filteredClients.filter(c => c.status === status);
+    generateClientsByStatusPDF(clientsByStatus, status);
+    toast.success(`Reporte de clientes ${status} descargado exitosamente`);
+  };
+
+  const handleDownloadBySource = (source: string) => {
+    const clientsBySource = filteredClients.filter(c => c.source === source);
+    generateClientsBySourcePDF(clientsBySource, source);
+    toast.success(`Reporte de clientes por ${source} descargado exitosamente`);
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading font-bold text-2xl text-secondary-900">
-            Panel CRM - Clientes
+            CRM Profesional - Gestión de Clientes
           </h1>
           <p className="text-secondary-500">
-            Gestiona los clientes agendados y sus consultas
+            Sistema avanzado de gestión de relaciones con clientes
           </p>
         </div>
         
-        <Button
-          onClick={handleDownloadSummary}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <BarChart3 className="h-4 w-4 mr-2" />
-          Descargar Reporte PDF
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-blue-100 mr-4">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">Total Clientes</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.total}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-blue-100 mr-4">
-                <AlertCircle className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">Nuevos</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.nuevo}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-purple-100 mr-4">
-                <Send className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">Presupuesto Enviado</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.presupuesto_enviado}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-green-100 mr-4">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">Cliente Cerrado</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.cliente_cerrado}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-yellow-100 mr-4">
-                <Target className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">En Seguimiento</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.en_seguimiento}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-orange-100 mr-4">
-                <Clock className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-secondary-500">En Proceso</p>
-                <h4 className="text-2xl font-bold text-secondary-900">{stats.en_proceso}</h4>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center space-x-2">
-              <Filter className="h-5 w-5 text-secondary-400" />
-              <span className="text-sm font-medium text-secondary-700">Filtros:</span>
-            </div>
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {showAdvancedFilters ? 'Ocultar' : 'Mostrar'} Filtros
+          </Button>
+          
+          <div className="relative group">
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </Button>
             
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-secondary-400" />
-              <Input
-                placeholder="Buscar por nombre o email..."
-                value={filters.name}
-                onChange={(e) => handleFilterChange('name', e.target.value)}
-                className="pl-10"
-                fullWidth
-              />
+            {/* Dropdown menu */}
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-secondary-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+              <div className="py-2">
+                <button
+                  onClick={handleDownloadSummary}
+                  className="w-full text-left px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100 flex items-center"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Reporte Completo
+                </button>
+                
+                <div className="border-t border-secondary-200 my-1"></div>
+                <div className="px-4 py-2 text-xs font-medium text-secondary-500 uppercase">
+                  Por Estado
+                </div>
+                
+                {Object.entries(stats?.byStatus || {}).map(([status, count]) => (
+                  <button
+                    key={status}
+                    onClick={() => handleDownloadByStatus(status)}
+                    className="w-full text-left px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100 flex items-center justify-between"
+                  >
+                    <span className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      {status.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-secondary-500">({count})</span>
+                  </button>
+                ))}
+                
+                <div className="border-t border-secondary-200 my-1"></div>
+                <div className="px-4 py-2 text-xs font-medium text-secondary-500 uppercase">
+                  Por Fuente
+                </div>
+                
+                {Object.entries(stats?.bySource || {}).map(([source, count]) => (
+                  <button
+                    key={source}
+                    onClick={() => handleDownloadBySource(source)}
+                    className="w-full text-left px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100 flex items-center justify-between"
+                  >
+                    <span className="flex items-center">
+                      <Users className="h-4 w-4 mr-2" />
+                      {source.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-secondary-500">({count})</span>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="px-3 py-2 border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Todos los estados</option>
-              <option value="nuevo">Nuevo</option>
-              <option value="presupuesto_enviado">Presupuesto Enviado</option>
-              <option value="en_seguimiento">En Seguimiento</option>
-              <option value="cliente_cerrado">Cliente Cerrado</option>
-              <option value="en_proceso">En Proceso</option>
-              <option value="cerrado">Cerrado</option>
-            </select>
-
-            {(filters.name || filters.status) && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Limpiar filtros
-              </Button>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Stats Dashboard */}
+      {stats && <ClientStats stats={stats} />}
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <AdvancedFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={clearFilters}
+          destinations={destinations}
+          availableTags={availableTags}
+        />
+      )}
 
       {/* Clients Table */}
       <Card>
@@ -306,6 +391,17 @@ export function ClientsPage() {
             </div>
           ) : (
             <>
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-secondary-600">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredClients.length)} de {filteredClients.length} clientes
+                  {filteredClients.length !== clients.length && (
+                    <span className="ml-2 text-primary-600 font-medium">
+                      (filtrados de {clients.length} total)
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <ClientsTable
                 clients={currentClients}
                 onViewClient={handleViewClient}
@@ -315,7 +411,7 @@ export function ClientsPage() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-secondary-500">
-                    Mostrando {startIndex + 1} a {Math.min(endIndex, filteredClients.length)} de {filteredClients.length} clientes
+                    Página {currentPage} de {totalPages}
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -329,19 +425,37 @@ export function ClientsPage() {
                     </Button>
                     
                     <div className="flex items-center space-x-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-1 text-sm rounded ${
-                            currentPage === page
-                              ? 'bg-primary-950 text-white'
-                              : 'text-secondary-600 hover:bg-secondary-100'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-3 py-1 text-sm rounded ${
+                              currentPage === page
+                                ? 'bg-primary-950 text-white'
+                                : 'text-secondary-600 hover:bg-secondary-100'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                      {totalPages > 5 && (
+                        <>
+                          <span className="text-secondary-500">...</span>
+                          <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            className={`px-3 py-1 text-sm rounded ${
+                              currentPage === totalPages
+                                ? 'bg-primary-950 text-white'
+                                : 'text-secondary-600 hover:bg-secondary-100'
+                            }`}
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
                     </div>
                     
                     <Button
