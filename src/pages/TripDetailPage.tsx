@@ -11,7 +11,7 @@ import { getTrip, getTrips } from '../lib/supabase';
 import { Trip } from '../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, MapPin, Tag, Clock, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function TripDetailPage() {
@@ -164,6 +164,30 @@ export function TripDetailPage() {
                       </span>
                     </div>
                   </div>
+
+                  {/* PDF Information - if available */}
+                  {trip.info_pdf_url && trip.info_pdf_name && (
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <FileText className="h-6 w-6 text-blue-600 mr-3" />
+                          <div>
+                            <h3 className="font-medium text-blue-900">Información adicional disponible</h3>
+                            <p className="text-sm text-blue-700">Descarga el PDF con detalles completos del viaje</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(trip.info_pdf_url, '_blank')}
+                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Descargar PDF
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="prose max-w-none mb-8">
                     {trip.description.split('\n').map((paragraph, index) => (

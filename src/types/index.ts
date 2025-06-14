@@ -37,6 +37,8 @@ export interface Trip {
   itinerary: ItineraryDay[];
   included_services: IncludedService[];
   category: 'nacional' | 'internacional' | 'grupal';
+  info_pdf_url?: string;
+  info_pdf_name?: string;
 }
 
 // Blog Types
@@ -78,6 +80,8 @@ export interface TripFormData {
   category: Trip['category'];
   itinerary: ItineraryDay[];
   included_services: IncludedService[];
+  info_pdf_url?: string;
+  info_pdf_name?: string;
 }
 
 export interface BookingFormData {

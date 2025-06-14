@@ -4,7 +4,7 @@ import { TripFormData, Trip, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { Plus, Trash2, Calendar, MapPin, Users, Upload, X } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye } from 'lucide-react';
 
 interface TripFormProps {
   initialData?: Trip;
@@ -16,12 +16,17 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  
+  // PDF states
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<TripFormData>({
     defaultValues: initialData
@@ -35,6 +40,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           available_spots: initialData.available_spots,
           image_url: initialData.image_url,
           category: initialData.category,
+          info_pdf_url: initialData.info_pdf_url,
+          info_pdf_name: initialData.info_pdf_name,
           itinerary: initialData.itinerary || [],
           included_services: initialData.included_services || [],
         }
@@ -43,6 +50,9 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           included_services: [{ icon: 'Hotel', title: '', description: '' }],
         },
   });
+
+  const watchPdfUrl = watch('info_pdf_url');
+  const watchPdfName = watch('info_pdf_name');
 
   const {
     fields: itineraryFields,
@@ -131,6 +141,52 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
+  // Handle PDF file selection
+  const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      alert('Por favor selecciona un archivo PDF válido');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB');
+      return;
+    }
+
+    setIsUploadingPdf(true);
+    
+    try {
+      setPdfFile(file);
+
+      // For demo purposes, we'll simulate a PDF upload
+      // In a real app, you would upload to a service like Cloudinary, AWS S3, etc.
+      const demoPdfUrls = [
+        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        'https://www.africau.edu/images/default/sample.pdf',
+        'https://www.orimi.com/pdf-test.pdf',
+      ];
+      
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Use a demo URL (in production, this would be the actual upload result)
+      const randomUrl = demoPdfUrls[Math.floor(Math.random() * demoPdfUrls.length)];
+      setValue('info_pdf_url', randomUrl);
+      setValue('info_pdf_name', file.name);
+      
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      alert('Error al subir el PDF. Por favor intenta nuevamente.');
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
   // Remove image
   const removeImage = () => {
     setImageFile(null);
@@ -139,6 +195,19 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     
     // Clear the file input
     const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  // Remove PDF
+  const removePdf = () => {
+    setPdfFile(null);
+    setValue('info_pdf_url', '');
+    setValue('info_pdf_name', '');
+    
+    // Clear the file input
+    const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
@@ -328,6 +397,97 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             type="hidden"
             {...register('image_url', { required: 'La imagen es obligatoria' })}
           />
+        </div>
+
+        {/* PDF Upload Section */}
+        <div className="mt-6">
+          <label className="block mb-2 text-sm font-medium text-secondary-900">
+            PDF Informativo (Opcional)
+          </label>
+          <p className="text-sm text-secondary-600 mb-4">
+            Sube un PDF con información adicional como itinerario detallado, términos y condiciones, o guías del destino.
+          </p>
+          
+          {watchPdfUrl && watchPdfName ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <FileText className="h-8 w-8 text-green-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-green-900">{watchPdfName}</p>
+                    <p className="text-sm text-green-600">PDF cargado correctamente</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(watchPdfUrl, '_blank')}
+                    className="text-green-600 border-green-300 hover:bg-green-50"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Ver
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={removePdf}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors">
+              <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
+              <p className="text-secondary-600 mb-2">
+                Arrastra un PDF aquí o haz clic para seleccionar
+              </p>
+              <p className="text-xs text-secondary-500 mb-4">
+                Solo archivos PDF hasta 10MB
+              </p>
+            </div>
+          )}
+          
+          <input
+            id="pdf-upload"
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={handlePdfChange}
+            className="hidden"
+          />
+          
+          <div className="mt-3 flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('pdf-upload')?.click()}
+              disabled={isUploadingPdf}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              {isUploadingPdf ? 'Subiendo PDF...' : 'Seleccionar PDF'}
+            </Button>
+            
+            {watchPdfUrl && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={removePdf}
+                className="text-red-600 hover:text-red-700"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Eliminar PDF
+              </Button>
+            )}
+          </div>
+          
+          {/* Hidden inputs for PDF data */}
+          <input type="hidden" {...register('info_pdf_url')} />
+          <input type="hidden" {...register('info_pdf_name')} />
         </div>
       </div>
 

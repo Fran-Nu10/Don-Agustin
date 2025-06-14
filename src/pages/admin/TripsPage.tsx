@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { TripCard } from '../../components/trips/TripCard';
 import { TripForm } from '../../components/admin/TripForm';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, FileText, Download, Eye } from 'lucide-react';
 import { Trip, TripFormData } from '../../types';
 import { getTrips, createTrip, updateTrip, deleteTrip } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -193,9 +193,40 @@ export function AdminTripsPage() {
                     <span>{trip.itinerary?.length || 0} días de itinerario</span>
                     <span>•</span>
                     <span>{trip.included_services?.length || 0} servicios incluidos</span>
+                    {trip.info_pdf_url && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center text-green-600">
+                          <FileText className="h-4 w-4 mr-1" />
+                          PDF disponible
+                        </span>
+                      </>
+                    )}
                   </div>
                   
                   <div className="flex flex-wrap gap-3 mt-auto">
+                    {trip.info_pdf_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(trip.info_pdf_url, '_blank')}
+                        className="text-green-600 border-green-300 hover:bg-green-50"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Ver PDF
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/viajes/${trip.id}`, '_blank')}
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Vista previa
+                    </Button>
+                    
                     <Button
                       variant="outline"
                       size="sm"
