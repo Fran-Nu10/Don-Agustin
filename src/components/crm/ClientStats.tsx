@@ -1,7 +1,7 @@
 import React from 'react';
 import { ClientStatsType } from '../../types/client';
 import { Card, CardContent } from '../ui/Card';
-import { Users, TrendingUp, Clock, AlertTriangle, Calendar, Target, Phone, Mail } from 'lucide-react';
+import { Users, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
 
 interface ClientStatsProps {
   stats: ClientStatsType;
@@ -30,7 +30,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
         <CardContent className="p-6">
           <div className="flex items-center">
             <div className="p-2 rounded-full bg-green-100 mr-4">
-              <Target className="h-6 w-6 text-green-600" />
+              <TrendingUp className="h-6 w-6 text-green-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-secondary-500">Tasa de Conversión</p>
@@ -55,7 +55,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
         </CardContent>
       </Card>
 
-      {/* Overdue Follow-ups */}
+      {/* Priority Distribution */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center">
@@ -63,8 +63,10 @@ export function ClientStats({ stats }: ClientStatsProps) {
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-secondary-500">Seguimientos Vencidos</p>
-              <h4 className="text-2xl font-bold text-secondary-900">{stats.overdueFollowUps}</h4>
+              <p className="text-sm font-medium text-secondary-500">Alta Prioridad</p>
+              <h4 className="text-2xl font-bold text-secondary-900">
+                {(stats.byPriority.high || 0) + (stats.byPriority.urgent || 0)}
+              </h4>
             </div>
           </div>
         </CardContent>
@@ -100,23 +102,33 @@ export function ClientStats({ stats }: ClientStatsProps) {
         </CardContent>
       </Card>
 
-      {/* Source Distribution */}
+      {/* Priority Distribution Details */}
       <Card className="md:col-span-2">
         <CardContent className="p-6">
           <h4 className="font-semibold text-secondary-900 mb-4 flex items-center">
-            <Phone className="h-5 w-5 mr-2" />
-            Fuentes de Clientes
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            Distribución por Prioridad
           </h4>
           <div className="space-y-3">
-            {Object.entries(stats.bySource).map(([source, count]) => (
-              <div key={source} className="flex items-center justify-between">
+            {Object.entries(stats.byPriority).map(([priority, count]) => (
+              <div key={priority} className="flex items-center justify-between">
                 <span className="text-sm text-secondary-600 capitalize">
-                  {source.replace('_', ' ')}
+                  {priority === 'urgent' ? 'Urgente' : 
+                   priority === 'high' ? 'Alta' : 
+                   priority === 'medium' ? 'Media' : 
+                   priority === 'low' ? 'Baja' : 
+                   priority === 'normal' ? 'Normal' : priority}
                 </span>
                 <div className="flex items-center">
                   <div className="w-20 bg-secondary-200 rounded-full h-2 mr-3">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className={`h-2 rounded-full ${
+                        priority === 'urgent' ? 'bg-red-600' :
+                        priority === 'high' ? 'bg-orange-600' :
+                        priority === 'medium' ? 'bg-yellow-600' :
+                        priority === 'low' ? 'bg-green-600' :
+                        'bg-gray-600'
+                      }`}
                       style={{ width: `${(count / stats.total) * 100}%` }}
                     ></div>
                   </div>
@@ -124,39 +136,6 @@ export function ClientStats({ stats }: ClientStatsProps) {
                     {count}
                   </span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Average Response Time */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center">
-            <div className="p-2 rounded-full bg-purple-100 mr-4">
-              <Clock className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-secondary-500">Tiempo Promedio de Respuesta</p>
-              <h4 className="text-2xl font-bold text-secondary-900">{stats.avgResponseTime}h</h4>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Priority Distribution */}
-      <Card>
-        <CardContent className="p-6">
-          <h4 className="font-semibold text-secondary-900 mb-4 flex items-center">
-            <AlertTriangle className="h-5 w-5 mr-2" />
-            Por Prioridad
-          </h4>
-          <div className="space-y-2">
-            {Object.entries(stats.byPriority).map(([priority, count]) => (
-              <div key={priority} className="flex items-center justify-between text-sm">
-                <span className="text-secondary-600 capitalize">{priority}</span>
-                <span className="font-medium text-secondary-900">{count}</span>
               </div>
             ))}
           </div>

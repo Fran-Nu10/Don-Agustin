@@ -7,8 +7,9 @@ import { ClientStats } from '../../components/crm/ClientStats';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Download, BarChart3, FileText, Users, Filter, Calendar, Plus } from 'lucide-react';
-import { Client, ClientFilters, ClientFormData, ClientStats as ClientStatsType } from '../../types/client';
+import { Client, ClientFilters, ClientFormData, ClientStatsType } from '../../types/client';
 import { getClients, updateClient, deleteClient } from '../../lib/supabase/clients';
+import { getTrips } from '../../lib/supabase';
 import { generateClientPDF, generateClientsSummaryPDF, generateClientsByStatusPDF, generateClientsBySourcePDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,6 +26,7 @@ export function ClientsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [stats, setStats] = useState<ClientStatsType | null>(null);
+  const [destinations, setDestinations] = useState<string[]>([]);
   const [filters, setFilters] = useState<ClientFilters>({
     name: '',
     status: '',
@@ -46,7 +48,7 @@ export function ClientsPage() {
   }
 
   useEffect(() => {
-    loadClients();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -54,14 +56,21 @@ export function ClientsPage() {
     calculateStats();
   }, [clients, filters]);
 
-  async function loadClients() {
+  async function loadData() {
     try {
       setLoading(true);
-      const clientsData = await getClients();
+      const [clientsData, tripsData] = await Promise.all([
+        getClients(),
+        getTrips()
+      ]);
       setClients(clientsData);
+      
+      // Extract unique destinations from trips
+      const uniqueDestinations = [...new Set(tripsData.map(trip => trip.destination))].sort();
+      setDestinations(uniqueDestinations);
     } catch (error) {
-      console.error('Error loading clients:', error);
-      toast.error('Error al cargar los clientes');
+      console.error('Error loading data:', error);
+      toast.error('Error al cargar los datos');
     } finally {
       setLoading(false);
     }
@@ -170,7 +179,7 @@ export function ClientsPage() {
 
     // Priority distribution
     const byPriority = clients.reduce((acc, client) => {
-      const priority = client.priority || 'undefined';
+      const priority = client.priority || 'normal';
       acc[priority] = (acc[priority] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -214,7 +223,7 @@ export function ClientsPage() {
     try {
       setIsSubmitting(true);
       await updateClient(id, data);
-      await loadClients();
+      await loadData();
       toast.success('Cliente actualizado con éxito');
       setIsModalOpen(false);
       setSelectedClient(null);
@@ -229,7 +238,7 @@ export function ClientsPage() {
   const handleDeleteClient = async (id: string) => {
     try {
       await deleteClient(id);
-      await loadClients();
+      await loadData();
       toast.success('Cliente eliminado con éxito');
     } catch (error) {
       console.error('Error deleting client:', error);
@@ -259,8 +268,7 @@ export function ClientsPage() {
     });
   };
 
-  // Get unique destinations and tags for filters
-  const destinations = [...new Set(clients.map(c => c.preferred_destination).filter(Boolean))];
+  // Get unique tags for filters
   const availableTags = [...new Set(clients.flatMap(c => c.tags || []))];
 
   // Pagination

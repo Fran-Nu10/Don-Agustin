@@ -34,6 +34,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
       phone: client.phone || '',
       message: client.message || '',
       status: client.status,
+      priority: client.priority || 'normal',
       internal_notes: client.internal_notes || '',
       scheduled_date: client.scheduled_date ? 
         // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
@@ -49,6 +50,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         phone: client.phone || '',
         message: client.message || '',
         status: client.status,
+        priority: client.priority || 'normal',
         internal_notes: client.internal_notes || '',
         scheduled_date: client.scheduled_date ? 
           // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
@@ -125,6 +127,36 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         return 'Cerrado';
       default:
         return status;
+    }
+  };
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-100 text-red-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getPriorityLabel = (priority?: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'Urgente';
+      case 'high':
+        return 'Alta';
+      case 'medium':
+        return 'Media';
+      case 'low':
+        return 'Baja';
+      default:
+        return 'Normal';
     }
   };
 
@@ -208,6 +240,13 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     <p className="text-sm text-secondary-500 mb-1">Estado</p>
                     <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(client.status)}`}>
                       {getStatusLabel(client.status)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-secondary-500 mb-1">Prioridad</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(client.priority)}`}>
+                      {getPriorityLabel(client.priority)}
                     </span>
                   </div>
                   
@@ -339,18 +378,36 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 </div>
               </div>
 
-              <div>
-                <Input
-                  label="Fecha Agendada (opcional)"
-                  id="scheduled_date"
-                  type="datetime-local"
-                  fullWidth
-                  error={errors.scheduled_date?.message}
-                  {...register('scheduled_date')}
-                />
-                <p className="text-xs text-secondary-500 mt-1">
-                  Esta fecha es para uso interno del CRM. Los clientes que hacen reservas públicas no tienen fecha agendada automáticamente.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-secondary-900">
+                    Prioridad
+                  </label>
+                  <select
+                    {...register('priority')}
+                    className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="low">Baja</option>
+                    <option value="normal">Normal</option>
+                    <option value="medium">Media</option>
+                    <option value="high">Alta</option>
+                    <option value="urgent">Urgente</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Input
+                    label="Fecha Agendada (opcional)"
+                    id="scheduled_date"
+                    type="datetime-local"
+                    fullWidth
+                    error={errors.scheduled_date?.message}
+                    {...register('scheduled_date')}
+                  />
+                  <p className="text-xs text-secondary-500 mt-1">
+                    Esta fecha es para uso interno del CRM. Los clientes que hacen reservas públicas no tienen fecha agendada automáticamente.
+                  </p>
+                </div>
               </div>
 
               <Textarea
