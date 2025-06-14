@@ -54,7 +54,7 @@ export interface ClientFilters {
   lastContactDays: string; // '7', '30', '90', 'all'
 }
 
-export interface ClientStats {
+export interface ClientStatsType {
   total: number;
   byStatus: Record<string, number>;
   bySource: Record<string, number>;

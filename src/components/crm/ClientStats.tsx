@@ -1,10 +1,10 @@
 import React from 'react';
-import { ClientStats } from '../../types/client';
+import { ClientStatsType } from '../../types/client';
 import { Card, CardContent } from '../ui/Card';
 import { Users, TrendingUp, Clock, AlertTriangle, Calendar, Target, Phone, Mail } from 'lucide-react';
 
 interface ClientStatsProps {
-  stats: ClientStats;
+  stats: ClientStatsType;
 }
 
 export function ClientStats({ stats }: ClientStatsProps) {
