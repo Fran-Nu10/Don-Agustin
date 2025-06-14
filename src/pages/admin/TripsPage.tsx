@@ -64,6 +64,47 @@ export function AdminTripsPage() {
     }
   };
 
+  // Función mejorada para manejar la visualización del PDF
+  const handleViewPdf = (pdfUrl: string, pdfName: string) => {
+    try {
+      if (pdfUrl.startsWith('blob:')) {
+        // Para archivos blob, abrir en nueva ventana con embed
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>${pdfName}</title>
+                <style>
+                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+                  .header { background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #dee2e6; }
+                  embed { width: 100%; height: calc(100vh - 60px); }
+                  .fallback { text-align: center; padding: 20px; }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <strong>📄 ${pdfName}</strong>
+                </div>
+                <embed src="${pdfUrl}" type="application/pdf" />
+                <div class="fallback">
+                  <p>Si el PDF no se muestra correctamente, 
+                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a></p>
+                </div>
+              </body>
+            </html>
+          `);
+        }
+      } else {
+        // Para URLs externas
+        window.open(pdfUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      toast.error('No se pudo abrir el PDF');
+    }
+  };
+
   // Filter trips based on search
   const filteredTrips = trips.filter((trip) => {
     return (
@@ -196,7 +237,7 @@ export function AdminTripsPage() {
                     {trip.info_pdf_url && (
                       <>
                         <span>•</span>
-                        <span className="flex items-center text-green-600">
+                        <span className="flex items-center text-green-600 font-medium">
                           <FileText className="h-4 w-4 mr-1" />
                           PDF disponible
                         </span>
@@ -209,7 +250,7 @@ export function AdminTripsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(trip.info_pdf_url, '_blank')}
+                        onClick={() => handleViewPdf(trip.info_pdf_url!, trip.info_pdf_name || 'documento.pdf')}
                         className="text-green-600 border-green-300 hover:bg-green-50"
                       >
                         <FileText className="h-4 w-4 mr-2" />

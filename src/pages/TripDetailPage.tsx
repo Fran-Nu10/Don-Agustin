@@ -11,7 +11,7 @@ import { getTrip, getTrips } from '../lib/supabase';
 import { Trip } from '../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download } from 'lucide-react';
+import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function TripDetailPage() {
@@ -53,6 +53,53 @@ export function TripDetailPage() {
     // Optionally refresh trip data to update available spots
     if (id) {
       getTrip(id).then(setTrip);
+    }
+  };
+
+  // Función mejorada para manejar la visualización del PDF
+  const handleViewPdf = (pdfUrl: string, pdfName: string) => {
+    try {
+      // Verificar si es una URL blob (archivo local)
+      if (pdfUrl.startsWith('blob:')) {
+        // Para archivos blob, abrir directamente
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>${pdfName}</title>
+                <style>
+                  body { margin: 0; padding: 0; }
+                  embed { width: 100%; height: 100vh; }
+                </style>
+              </head>
+              <body>
+                <embed src="${pdfUrl}" type="application/pdf" />
+                <p style="text-align: center; padding: 20px;">
+                  Si el PDF no se muestra, 
+                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a>
+                </p>
+              </body>
+            </html>
+          `);
+        }
+      } else {
+        // Para URLs externas, intentar abrir en nueva pestaña
+        const newWindow = window.open(pdfUrl, '_blank');
+        if (!newWindow) {
+          // Si el popup fue bloqueado, crear un enlace de descarga
+          const link = document.createElement('a');
+          link.href = pdfUrl;
+          link.download = pdfName;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      alert('No se pudo abrir el PDF. Por favor, intenta nuevamente.');
     }
   };
 
@@ -165,26 +212,52 @@ export function TripDetailPage() {
                     </div>
                   </div>
 
-                  {/* PDF Information - if available */}
+                  {/* PDF Information - MEJORADO */}
                   {trip.info_pdf_url && trip.info_pdf_name && (
-                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <FileText className="h-6 w-6 text-blue-600 mr-3" />
+                          <div className="bg-blue-100 p-3 rounded-full mr-4">
+                            <FileText className="h-6 w-6 text-blue-600" />
+                          </div>
                           <div>
-                            <h3 className="font-medium text-blue-900">Información adicional disponible</h3>
-                            <p className="text-sm text-blue-700">Descarga el PDF con detalles completos del viaje</p>
+                            <h3 className="font-bold text-blue-900 text-lg">📋 Información Completa Disponible</h3>
+                            <p className="text-blue-700 mb-2">
+                              Descarga el PDF con todos los detalles del viaje: itinerario completo, 
+                              qué llevar, contactos importantes y más.
+                            </p>
+                            <p className="text-sm text-blue-600 font-medium">
+                              📄 {trip.info_pdf_name}
+                            </p>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(trip.info_pdf_url, '_blank')}
-                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Descargar PDF
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewPdf(trip.info_pdf_url!, trip.info_pdf_name!)}
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver PDF
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = trip.info_pdf_url!;
+                              link.download = trip.info_pdf_name!;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                            className="text-blue-600 hover:bg-blue-50"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Descargar
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}

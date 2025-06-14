@@ -141,7 +141,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
-  // Handle PDF file selection
+  // Handle PDF file selection - MEJORADO
   const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -163,25 +163,20 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     try {
       setPdfFile(file);
 
-      // For demo purposes, we'll simulate a PDF upload
-      // In a real app, you would upload to a service like Cloudinary, AWS S3, etc.
-      const demoPdfUrls = [
-        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-        'https://www.africau.edu/images/default/sample.pdf',
-        'https://www.orimi.com/pdf-test.pdf',
-      ];
+      // Crear una URL temporal para el archivo usando createObjectURL
+      const tempUrl = URL.createObjectURL(file);
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simular delay de carga
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Use a demo URL (in production, this would be the actual upload result)
-      const randomUrl = demoPdfUrls[Math.floor(Math.random() * demoPdfUrls.length)];
-      setValue('info_pdf_url', randomUrl);
+      // En lugar de usar URLs externas, usamos la URL temporal del archivo
+      // En producción, aquí subirías el archivo a tu servicio de almacenamiento
+      setValue('info_pdf_url', tempUrl);
       setValue('info_pdf_name', file.name);
       
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      alert('Error al subir el PDF. Por favor intenta nuevamente.');
+      alert('Error al procesar el PDF. Por favor intenta nuevamente.');
     } finally {
       setIsUploadingPdf(false);
     }
@@ -202,6 +197,11 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Remove PDF
   const removePdf = () => {
+    // Liberar la URL temporal si existe
+    if (watchPdfUrl && watchPdfUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(watchPdfUrl);
+    }
+    
     setPdfFile(null);
     setValue('info_pdf_url', '');
     setValue('info_pdf_name', '');
@@ -399,7 +399,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           />
         </div>
 
-        {/* PDF Upload Section */}
+        {/* PDF Upload Section - MEJORADO */}
         <div className="mt-6">
           <label className="block mb-2 text-sm font-medium text-secondary-900">
             PDF Informativo (Opcional)
@@ -415,7 +415,9 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                   <FileText className="h-8 w-8 text-green-600 mr-3" />
                   <div>
                     <p className="font-medium text-green-900">{watchPdfName}</p>
-                    <p className="text-sm text-green-600">PDF cargado correctamente</p>
+                    <p className="text-sm text-green-600">
+                      PDF cargado correctamente • {pdfFile ? `${(pdfFile.size / 1024 / 1024).toFixed(1)} MB` : 'Archivo listo'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -423,7 +425,22 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open(watchPdfUrl, '_blank')}
+                    onClick={() => {
+                      if (watchPdfUrl) {
+                        // Abrir el PDF en una nueva pestaña
+                        const newWindow = window.open();
+                        if (newWindow) {
+                          newWindow.document.write(`
+                            <html>
+                              <head><title>${watchPdfName}</title></head>
+                              <body style="margin:0;">
+                                <embed src="${watchPdfUrl}" type="application/pdf" width="100%" height="100%" />
+                              </body>
+                            </html>
+                          `);
+                        }
+                      }
+                    }}
                     className="text-green-600 border-green-300 hover:bg-green-50"
                   >
                     <Eye className="h-4 w-4 mr-1" />
@@ -469,7 +486,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
               disabled={isUploadingPdf}
             >
               <FileText className="h-4 w-4 mr-2" />
-              {isUploadingPdf ? 'Subiendo PDF...' : 'Seleccionar PDF'}
+              {isUploadingPdf ? 'Procesando PDF...' : 'Seleccionar PDF'}
             </Button>
             
             {watchPdfUrl && (
@@ -488,6 +505,18 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           {/* Hidden inputs for PDF data */}
           <input type="hidden" {...register('info_pdf_url')} />
           <input type="hidden" {...register('info_pdf_name')} />
+          
+          {/* Información adicional */}
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">💡 Consejos para el PDF:</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Incluye itinerarios detallados día por día</li>
+              <li>• Agrega información sobre qué llevar</li>
+              <li>• Menciona contactos de emergencia locales</li>
+              <li>• Incluye mapas y direcciones importantes</li>
+              <li>• Añade términos y condiciones específicos</li>
+            </ul>
+          </div>
         </div>
       </div>
 
