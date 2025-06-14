@@ -67,16 +67,85 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Parallax effect support */
-@supports (background-attachment: fixed) {
+/* Responsive background image handling */
+@media (max-width: 768px) {
+  /* Disable parallax on mobile for better performance and compatibility */
   .parallax-bg {
-    background-attachment: fixed;
+    background-attachment: scroll !important;
+  }
+  
+  /* Ensure background images are properly sized on mobile */
+  [style*="background-attachment: fixed"] {
+    background-attachment: scroll !important;
   }
 }
 
-/* Fallback for devices that don't support parallax */
+/* Parallax effect support for desktop */
+@supports (background-attachment: fixed) {
+  @media (min-width: 769px) {
+    .parallax-bg {
+      background-attachment: fixed;
+    }
+  }
+}
+
+/* Responsive text sizing */
+@media (max-width: 640px) {
+  .responsive-text-lg {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  .responsive-text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  .responsive-text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  
+  .responsive-text-3xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+/* Improved responsive spacing */
+@media (max-width: 640px) {
+  .responsive-py-12 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+  
+  .responsive-py-16 {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+  
+  .responsive-mb-8 {
+    margin-bottom: 2rem;
+  }
+  
+  .responsive-mb-12 {
+    margin-bottom: 3rem;
+  }
+}
+
+/* Better image loading and display */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure proper aspect ratios on mobile */
 @media (max-width: 768px) {
-  .parallax-bg {
-    background-attachment: scroll !important;
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .aspect-square {
+    aspect-ratio: 1 / 1;
   }
 }

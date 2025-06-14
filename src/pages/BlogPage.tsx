@@ -57,14 +57,33 @@ export function BlogPage() {
       <Navbar />
       
       <main className="flex-grow bg-secondary-50 main-content">
-        {/* Hero Section with Background */}
+        {/* Hero Section with Responsive Background */}
         <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
-            <img
-              src="https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg"
-              alt="Blog Hero"
-              className="w-full h-full object-cover"
+            {/* Desktop Background */}
+            <div 
+              className="hidden md:block absolute inset-0"
+              style={{
+                backgroundImage: 'url(https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center center',
+                backgroundAttachment: 'fixed',
+                backgroundRepeat: 'no-repeat'
+              }}
             />
+            
+            {/* Mobile Background */}
+            <div 
+              className="block md:hidden absolute inset-0"
+              style={{
+                backgroundImage: 'url(https://images.pexels.com/photos/1008155/pexels-photo-1008155.jpeg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center 30%',
+                backgroundAttachment: 'scroll',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+            
             <div className="absolute inset-0 bg-gradient-to-br from-primary-900/80 via-primary-800/70 to-secondary-900/80"></div>
           </div>
           
@@ -75,25 +94,25 @@ export function BlogPage() {
               transition={{ duration: 0.5 }}
               className="pt-12"
             >
-              <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-6">
+              <h1 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl text-white mb-4 md:mb-6">
                 Blog de Viajes
               </h1>
-              <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
                 Inspiración, consejos y experiencias para tu próxima aventura
               </p>
             </motion.div>
           </div>
         </section>
 
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-8 md:py-12">
           {/* Filters */}
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-4 justify-center mb-6">
+          <div className="mb-6 md:mb-8">
+            <div className="flex flex-wrap gap-2 md:gap-4 justify-center mb-4 md:mb-6">
               {allCategories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full transition-colors ${
+                  className={`px-3 py-2 md:px-4 md:py-2 rounded-full transition-colors text-sm md:text-base ${
                     selectedCategory === category
                       ? 'bg-primary-600 text-white'
                       : 'bg-white text-secondary-600 hover:bg-secondary-100'
@@ -134,7 +153,7 @@ export function BlogPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredPosts.map((post, index) => (
                 <motion.article
                   key={post.id}
@@ -157,7 +176,7 @@ export function BlogPage() {
                       </div>
                     </div>
                     
-                    <div className="p-6 flex flex-col h-full">
+                    <div className="p-4 md:p-6 flex flex-col h-full">
                       <div className="flex items-center text-secondary-500 text-sm mb-2">
                         <Calendar className="h-4 w-4 mr-2" />
                         <span>
@@ -165,11 +184,11 @@ export function BlogPage() {
                         </span>
                       </div>
                       
-                      <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900 group-hover:text-primary-600 transition-colors">
+                      <h3 className="font-heading font-bold text-lg md:text-xl mb-2 text-secondary-900 group-hover:text-primary-600 transition-colors">
                         {post.title}
                       </h3>
                       
-                      <p className="text-secondary-600 mb-4 line-clamp-3 flex-grow">
+                      <p className="text-secondary-600 mb-4 line-clamp-3 flex-grow text-sm md:text-base">
                         {post.excerpt}
                       </p>
                       

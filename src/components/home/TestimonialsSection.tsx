@@ -28,14 +28,33 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="relative py-16 overflow-hidden">
-      {/* Background Image */}
+    <section className="relative py-12 md:py-16 overflow-hidden">
+      {/* Responsive Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src="https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg"
-          alt="Testimonials Background"
-          className="w-full h-full object-cover"
+        {/* Desktop Background */}
+        <div 
+          className="hidden md:block absolute inset-0"
+          style={{
+            backgroundImage: 'url(https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat'
+          }}
         />
+        
+        {/* Mobile Background */}
+        <div 
+          className="block md:hidden absolute inset-0"
+          style={{
+            backgroundImage: 'url(https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 30%',
+            backgroundAttachment: 'scroll',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        
         <div className="absolute inset-0 bg-gradient-to-br from-secondary-900/85 via-secondary-800/80 to-primary-900/85"></div>
       </div>
 
@@ -45,17 +64,17 @@ export function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
         >
-          <h2 className="font-heading font-bold text-3xl text-white mb-4">
+          <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-4">
             Lo que dicen nuestros clientes
           </h2>
-          <p className="text-lg text-white/90">
+          <p className="text-lg text-white/90 max-w-3xl mx-auto">
             Experiencias reales de viajeros que confiaron en nosotros
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.id}
@@ -63,22 +82,22 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
               viewport={{ once: true }}
-              className="bg-white/95 backdrop-blur-sm rounded-lg p-6 shadow-card"
+              className="bg-white/95 backdrop-blur-sm rounded-lg p-4 md:p-6 shadow-card"
             >
-              <div className="flex mb-4">
+              <div className="flex mb-3 md:mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
                   <Star
                     key={i}
-                    className="h-5 w-5 text-primary-600 fill-current"
+                    className="h-4 w-4 md:h-5 md:w-5 text-primary-600 fill-current"
                   />
                 ))}
               </div>
-              <p className="text-secondary-600 mb-4 italic">"{testimonial.quote}"</p>
+              <p className="text-secondary-600 mb-3 md:mb-4 italic text-sm md:text-base">"{testimonial.quote}"</p>
               <div>
-                <p className="font-heading font-bold text-secondary-900">
+                <p className="font-heading font-bold text-secondary-900 text-sm md:text-base">
                   {testimonial.author}
                 </p>
-                <p className="text-secondary-500 text-sm">{testimonial.location}</p>
+                <p className="text-secondary-500 text-xs md:text-sm">{testimonial.location}</p>
               </div>
             </motion.div>
           ))}
