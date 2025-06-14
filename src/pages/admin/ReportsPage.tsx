@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 import { ReportsOverview } from '../../components/reports/ReportsOverview';
+import { RevenueChart } from '../../components/reports/RevenueChart';
+import { CategoryChart } from '../../components/reports/CategoryChart';
+import { SourcesChart } from '../../components/reports/SourcesChart';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { BarChart3, TrendingUp, DollarSign, Users, Target, Download, Calendar, Filter } from 'lucide-react';
+import { BarChart3, TrendingUp, DollarSign, Users, Target, Download, Calendar, Filter, PieChart, Activity } from 'lucide-react';
 import { ReportsData, RevenueMetrics, ReportFilters } from '../../types/reports';
 import { getReportsData } from '../../lib/supabase/reports';
 import { toast } from 'react-hot-toast';
@@ -182,9 +185,7 @@ export function ReportsPage() {
             </CardHeader>
             <CardContent>
               {reportsData.revenueHistory.length > 0 ? (
-                <div className="h-64 flex items-center justify-center">
-                  <p className="text-secondary-500">Gráfico de evolución de ingresos (en desarrollo)</p>
-                </div>
+                <RevenueChart data={reportsData.revenueHistory} />
               ) : (
                 <div className="text-center py-8">
                   <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
@@ -194,79 +195,42 @@ export function ReportsPage() {
             </CardContent>
           </Card>
 
-          {/* Category Performance */}
+          {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Category Performance Chart */}
             <Card>
               <CardHeader>
                 <h3 className="font-heading font-bold text-lg flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Rendimiento por Categoría
+                  <PieChart className="h-5 w-5 mr-2" />
+                  Distribución por Categoría
                 </h3>
               </CardHeader>
               <CardContent>
                 {reportsData.categoryPerformance.length > 0 ? (
-                  <div className="space-y-4">
-                    {reportsData.categoryPerformance.map((category, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium text-secondary-900">{category.category}</h4>
-                          <p className="text-sm text-secondary-600">
-                            {category.bookings} reservas • {category.marketShare.toFixed(1)}% del mercado
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-primary-950">
-                            ${category.revenue.toLocaleString('es-UY')}
-                          </p>
-                          <p className={`text-sm ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {category.growth >= 0 ? '+' : ''}{category.growth.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <CategoryChart data={reportsData.categoryPerformance} />
                 ) : (
                   <div className="text-center py-8">
-                    <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                    <PieChart className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-500">No hay datos de categorías disponibles</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Revenue Sources */}
+            {/* Revenue Sources Chart */}
             <Card>
               <CardHeader>
                 <h3 className="font-heading font-bold text-lg flex items-center">
-                  <Users className="h-5 w-5 mr-2" />
-                  Fuentes de Ingresos
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  Ingresos por Fuente
                 </h3>
               </CardHeader>
               <CardContent>
                 {reportsData.revenueSources.length > 0 ? (
-                  <div className="space-y-4">
-                    {reportsData.revenueSources.map((source, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium text-secondary-900">{source.source}</h4>
-                          <p className="text-sm text-secondary-600">
-                            {source.bookings} reservas • ROI: {source.roi}%
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-primary-950">
-                            ${source.amount.toLocaleString('es-UY')}
-                          </p>
-                          <p className="text-sm text-secondary-600">
-                            {source.percentage.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <SourcesChart data={reportsData.revenueSources} />
                 ) : (
                   <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                    <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-500">No hay datos de fuentes disponibles</p>
                   </div>
                 )}
@@ -274,12 +238,119 @@ export function ReportsPage() {
             </Card>
           </div>
 
+          {/* Category Performance Details */}
+          <Card className="mb-6">
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Rendimiento Detallado por Categoría
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.categoryPerformance.length > 0 ? (
+                <div className="space-y-4">
+                  {reportsData.categoryPerformance.map((category, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors">
+                      <div className="flex items-center">
+                        <div className={`w-4 h-4 rounded-full mr-4 ${
+                          index === 0 ? 'bg-orange-500' :
+                          index === 1 ? 'bg-blue-500' :
+                          'bg-green-500'
+                        }`}></div>
+                        <div>
+                          <h4 className="font-medium text-secondary-900">{category.category}</h4>
+                          <p className="text-sm text-secondary-600">
+                            {category.bookings} reservas • {category.marketShare.toFixed(1)}% del mercado
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg text-primary-950">
+                          ${category.revenue.toLocaleString('es-UY')}
+                        </p>
+                        <p className={`text-sm flex items-center ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {category.growth >= 0 ? '↗' : '↘'} {Math.abs(category.growth).toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <p className="text-secondary-500">No hay datos de categorías disponibles</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Revenue Sources Details */}
+          <Card className="mb-6">
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Análisis de Fuentes de Ingresos
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.revenueSources.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {reportsData.revenueSources.map((source, index) => (
+                    <div key={index} className="p-6 bg-gradient-to-br from-secondary-50 to-secondary-100 rounded-lg border border-secondary-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-lg text-secondary-900">{source.source}</h4>
+                        <span className="text-2xl font-bold text-primary-950">
+                          {source.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-secondary-600">Ingresos:</span>
+                          <span className="font-medium text-secondary-900">
+                            ${source.amount.toLocaleString('es-UY')}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between">
+                          <span className="text-secondary-600">Reservas:</span>
+                          <span className="font-medium text-secondary-900">
+                            {source.bookings}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between">
+                          <span className="text-secondary-600">ROI:</span>
+                          <span className={`font-medium ${source.roi > 200 ? 'text-green-600' : source.roi > 100 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {source.roi}%
+                          </span>
+                        </div>
+                        
+                        <div className="w-full bg-secondary-200 rounded-full h-2 mt-4">
+                          <div 
+                            className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${source.percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <p className="text-secondary-500">No hay datos de fuentes disponibles</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Sales Performance */}
           <Card className="mb-6">
             <CardHeader>
               <h3 className="font-heading font-bold text-lg flex items-center">
-                <Target className="h-5 w-5 mr-2" />
-                Rendimiento de Ventas
+                <Activity className="h-5 w-5 mr-2" />
+                Rendimiento del Equipo de Ventas
               </h3>
             </CardHeader>
             <CardContent>
@@ -310,9 +381,18 @@ export function ReportsPage() {
                     </thead>
                     <tbody className="bg-white divide-y divide-secondary-200">
                       {reportsData.salesPerformance.map((performance, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">
-                            {performance.name}
+                        <tr key={index} className="hover:bg-secondary-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                <span className="text-primary-950 font-medium text-sm">
+                                  {performance.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="text-sm font-medium text-secondary-900">
+                                {performance.name}
+                              </span>
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                             {performance.leads}
@@ -320,11 +400,17 @@ export function ReportsPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                             {performance.opportunities}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">
                             ${performance.revenue.toLocaleString('es-UY')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                            {performance.conversionRate.toFixed(1)}%
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              performance.conversionRate >= 30 ? 'bg-green-100 text-green-800' :
+                              performance.conversionRate >= 20 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {performance.conversionRate.toFixed(1)}%
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                             ${performance.averageDealSize.toLocaleString('es-UY')}
@@ -336,7 +422,7 @@ export function ReportsPage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Target className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
+                  <Activity className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
                   <p className="text-secondary-500">No hay datos de rendimiento disponibles</p>
                 </div>
               )}
@@ -348,69 +434,87 @@ export function ReportsPage() {
             <CardHeader>
               <h3 className="font-heading font-bold text-lg flex items-center">
                 <Target className="h-5 w-5 mr-2" />
-                Objetivos Financieros
+                Objetivos Financieros y Metas
               </h3>
             </CardHeader>
             <CardContent>
               {reportsData.targets.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {reportsData.targets.map((target, index) => (
-                    <div key={index} className="bg-secondary-50 p-6 rounded-lg">
+                    <div key={index} className="bg-gradient-to-br from-secondary-50 to-secondary-100 p-6 rounded-lg border border-secondary-200">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-secondary-900 capitalize">
-                          {target.targetType} - {target.targetPeriod}
+                        <h4 className="font-bold text-lg text-secondary-900 capitalize">
+                          {target.targetType === 'monthly' ? 'Mensual' :
+                           target.targetType === 'quarterly' ? 'Trimestral' :
+                           'Anual'} - {target.targetPeriod}
                         </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                           target.achievementRate >= 100 ? 'bg-green-100 text-green-800' :
                           target.achievementRate >= 75 ? 'bg-yellow-100 text-yellow-800' :
+                          target.achievementRate >= 50 ? 'bg-orange-100 text-orange-800' :
                           'bg-red-100 text-red-800'
                         }`}>
                           {target.achievementRate.toFixed(1)}%
                         </span>
                       </div>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-secondary-600">Ingresos</span>
-                            <span className="font-medium">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-secondary-600 font-medium">💰 Ingresos</span>
+                            <span className="font-bold text-secondary-900">
                               ${target.actualRevenue.toLocaleString('es-UY')} / ${target.revenueTarget.toLocaleString('es-UY')}
                             </span>
                           </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                          <div className="w-full bg-secondary-200 rounded-full h-3">
                             <div 
-                              className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                              className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-700 shadow-sm"
                               style={{ width: `${Math.min((target.actualRevenue / target.revenueTarget) * 100, 100)}%` }}
                             ></div>
                           </div>
                         </div>
                         
                         <div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-secondary-600">Reservas</span>
-                            <span className="font-medium">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-secondary-600 font-medium">📋 Reservas</span>
+                            <span className="font-bold text-secondary-900">
                               {target.actualBookings} / {target.bookingsTarget}
                             </span>
                           </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                          <div className="w-full bg-secondary-200 rounded-full h-3">
                             <div 
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                              className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-700 shadow-sm"
                               style={{ width: `${Math.min((target.actualBookings / target.bookingsTarget) * 100, 100)}%` }}
                             ></div>
                           </div>
                         </div>
                         
                         <div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-secondary-600">Leads</span>
-                            <span className="font-medium">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-secondary-600 font-medium">🎯 Leads</span>
+                            <span className="font-bold text-secondary-900">
                               {target.actualLeads} / {target.leadsTarget}
                             </span>
                           </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-2 mt-1">
+                          <div className="w-full bg-secondary-200 rounded-full h-3">
                             <div 
-                              className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                              className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-700 shadow-sm"
                               style={{ width: `${Math.min((target.actualLeads / target.leadsTarget) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-secondary-600 font-medium">📈 Conversión</span>
+                            <span className="font-bold text-secondary-900">
+                              {target.actualConversion.toFixed(1)}% / {target.conversionTarget.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary-200 rounded-full h-3">
+                            <div 
+                              className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-700 shadow-sm"
+                              style={{ width: `${Math.min((target.actualConversion / target.conversionTarget) * 100, 100)}%` }}
                             ></div>
                           </div>
                         </div>
@@ -421,7 +525,10 @@ export function ReportsPage() {
               ) : (
                 <div className="text-center py-8">
                   <Target className="h-12 w-12 text-secondary-300 mx-auto mb-4" />
-                  <p className="text-secondary-500">No hay objetivos configurados</p>
+                  <p className="text-secondary-500 mb-4">No hay objetivos configurados</p>
+                  <p className="text-sm text-secondary-400">
+                    Los objetivos se configuran automáticamente desde la base de datos
+                  </p>
                 </div>
               )}
             </CardContent>
