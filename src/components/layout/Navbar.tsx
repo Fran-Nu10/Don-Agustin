@@ -147,7 +147,7 @@ export function Navbar() {
                   Contacto
                 </NavLink>
                 
-                {user ? (
+                {user && (
                   <div className="flex items-center space-x-4">
                     <Link to="/admin/dashboard">
                       <Button 
@@ -167,16 +167,6 @@ export function Navbar() {
                       Cerrar Sesión
                     </Button>
                   </div>
-                ) : (
-                  <Link to="/login">
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="bg-white text-primary-600 hover:bg-white/90"
-                    >
-                      Iniciar Sesión
-                    </Button>
-                  </Link>
                 )}
               </nav>
 
@@ -252,11 +242,8 @@ export function Navbar() {
                       Contacto
                     </MobileNavLink>
                     
-                    {/* Separador visual con gradiente sutil */}
-                    <div className="border-t border-white/20 my-2"></div>
-                    
-                    {user ? (
-                      <div className="flex flex-col space-y-3">
+                    {user && (
+                      <div className="flex flex-col space-y-3 pt-4 border-t border-white/20">
                         <MobileNavLink
                           to="/admin/dashboard"
                           isActive={isActive('/admin/dashboard')}
@@ -275,18 +262,6 @@ export function Navbar() {
                         >
                           Cerrar Sesión
                         </Button>
-                      </div>
-                    ) : (
-                      <div className="pt-2">
-                        <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                          <Button 
-                            variant="secondary" 
-                            fullWidth 
-                            className="bg-white text-primary-600 hover:bg-white/90 shadow-lg"
-                          >
-                            Iniciar Sesión
-                          </Button>
-                        </Link>
                       </div>
                     )}
                   </div>

@@ -72,18 +72,34 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  to="/contacto"
+                  to="/sobre-nosotros"
                   className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
-                  Contacto
+                  Sobre Nosotros
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/login"
+                  to="/blog"
                   className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
-                  Iniciar Sesión
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cotizacion"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
+                >
+                  Cotización
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contacto"
+                  className="text-secondary-300 hover:text-primary-600 transition-colors"
+                >
+                  Contacto
                 </Link>
               </li>
             </ul>
@@ -116,8 +132,20 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-secondary-700 mt-10 pt-6 text-center text-secondary-400 text-sm">
-          <p>© {new Date().getFullYear()} Don Agustín Viajes. Todos los derechos reservados.</p>
+        <div className="border-t border-secondary-700 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-secondary-400 text-sm mb-4 md:mb-0">
+            © {new Date().getFullYear()} Don Agustín Viajes. Todos los derechos reservados.
+          </p>
+          
+          {/* Discrete Admin Access */}
+          <div className="flex items-center space-x-4">
+            <Link
+              to="/login"
+              className="text-secondary-500 hover:text-secondary-300 transition-colors text-xs"
+            >
+              Acceso Admin
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
