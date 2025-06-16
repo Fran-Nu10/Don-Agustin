@@ -33,12 +33,12 @@ export function LoginPage() {
       <Navbar />
       
       <main className="flex-grow flex items-center justify-center bg-secondary-50 py-12 main-content">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-16rem)]">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-md mx-auto"
+            className="max-w-md w-full"
           >
             <div className="bg-white rounded-lg shadow-card p-8">
               <div className="text-center mb-6">

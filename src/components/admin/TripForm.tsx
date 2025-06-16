@@ -219,7 +219,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
-  // Función mejorada para ver PDF - ARREGLADA
+  // Función mejorada para ver PDF - COMPLETAMENTE REESCRITA
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
     try {
       // Verificar si la URL es válida
@@ -228,49 +228,63 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         return;
       }
 
-      console.log('Intentando abrir PDF:', pdfUrl);
-
-      // Para URLs externas válidas, abrir en nueva pestaña
+      // Para URLs externas válidas, abrir en nueva pestaña con un enfoque más robusto
       if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
-        const newWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-        if (!newWindow) {
-          // Si el popup fue bloqueado, mostrar mensaje
-          alert('El popup fue bloqueado. Por favor, permite popups para este sitio o haz clic derecho en el enlace y selecciona "Abrir en nueva pestaña".');
-        }
-      } else if (pdfUrl.startsWith('blob:')) {
-        // Para archivos blob locales
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
+        // Crear un iframe temporal invisible
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        // Usar el iframe para abrir el PDF, lo que evita problemas de bloqueo de popups
+        if (iframe.contentWindow) {
+          iframe.contentWindow.document.open();
+          iframe.contentWindow.document.write(`
+            <!DOCTYPE html>
             <html>
               <head>
                 <title>${pdfName}</title>
                 <style>
-                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-                  .header { background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #dee2e6; }
-                  embed { width: 100%; height: calc(100vh - 60px); }
-                  .fallback { text-align: center; padding: 20px; }
+                  body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+                  .pdf-container { width: 100%; height: 100vh; }
                 </style>
               </head>
               <body>
-                <div class="header">
-                  <strong>📄 ${pdfName}</strong>
-                </div>
-                <embed src="${pdfUrl}" type="application/pdf" />
-                <div class="fallback">
-                  <p>Si el PDF no se muestra correctamente, 
-                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a></p>
-                </div>
+                <embed class="pdf-container" src="${pdfUrl}" type="application/pdf" />
               </body>
             </html>
           `);
+          iframe.contentWindow.document.close();
+          
+          // Abrir en nueva pestaña
+          const newWindow = window.open('', '_blank');
+          if (newWindow) {
+            newWindow.document.write(iframe.contentWindow.document.documentElement.outerHTML);
+            newWindow.document.close();
+            // Eliminar el iframe temporal
+            setTimeout(() => document.body.removeChild(iframe), 100);
+          } else {
+            alert('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
+            // Ofrecer descarga directa como alternativa
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = pdfName || 'documento.pdf';
+            link.target = '_blank';
+            link.click();
+          }
         }
       } else {
         alert('URL de PDF no válida');
       }
     } catch (error) {
       console.error('Error opening PDF:', error);
-      alert('No se pudo abrir el PDF. Verifica que la URL sea válida.');
+      alert('No se pudo abrir el PDF. Intenta descargarlo directamente.');
+      
+      // Ofrecer descarga como alternativa
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = pdfName || 'documento.pdf';
+      link.target = '_blank';
+      link.click();
     }
   };
 
@@ -460,44 +474,43 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           />
         </div>
 
-        {/* PDF Upload Section - MEJORADO */}
+        {/* PDF Upload Section - REDISEÑADO PARA SER MÁS MINIMALISTA */}
         <div className="mt-6">
-          <label className="block mb-2 text-sm font-medium text-secondary-900">
+          <label className="block mb-2 text-sm font-medium text-secondary-900 flex items-center">
+            <FileText className="h-4 w-4 mr-2 text-primary-600" />
             PDF Informativo (Opcional)
           </label>
-          <p className="text-sm text-secondary-600 mb-4">
-            Sube un PDF con información adicional como itinerario detallado, términos y condiciones, o guías del destino.
-          </p>
           
           {watchPdfUrl && watchPdfName ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FileText className="h-8 w-8 text-green-600 mr-3" />
-                  <div>
-                    <p className="font-medium text-green-900">{watchPdfName}</p>
-                    <p className="text-sm text-green-600">
-                      PDF cargado correctamente • Archivo listo para visualizar
-                    </p>
+            <div className="bg-white border border-green-200 rounded-lg overflow-hidden">
+              <div className="flex items-center p-3 md:p-4">
+                <div className="flex-shrink-0">
+                  <div className="bg-green-100 p-2 rounded-lg">
+                    <FileText className="h-5 w-5 text-green-600" />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="ml-3 flex-grow min-w-0">
+                  <p className="font-medium text-secondary-900 truncate">{watchPdfName}</p>
+                  <p className="text-xs text-green-600 mt-0.5">PDF cargado correctamente</p>
+                </div>
+                <div className="flex-shrink-0 flex space-x-1">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleViewPdf(watchPdfUrl, watchPdfName)}
-                    className="text-green-600 border-green-300 hover:bg-green-50"
+                    className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5"
+                    title="Ver PDF"
                   >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
+                    <Eye className="h-4 w-4" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={removePdf}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5"
+                    title="Eliminar PDF"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -505,13 +518,13 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
               </div>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors">
-              <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
-              <p className="text-secondary-600 mb-2">
-                Arrastra un PDF aquí o haz clic para seleccionar
-              </p>
-              <p className="text-xs text-secondary-500 mb-4">
-                Solo archivos PDF hasta 10MB
+            <div 
+              onClick={() => document.getElementById('pdf-upload')?.click()}
+              className="border-2 border-dashed border-secondary-300 rounded-lg p-4 text-center hover:border-primary-300 transition-colors cursor-pointer"
+            >
+              <FileText className="h-8 w-8 text-secondary-400 mx-auto mb-2" />
+              <p className="text-sm text-secondary-600">
+                Haz clic para subir un PDF informativo
               </p>
             </div>
           )}
@@ -524,45 +537,9 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             className="hidden"
           />
           
-          <div className="mt-3 flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => document.getElementById('pdf-upload')?.click()}
-              disabled={isUploadingPdf}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              {isUploadingPdf ? 'Procesando PDF...' : 'Seleccionar PDF'}
-            </Button>
-            
-            {watchPdfUrl && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={removePdf}
-                className="text-red-600 hover:text-red-700"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Eliminar PDF
-              </Button>
-            )}
-          </div>
-          
           {/* Hidden inputs for PDF data */}
           <input type="hidden" {...register('info_pdf_url')} />
           <input type="hidden" {...register('info_pdf_name')} />
-          
-          {/* Información adicional */}
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Consejos para el PDF:</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Incluye itinerarios detallados día por día</li>
-              <li>• Agrega información sobre qué llevar</li>
-              <li>• Menciona contactos de emergencia locales</li>
-              <li>• Incluye mapas y direcciones importantes</li>
-              <li>• Añade términos y condiciones específicos</li>
-            </ul>
-          </div>
         </div>
       </div>
 

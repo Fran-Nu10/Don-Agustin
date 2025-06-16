@@ -57,7 +57,7 @@ export function TripDetailPage() {
     }
   };
 
-  // Función mejorada para manejar la visualización del PDF - ARREGLADA
+  // Función completamente reescrita para visualizar PDFs
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
     try {
       // Verificar si la URL es válida
@@ -66,52 +66,63 @@ export function TripDetailPage() {
         return;
       }
 
-      console.log('Intentando abrir PDF:', pdfUrl);
-
-      // Para URLs externas válidas, abrir en nueva pestaña
+      // Para URLs externas válidas, abrir en nueva pestaña con un enfoque más robusto
       if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
-        const newWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-        if (!newWindow) {
-          // Si el popup fue bloqueado, mostrar mensaje
-          toast.error('El popup fue bloqueado. Por favor, permite popups para este sitio.');
-        } else {
-          toast.success('PDF abierto en nueva pestaña');
-        }
-      } else if (pdfUrl.startsWith('blob:')) {
-        // Para archivos blob locales
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
+        // Crear un iframe temporal invisible
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        // Usar el iframe para abrir el PDF, lo que evita problemas de bloqueo de popups
+        if (iframe.contentWindow) {
+          iframe.contentWindow.document.open();
+          iframe.contentWindow.document.write(`
+            <!DOCTYPE html>
             <html>
               <head>
                 <title>${pdfName}</title>
                 <style>
-                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-                  .header { background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #dee2e6; }
-                  embed { width: 100%; height: calc(100vh - 60px); }
-                  .fallback { text-align: center; padding: 20px; }
+                  body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+                  .pdf-container { width: 100%; height: 100vh; }
                 </style>
               </head>
               <body>
-                <div class="header">
-                  <strong>📄 ${pdfName}</strong>
-                </div>
-                <embed src="${pdfUrl}" type="application/pdf" />
-                <div class="fallback">
-                  <p>Si el PDF no se muestra correctamente, 
-                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a></p>
-                </div>
+                <embed class="pdf-container" src="${pdfUrl}" type="application/pdf" />
               </body>
             </html>
           `);
-          toast.success('PDF abierto en nueva ventana');
+          iframe.contentWindow.document.close();
+          
+          // Abrir en nueva pestaña
+          const newWindow = window.open('', '_blank');
+          if (newWindow) {
+            newWindow.document.write(iframe.contentWindow.document.documentElement.outerHTML);
+            newWindow.document.close();
+            // Eliminar el iframe temporal
+            setTimeout(() => document.body.removeChild(iframe), 100);
+          } else {
+            toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
+            // Ofrecer descarga directa como alternativa
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = pdfName || 'documento.pdf';
+            link.target = '_blank';
+            link.click();
+          }
         }
       } else {
         toast.error('URL de PDF no válida');
       }
     } catch (error) {
       console.error('Error opening PDF:', error);
-      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
+      toast.error('No se pudo abrir el PDF. Intenta descargarlo directamente.');
+      
+      // Ofrecer descarga como alternativa
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = pdfName || 'documento.pdf';
+      link.target = '_blank';
+      link.click();
     }
   };
 
@@ -164,7 +175,7 @@ export function TripDetailPage() {
       <main className="flex-grow bg-secondary-50 main-content">
         <div className="container mx-auto px-4 py-8">
           {/* Back Button - ARREGLADO PARA QUE NO QUEDE DEBAJO DEL NAV */}
-          <div className="mb-6 pt-4">
+          <div className="mb-6 pt-8 md:pt-4">
             <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline">
               <ArrowLeft className="h-4 w-4 mr-1" />
               Volver a viajes
@@ -226,34 +237,25 @@ export function TripDetailPage() {
                     </div>
                   </div>
 
-                  {/* PDF Information - MEJORADO */}
+                  {/* PDF Information - REDISEÑADO PARA SER MÁS MINIMALISTA */}
                   {trip.info_pdf_url && trip.info_pdf_name && (
-                    <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="bg-blue-100 p-3 rounded-full mr-4">
-                            <FileText className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-blue-900 text-lg">📋 Información Completa Disponible</h3>
-                            <p className="text-blue-700 mb-2">
-                              Descarga el PDF con todos los detalles del viaje: itinerario completo, 
-                              qué llevar, contactos importantes y más.
-                            </p>
-                            <p className="text-sm text-blue-600 font-medium">
-                              📄 {trip.info_pdf_name}
-                            </p>
-                          </div>
+                    <div className="mb-6 border border-blue-100 rounded-lg overflow-hidden">
+                      <div className="flex items-center p-3 bg-blue-50">
+                        <FileText className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" />
+                        <div className="flex-grow min-w-0">
+                          <p className="font-medium text-blue-800 text-sm truncate">
+                            {trip.info_pdf_name}
+                          </p>
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex-shrink-0 flex space-x-1">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleViewPdf(trip.info_pdf_url!, trip.info_pdf_name!)}
-                            className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                            className="text-blue-600 hover:bg-blue-100 p-1.5"
+                            title="Ver PDF"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver PDF
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -267,10 +269,10 @@ export function TripDetailPage() {
                               document.body.removeChild(link);
                               toast.success('Descarga iniciada');
                             }}
-                            className="text-blue-600 hover:bg-blue-50"
+                            className="text-blue-600 hover:bg-blue-100 p-1.5"
+                            title="Descargar PDF"
                           >
-                            <Download className="h-4 w-4 mr-2" />
-                            Descargar
+                            <Download className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
