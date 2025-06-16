@@ -129,12 +129,7 @@ export function HomePage() {
           </div>
         ) : (
           <>
-            {/* Group Trips */}
-            {groupTrips.length > 0 && (
-              <GroupTripsCarousel trips={groupTrips} />
-            )}
-            
-            {/* National Trips */}
+            {/* National Trips - Moved up */}
             {nationalTrips.length > 0 && (
               <TripCarousel
                 trips={nationalTrips}
@@ -143,13 +138,18 @@ export function HomePage() {
               />
             )}
             
-            {/* International Trips */}
+            {/* International Trips - Moved up */}
             {internationalTrips.length > 0 && (
               <TripCarousel
                 trips={internationalTrips}
                 title="Viajes Internacionales"
                 subtitle="Explora destinos alrededor del mundo"
               />
+            )}
+            
+            {/* Group Trips - Moved down */}
+            {groupTrips.length > 0 && (
+              <GroupTripsCarousel trips={groupTrips} />
             )}
           </>
         )}
