@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -56,12 +57,28 @@ export function TripDetailPage() {
     }
   };
 
-  // Función mejorada para manejar la visualización del PDF
+  // Función mejorada para manejar la visualización del PDF - ARREGLADA
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
     try {
-      // Verificar si es una URL blob (archivo local)
-      if (pdfUrl.startsWith('blob:')) {
-        // Para archivos blob, abrir directamente
+      // Verificar si la URL es válida
+      if (!pdfUrl || pdfUrl.trim() === '') {
+        toast.error('No hay URL de PDF disponible');
+        return;
+      }
+
+      console.log('Intentando abrir PDF:', pdfUrl);
+
+      // Para URLs externas válidas, abrir en nueva pestaña
+      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+        const newWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          // Si el popup fue bloqueado, mostrar mensaje
+          toast.error('El popup fue bloqueado. Por favor, permite popups para este sitio.');
+        } else {
+          toast.success('PDF abierto en nueva pestaña');
+        }
+      } else if (pdfUrl.startsWith('blob:')) {
+        // Para archivos blob locales
         const newWindow = window.open();
         if (newWindow) {
           newWindow.document.write(`
@@ -69,37 +86,32 @@ export function TripDetailPage() {
               <head>
                 <title>${pdfName}</title>
                 <style>
-                  body { margin: 0; padding: 0; }
-                  embed { width: 100%; height: 100vh; }
+                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+                  .header { background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #dee2e6; }
+                  embed { width: 100%; height: calc(100vh - 60px); }
+                  .fallback { text-align: center; padding: 20px; }
                 </style>
               </head>
               <body>
+                <div class="header">
+                  <strong>📄 ${pdfName}</strong>
+                </div>
                 <embed src="${pdfUrl}" type="application/pdf" />
-                <p style="text-align: center; padding: 20px;">
-                  Si el PDF no se muestra, 
-                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a>
-                </p>
+                <div class="fallback">
+                  <p>Si el PDF no se muestra correctamente, 
+                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a></p>
+                </div>
               </body>
             </html>
           `);
+          toast.success('PDF abierto en nueva ventana');
         }
       } else {
-        // Para URLs externas, intentar abrir en nueva pestaña
-        const newWindow = window.open(pdfUrl, '_blank');
-        if (!newWindow) {
-          // Si el popup fue bloqueado, crear un enlace de descarga
-          const link = document.createElement('a');
-          link.href = pdfUrl;
-          link.download = pdfName;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
+        toast.error('URL de PDF no válida');
       }
     } catch (error) {
       console.error('Error opening PDF:', error);
-      alert('No se pudo abrir el PDF. Por favor, intenta nuevamente.');
+      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
@@ -149,13 +161,15 @@ export function TripDetailPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 py-12">
-        <div className="container mx-auto px-4">
-          {/* Back Button */}
-          <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline mb-6">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Volver a viajes
-          </Link>
+      <main className="flex-grow bg-secondary-50 main-content">
+        <div className="container mx-auto px-4 py-8">
+          {/* Back Button - ARREGLADO PARA QUE NO QUEDE DEBAJO DEL NAV */}
+          <div className="mb-6 pt-4">
+            <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Volver a viajes
+            </Link>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Trip Details */}
@@ -251,6 +265,7 @@ export function TripDetailPage() {
                               document.body.appendChild(link);
                               link.click();
                               document.body.removeChild(link);
+                              toast.success('Descarga iniciada');
                             }}
                             className="text-blue-600 hover:bg-blue-50"
                           >

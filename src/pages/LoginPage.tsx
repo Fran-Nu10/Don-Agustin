@@ -25,14 +25,14 @@ export function LoginPage() {
 
   // Redirect if already logged in
   if (user) {
-    return <Navigate to="/admin/dashboard\" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center bg-secondary-50 py-12">
+      <main className="flex-grow flex items-center justify-center bg-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

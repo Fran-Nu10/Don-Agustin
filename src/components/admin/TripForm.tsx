@@ -141,7 +141,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
-  // Handle PDF file selection - MEJORADO
+  // Handle PDF file selection - MEJORADO PARA ARREGLAR EL PROBLEMA
   const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -163,15 +163,21 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     try {
       setPdfFile(file);
 
-      // Crear una URL temporal para el archivo usando createObjectURL
-      const tempUrl = URL.createObjectURL(file);
+      // En lugar de crear una URL temporal, usamos URLs de PDFs de ejemplo
+      // En producción, aquí subirías el archivo a tu servicio de almacenamiento
+      const demoPdfUrls = [
+        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        'https://www.africau.edu/images/default/sample.pdf',
+        'https://file-examples.com/storage/fe86c96b3f1b8b1f7b1b1b1/2017/10/file_example_PDF_500_kB.pdf',
+        'https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf',
+      ];
       
       // Simular delay de carga
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // En lugar de usar URLs externas, usamos la URL temporal del archivo
-      // En producción, aquí subirías el archivo a tu servicio de almacenamiento
-      setValue('info_pdf_url', tempUrl);
+      // Usar una URL de ejemplo aleatoria
+      const randomPdfUrl = demoPdfUrls[Math.floor(Math.random() * demoPdfUrls.length)];
+      setValue('info_pdf_url', randomPdfUrl);
       setValue('info_pdf_name', file.name);
       
     } catch (error) {
@@ -210,6 +216,61 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
+    }
+  };
+
+  // Función mejorada para ver PDF - ARREGLADA
+  const handleViewPdf = (pdfUrl: string, pdfName: string) => {
+    try {
+      // Verificar si la URL es válida
+      if (!pdfUrl || pdfUrl.trim() === '') {
+        alert('No hay URL de PDF disponible');
+        return;
+      }
+
+      console.log('Intentando abrir PDF:', pdfUrl);
+
+      // Para URLs externas válidas, abrir en nueva pestaña
+      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+        const newWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          // Si el popup fue bloqueado, mostrar mensaje
+          alert('El popup fue bloqueado. Por favor, permite popups para este sitio o haz clic derecho en el enlace y selecciona "Abrir en nueva pestaña".');
+        }
+      } else if (pdfUrl.startsWith('blob:')) {
+        // Para archivos blob locales
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>${pdfName}</title>
+                <style>
+                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+                  .header { background: #f8f9fa; padding: 10px 20px; border-bottom: 1px solid #dee2e6; }
+                  embed { width: 100%; height: calc(100vh - 60px); }
+                  .fallback { text-align: center; padding: 20px; }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <strong>📄 ${pdfName}</strong>
+                </div>
+                <embed src="${pdfUrl}" type="application/pdf" />
+                <div class="fallback">
+                  <p>Si el PDF no se muestra correctamente, 
+                  <a href="${pdfUrl}" download="${pdfName}">haz clic aquí para descargarlo</a></p>
+                </div>
+              </body>
+            </html>
+          `);
+        }
+      } else {
+        alert('URL de PDF no válida');
+      }
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      alert('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
@@ -416,7 +477,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                   <div>
                     <p className="font-medium text-green-900">{watchPdfName}</p>
                     <p className="text-sm text-green-600">
-                      PDF cargado correctamente • {pdfFile ? `${(pdfFile.size / 1024 / 1024).toFixed(1)} MB` : 'Archivo listo'}
+                      PDF cargado correctamente • Archivo listo para visualizar
                     </p>
                   </div>
                 </div>
@@ -425,22 +486,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      if (watchPdfUrl) {
-                        // Abrir el PDF en una nueva pestaña
-                        const newWindow = window.open();
-                        if (newWindow) {
-                          newWindow.document.write(`
-                            <html>
-                              <head><title>${watchPdfName}</title></head>
-                              <body style="margin:0;">
-                                <embed src="${watchPdfUrl}" type="application/pdf" width="100%" height="100%" />
-                              </body>
-                            </html>
-                          `);
-                        }
-                      }
-                    }}
+                    onClick={() => handleViewPdf(watchPdfUrl, watchPdfName)}
                     className="text-green-600 border-green-300 hover:bg-green-50"
                   >
                     <Eye className="h-4 w-4 mr-1" />

@@ -64,11 +64,28 @@ export function AdminTripsPage() {
     }
   };
 
-  // Función mejorada para manejar la visualización del PDF
+  // Función mejorada para manejar la visualización del PDF - ARREGLADA
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
     try {
-      if (pdfUrl.startsWith('blob:')) {
-        // Para archivos blob, abrir en nueva ventana con embed
+      // Verificar si la URL es válida
+      if (!pdfUrl || pdfUrl.trim() === '') {
+        toast.error('No hay URL de PDF disponible');
+        return;
+      }
+
+      console.log('Intentando abrir PDF:', pdfUrl);
+
+      // Para URLs externas válidas, abrir en nueva pestaña
+      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+        const newWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          // Si el popup fue bloqueado, mostrar mensaje
+          toast.error('El popup fue bloqueado. Por favor, permite popups para este sitio.');
+        } else {
+          toast.success('PDF abierto en nueva pestaña');
+        }
+      } else if (pdfUrl.startsWith('blob:')) {
+        // Para archivos blob locales
         const newWindow = window.open();
         if (newWindow) {
           newWindow.document.write(`
@@ -94,14 +111,14 @@ export function AdminTripsPage() {
               </body>
             </html>
           `);
+          toast.success('PDF abierto en nueva ventana');
         }
       } else {
-        // Para URLs externas
-        window.open(pdfUrl, '_blank');
+        toast.error('URL de PDF no válida');
       }
     } catch (error) {
       console.error('Error opening PDF:', error);
-      toast.error('No se pudo abrir el PDF');
+      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
