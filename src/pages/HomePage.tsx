@@ -90,38 +90,6 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-8 md:mb-12 text-secondary-900">
-              ¿Por qué elegirnos?
-            </h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              <FeatureCard
-                icon={<MapPin className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
-                title="Destinos Únicos"
-                description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
-              />
-              <FeatureCard
-                icon={<Plane className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
-                title="Transporte de Calidad"
-                description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
-              />
-              <FeatureCard
-                icon={<Clock className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
-                title="Más de 25 Años"
-                description="Más de dos décadas de experiencia organizando viajes perfectos para nuestros clientes."
-              />
-              <FeatureCard
-                icon={<Shield className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
-                title="Garantía de Satisfacción"
-                description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
-              />
-            </div>
-          </div>
-        </section>
-
         {/* Featured Trips */}
         {loading ? (
           <div className="text-center py-12">
@@ -153,6 +121,38 @@ export function HomePage() {
             )}
           </>
         )}
+
+        {/* Features Section - Moved below all trip sections */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-8 md:mb-12 text-secondary-900">
+              ¿Por qué elegirnos?
+            </h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              <FeatureCard
+                icon={<MapPin className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                title="Destinos Únicos"
+                description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
+              />
+              <FeatureCard
+                icon={<Plane className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                title="Transporte de Calidad"
+                description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
+              />
+              <FeatureCard
+                icon={<Clock className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                title="Más de 25 Años"
+                description="Más de dos décadas de experiencia organizando viajes perfectos para nuestros clientes."
+              />
+              <FeatureCard
+                icon={<Shield className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                title="Garantía de Satisfacción"
+                description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
+              />
+            </div>
+          </div>
+        </section>
 
         {/* Travel Categories */}
         <TravelCategoriesSection />
