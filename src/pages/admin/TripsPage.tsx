@@ -64,72 +64,22 @@ export function AdminTripsPage() {
     }
   };
 
-  // Función mejorada para manejar la visualización del PDF - COMPLETAMENTE REESCRITA
+  // Función mejorada para manejar la visualización del PDF
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
-    try {
-      // Verificar si la URL es válida
-      if (!pdfUrl || pdfUrl.trim() === '') {
-        toast.error('No hay URL de PDF disponible');
-        return;
-      }
+    if (!pdfUrl) {
+      toast.error('No hay URL de PDF disponible');
+      return;
+    }
 
-      // Para URLs externas válidas, abrir en nueva pestaña con un enfoque más robusto
-      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
-        // Crear un iframe temporal invisible
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        // Usar el iframe para abrir el PDF, lo que evita problemas de bloqueo de popups
-        if (iframe.contentWindow) {
-          iframe.contentWindow.document.open();
-          iframe.contentWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>${pdfName}</title>
-                <style>
-                  body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-                  .pdf-container { width: 100%; height: 100vh; }
-                </style>
-              </head>
-              <body>
-                <embed class="pdf-container" src="${pdfUrl}" type="application/pdf" />
-              </body>
-            </html>
-          `);
-          iframe.contentWindow.document.close();
-          
-          // Abrir en nueva pestaña
-          const newWindow = window.open('', '_blank');
-          if (newWindow) {
-            newWindow.document.write(iframe.contentWindow.document.documentElement.outerHTML);
-            newWindow.document.close();
-            // Eliminar el iframe temporal
-            setTimeout(() => document.body.removeChild(iframe), 100);
-          } else {
-            toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
-            // Ofrecer descarga directa como alternativa
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = pdfName || 'documento.pdf';
-            link.target = '_blank';
-            link.click();
-          }
-        }
-      } else {
-        toast.error('URL de PDF no válida');
-      }
-    } catch (error) {
-      console.error('Error opening PDF:', error);
-      toast.error('No se pudo abrir el PDF. Intenta descargarlo directamente.');
+    try {
+      // Abrir en una nueva pestaña
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       
-      // Ofrecer descarga como alternativa
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = pdfName || 'documento.pdf';
-      link.target = '_blank';
-      link.click();
+      // Mostrar mensaje de éxito
+      toast.success('PDF abierto en nueva pestaña');
+    } catch (error) {
+      console.error('Error al abrir el PDF:', error);
+      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 

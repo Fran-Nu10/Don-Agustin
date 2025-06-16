@@ -11,7 +11,7 @@ import { getTrip, getTrips } from '../lib/supabase';
 import { Trip } from '../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from 'lucide-react';
+import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
@@ -57,72 +57,22 @@ export function TripDetailPage() {
     }
   };
 
-  // Función completamente reescrita para visualizar PDFs
+  // Función mejorada para manejar la visualización del PDF
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
-    try {
-      // Verificar si la URL es válida
-      if (!pdfUrl || pdfUrl.trim() === '') {
-        toast.error('No hay URL de PDF disponible');
-        return;
-      }
+    if (!pdfUrl) {
+      toast.error('No hay URL de PDF disponible');
+      return;
+    }
 
-      // Para URLs externas válidas, abrir en nueva pestaña con un enfoque más robusto
-      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
-        // Crear un iframe temporal invisible
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        // Usar el iframe para abrir el PDF, lo que evita problemas de bloqueo de popups
-        if (iframe.contentWindow) {
-          iframe.contentWindow.document.open();
-          iframe.contentWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>${pdfName}</title>
-                <style>
-                  body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-                  .pdf-container { width: 100%; height: 100vh; }
-                </style>
-              </head>
-              <body>
-                <embed class="pdf-container" src="${pdfUrl}" type="application/pdf" />
-              </body>
-            </html>
-          `);
-          iframe.contentWindow.document.close();
-          
-          // Abrir en nueva pestaña
-          const newWindow = window.open('', '_blank');
-          if (newWindow) {
-            newWindow.document.write(iframe.contentWindow.document.documentElement.outerHTML);
-            newWindow.document.close();
-            // Eliminar el iframe temporal
-            setTimeout(() => document.body.removeChild(iframe), 100);
-          } else {
-            toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
-            // Ofrecer descarga directa como alternativa
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = pdfName || 'documento.pdf';
-            link.target = '_blank';
-            link.click();
-          }
-        }
-      } else {
-        toast.error('URL de PDF no válida');
-      }
-    } catch (error) {
-      console.error('Error opening PDF:', error);
-      toast.error('No se pudo abrir el PDF. Intenta descargarlo directamente.');
+    try {
+      // Abrir en una nueva pestaña
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
       
-      // Ofrecer descarga como alternativa
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = pdfName || 'documento.pdf';
-      link.target = '_blank';
-      link.click();
+      // Mostrar mensaje de éxito
+      toast.success('PDF abierto en nueva pestaña');
+    } catch (error) {
+      console.error('Error al abrir el PDF:', error);
+      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
@@ -175,7 +125,7 @@ export function TripDetailPage() {
       <main className="flex-grow bg-secondary-50 main-content">
         <div className="container mx-auto px-4 py-8">
           {/* Back Button - ARREGLADO PARA QUE NO QUEDE DEBAJO DEL NAV */}
-          <div className="mb-6 pt-8 md:pt-4">
+          <div className="mb-6 pt-8">
             <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline">
               <ArrowLeft className="h-4 w-4 mr-1" />
               Volver a viajes
@@ -237,40 +187,36 @@ export function TripDetailPage() {
                     </div>
                   </div>
 
-                  {/* PDF Information - REDISEÑADO PARA SER MÁS MINIMALISTA */}
+                  {/* PDF Information - MEJORADO */}
                   {trip.info_pdf_url && trip.info_pdf_name && (
-                    <div className="mb-6 border border-blue-100 rounded-lg overflow-hidden">
-                      <div className="flex items-center p-3 bg-blue-50">
-                        <FileText className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0" />
-                        <div className="flex-grow min-w-0">
-                          <p className="font-medium text-blue-800 text-sm truncate">
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="bg-blue-100 p-2 rounded-full mr-3">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-grow">
+                          <h3 className="font-medium text-blue-900 text-base">Información Completa Disponible</h3>
+                          <p className="text-sm text-blue-700">
                             {trip.info_pdf_name}
                           </p>
                         </div>
-                        <div className="flex-shrink-0 flex space-x-1">
+                        <div className="flex space-x-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleViewPdf(trip.info_pdf_url!, trip.info_pdf_name!)}
-                            className="text-blue-600 hover:bg-blue-100 p-1.5"
-                            title="Ver PDF"
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50"
                           >
-                            <Eye className="h-4 w-4" />
+                            Ver PDF
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              const link = document.createElement('a');
-                              link.href = trip.info_pdf_url!;
-                              link.download = trip.info_pdf_name!;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
+                              window.open(trip.info_pdf_url!, '_blank');
                               toast.success('Descarga iniciada');
                             }}
-                            className="text-blue-600 hover:bg-blue-100 p-1.5"
-                            title="Descargar PDF"
+                            className="text-blue-600 hover:bg-blue-50"
                           >
                             <Download className="h-4 w-4" />
                           </Button>

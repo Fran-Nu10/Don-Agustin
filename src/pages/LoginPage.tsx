@@ -33,7 +33,7 @@ export function LoginPage() {
       <Navbar />
       
       <main className="flex-grow flex items-center justify-center bg-secondary-50 py-12 main-content">
-        <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-16rem)]">
+        <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-200px)]">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

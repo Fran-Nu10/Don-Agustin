@@ -179,16 +179,6 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     }
   };
 
-  // Format currency
-  const formatCurrency = (amount?: number) => {
-    if (amount === undefined || amount === null) return '-';
-    return new Intl.NumberFormat('es-UY', {
-      style: 'currency',
-      currency: 'UYU',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   if (!isOpen || !client) return null;
 
   return (
@@ -245,13 +235,15 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                       </div>
                     </div>
                   )}
-
-                  {/* Trip Value */}
+                  
+                  {/* Valor del viaje */}
                   <div className="flex items-center">
                     <DollarSign className="h-5 w-5 text-primary-950 mr-3" />
                     <div>
-                      <p className="text-sm text-secondary-500">Valor del Viaje</p>
-                      <p className="font-medium text-green-600">{formatCurrency(client.trip_value)}</p>
+                      <p className="text-sm text-secondary-500">Valor del viaje</p>
+                      <p className="font-medium text-secondary-900">
+                        ${client.trip_value?.toLocaleString('es-UY') || '0'} UYU
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -431,30 +423,29 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 </div>
               </div>
 
-              {/* Trip Value Field */}
+              {/* Valor del viaje */}
               <div>
-                <label className="block mb-1 text-sm font-medium text-secondary-900 flex items-center">
-                  <DollarSign className="h-4 w-4 mr-1 text-green-600" />
-                  Valor del Viaje
+                <label className="block mb-1 text-sm font-medium text-secondary-900">
+                  Valor del viaje (UYU)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-secondary-500">$</span>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <DollarSign className="h-5 w-5 text-secondary-400" />
+                  </div>
                   <input
                     type="number"
+                    min="0"
+                    step="1000"
+                    className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     {...register('trip_value', { 
                       valueAsNumber: true,
                       min: { value: 0, message: 'El valor no puede ser negativo' }
                     })}
-                    className="block w-full pl-8 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="0"
                   />
                 </div>
                 {errors.trip_value && (
                   <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
                 )}
-                <p className="text-xs text-secondary-500 mt-1">
-                  Ingrese el valor total del viaje para este cliente (en pesos uruguayos).
-                </p>
               </div>
 
               <Textarea

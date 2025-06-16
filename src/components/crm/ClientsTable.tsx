@@ -181,16 +181,6 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     return new Date(followUpDate) < new Date();
   };
 
-  // Format currency
-  const formatCurrency = (amount?: number) => {
-    if (amount === undefined || amount === null) return '-';
-    return new Intl.NumberFormat('es-UY', {
-      style: 'currency',
-      currency: 'UYU',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -246,13 +236,6 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                 onSort={handleSort}
               />
               <SortableHeader
-                label="Último Contacto"
-                field="last_contact_date"
-                currentField={sortField}
-                direction={sortDirection}
-                onSort={handleSort}
-              />
-              <SortableHeader
                 label="Creado"
                 field="created_at"
                 currentField={sortField}
@@ -267,7 +250,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
           <tbody className="divide-y divide-secondary-200">
             {sortedClients.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-6 py-4 text-center text-secondary-500">
+                <td colSpan={10} className="px-6 py-4 text-center text-secondary-500">
                   No hay clientes para mostrar
                 </td>
               </tr>
@@ -349,17 +332,19 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                         <span className="text-secondary-400">-</span>
                       )}
                     </td>
-                    {/* Trip Value Column */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
                       {client.trip_value ? (
                         <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1 text-green-600" />
-                          <span className="font-medium text-green-600">
-                            {formatCurrency(client.trip_value)}
+                          <DollarSign className="h-4 w-4 mr-2 text-green-600" />
+                          <span className="text-green-600 font-medium">
+                            ${client.trip_value.toLocaleString('es-UY')}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-secondary-400">-</span>
+                        <div className="flex items-center">
+                          <DollarSign className="h-4 w-4 mr-2 text-secondary-300" />
+                          <span className="text-secondary-400 italic">Sin valor</span>
+                        </div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
@@ -375,18 +360,6 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                           <Calendar className="h-4 w-4 mr-2 text-secondary-300" />
                           <span className="text-secondary-400 italic">Sin agendar</span>
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                      {client.last_contact_date ? (
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-blue-600" />
-                          <span className="text-blue-600">
-                            {format(new Date(client.last_contact_date), 'dd MMM', { locale: es })}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-secondary-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">

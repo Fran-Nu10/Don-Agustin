@@ -18,8 +18,7 @@ export interface Client {
   last_contact_date?: string;
   next_follow_up?: string;
   tags?: string[];
-  // New field for trip value
-  trip_value?: number;
+  trip_value?: number; // Nuevo campo para el valor del viaje
 }
 
 export interface ClientFormData {
@@ -38,8 +37,7 @@ export interface ClientFormData {
   last_contact_date?: string;
   next_follow_up?: string;
   tags?: string[];
-  // New field for trip value
-  trip_value?: number;
+  trip_value?: number; // Nuevo campo para el valor del viaje
 }
 
 export interface ClientFilters {
@@ -67,7 +65,4 @@ export interface ClientStatsType {
   avgResponseTime: number;
   upcomingFollowUps: number;
   overdueFollowUps: number;
-  // New field for total revenue
-  totalRevenue?: number;
-  averageTripValue?: number;
 }

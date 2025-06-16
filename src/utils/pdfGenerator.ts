@@ -35,7 +35,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.text(`Cotización #${quotation.id.slice(0, 8)}`, 20, 68);
-  doc.text(`Fecha: ${format(new Date(quotation.created_at), 'dd/MM/yyyy', { locale: es })}`, 20, 74);
+  doc.text(`Fecha: ${format(new Date(quotation.created_at), 'dd MMM yyyy', { locale: es })}`, 20, 74);
   
   // Estado
   const statusLabel = getQuotationStatusLabel(quotation.status);
@@ -77,8 +77,8 @@ export function generateQuotationPDF(quotation: Quotation) {
   
   const tripData = [
     ['Destino:', quotation.destination || 'A definir'],
-    ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd/MM/yyyy', { locale: es }) : 'Flexible'],
-    ['Fecha de regreso:', quotation.return_date ? format(new Date(quotation.return_date), 'dd/MM/yyyy', { locale: es }) : 'Flexible'],
+    ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
+    ['Fecha de regreso:', quotation.return_date ? format(new Date(quotation.return_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
     ['Fechas flexibles:', quotation.flexible_dates ? 'Sí' : 'No'],
     ['Adultos:', quotation.adults.toString()],
     ['Menores:', quotation.children.toString()],
@@ -116,7 +116,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
   doc.text('Don Agustín Viajes - Tu agencia de confianza desde 1997', 20, pageHeight - 20);
-  doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`, 20, pageHeight - 15);
+  doc.text(`Generado el ${format(new Date(), 'dd MMM yyyy HH:mm', { locale: es })}`, 20, pageHeight - 15);
   
   // Descargar el PDF
   doc.save(`cotizacion-${quotation.name.replace(/\s+/g, '-').toLowerCase()}-${quotation.id.slice(0, 8)}.pdf`);
@@ -133,7 +133,7 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
   doc.text('Reporte de Cotizaciones', 20, 32);
-  doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`, 20, 38);
+  doc.text(`Generado el ${format(new Date(), 'dd MMM yyyy HH:mm', { locale: es })}`, 20, 38);
   
   // Línea separadora
   doc.setDrawColor(255, 107, 0);
@@ -278,6 +278,7 @@ export function generateClientPDF(client: Client) {
     ['Fuente:', client.source || 'No especificada'],
     ['Fecha de registro:', format(new Date(client.created_at), 'dd/MM/yyyy HH:mm', { locale: es })],
     ['Última actualización:', format(new Date(client.updated_at), 'dd/MM/yyyy HH:mm', { locale: es })],
+    ['Valor del viaje:', client.trip_value ? `$${client.trip_value.toLocaleString('es-UY')} UYU` : 'No especificado'],
   ];
   
   autoTable(doc, {
@@ -307,7 +308,6 @@ export function generateClientPDF(client: Client) {
     ['Próximo seguimiento:', client.next_follow_up ? format(new Date(client.next_follow_up), 'dd/MM/yyyy', { locale: es }) : 'No programado'],
     ['Destino preferido:', client.preferred_destination || 'No especificado'],
     ['Rango de presupuesto:', client.budget_range || 'No especificado'],
-    ['Valor del viaje:', client.trip_value ? formatCurrency(client.trip_value) : 'No especificado'],
   ];
   
   autoTable(doc, {
@@ -402,7 +402,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
     alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
-    total_revenue: clients.reduce((sum, c) => sum + (c.trip_value || 0), 0),
+    total_valor: clients.reduce((sum, client) => sum + (client.trip_value || 0), 0),
   };
   
   doc.setFontSize(14);
@@ -417,7 +417,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     ['Clientes cerrados:', stats.cliente_cerrado.toString()],
     ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
     ['Alta prioridad:', stats.alta_prioridad.toString()],
-    ['Valor total:', formatCurrency(stats.total_revenue)],
+    ['Valor total:', `$${stats.total_valor.toLocaleString('es-UY')} UYU`],
   ];
   
   autoTable(doc, {
@@ -447,7 +447,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     c.phone || '-',
     getClientStatusLabel(c.status),
     c.priority ? getPriorityLabel(c.priority) : '-',
-    formatCurrency(c.trip_value),
+    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
     c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
@@ -469,10 +469,10 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     columnStyles: {
       0: { cellWidth: 25 },
       1: { cellWidth: 35 },
-      2: { cellWidth: 15 },
-      3: { cellWidth: 15, halign: 'center' },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 20, halign: 'center' },
       4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 15, halign: 'right' },
+      5: { cellWidth: 15, halign: 'center' },
       6: { cellWidth: 25, halign: 'center' },
       7: { cellWidth: 15, halign: 'center' },
     },
@@ -515,7 +515,7 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   
   // Calcular valor total
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  doc.text(`Valor total: ${formatCurrency(totalValue)}`, 120, 68);
+  doc.text(`Valor total: $${totalValue.toLocaleString('es-UY')} UYU`, 20, 74);
   
   // Tabla de clientes
   const tableData = clients.map(c => [
@@ -523,13 +523,13 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
     c.email,
     c.phone || '-',
     c.priority ? getPriorityLabel(c.priority) : '-',
-    formatCurrency(c.trip_value),
+    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
     c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
   autoTable(doc, {
-    startY: 75,
+    startY: 80,
     head: [['Cliente', 'Email', 'Teléfono', 'Prioridad', 'Valor', 'Fecha Agendada', 'Registro']],
     body: tableData,
     theme: 'striped',
@@ -546,8 +546,8 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
       0: { cellWidth: 30 },
       1: { cellWidth: 40 },
       2: { cellWidth: 20 },
-      3: { cellWidth: 15, halign: 'center' },
-      4: { cellWidth: 20, halign: 'right' },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 20, halign: 'center' },
       5: { cellWidth: 30, halign: 'center' },
       6: { cellWidth: 20, halign: 'center' },
     },
@@ -591,7 +591,7 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   
   // Calcular valor total
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  doc.text(`Valor total: ${formatCurrency(totalValue)}`, 120, 68);
+  doc.text(`Valor total: $${totalValue.toLocaleString('es-UY')} UYU`, 20, 74);
   
   // Tabla de clientes
   const tableData = clients.map(c => [
@@ -600,12 +600,12 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
     c.phone || '-',
     getClientStatusLabel(c.status),
     c.priority ? getPriorityLabel(c.priority) : '-',
-    formatCurrency(c.trip_value),
+    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
   autoTable(doc, {
-    startY: 75,
+    startY: 80,
     head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Prioridad', 'Valor', 'Registro']],
     body: tableData,
     theme: 'striped',
@@ -622,9 +622,9 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
       0: { cellWidth: 30 },
       1: { cellWidth: 40 },
       2: { cellWidth: 20 },
-      3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 20, halign: 'right' },
+      3: { cellWidth: 25, halign: 'center' },
+      4: { cellWidth: 20, halign: 'center' },
+      5: { cellWidth: 20, halign: 'center' },
       6: { cellWidth: 20, halign: 'center' },
     },
   });
@@ -723,13 +723,4 @@ function getPriorityLabel(priority: string): string {
     default:
       return priority;
   }
-}
-
-// Format currency
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('es-UY', {
-    style: 'currency',
-    currency: 'UYU',
-    minimumFractionDigits: 0,
-  }).format(amount);
 }
