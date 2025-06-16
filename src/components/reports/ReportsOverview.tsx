@@ -120,7 +120,7 @@ export function ReportsOverview({ metrics }: ReportsOverviewProps) {
         </Card>
       </motion.div>
 
-      {/* Sales Activities */}
+      {/* Average Booking Value */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -131,19 +131,19 @@ export function ReportsOverview({ metrics }: ReportsOverviewProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <Activity className="h-6 w-6 text-orange-600" />
+                <DollarSign className="h-6 w-6 text-orange-600" />
               </div>
-              <div className="flex items-center space-x-1 text-red-600">
-                <ArrowDownRight className="h-4 w-4" />
-                <span className="text-sm font-medium">-3.5%</span>
+              <div className="flex items-center space-x-1 text-green-600">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-sm font-medium">+5.2%</span>
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-secondary-500 mb-1">Actividades de Venta</p>
+              <p className="text-sm font-medium text-secondary-500 mb-1">Valor Promedio</p>
               <h3 className="text-2xl font-bold text-secondary-900">
-                {metrics.salesActivities.toLocaleString()}
+                {formatCurrency(metrics.averageBookingValue)}
               </h3>
-              <p className="text-xs text-secondary-500 mt-1">este mes</p>
+              <p className="text-xs text-secondary-500 mt-1">por reserva</p>
             </div>
           </CardContent>
         </Card>

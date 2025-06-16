@@ -7,6 +7,8 @@ export interface RevenueMetrics {
   conversionRate: number;
   leadsGenerated: number;
   salesActivities: number;
+  // New field for client revenue
+  clientRevenue?: number;
 }
 
 export interface RevenueData {
@@ -63,6 +65,12 @@ export interface ReportsData {
   revenueSources: RevenueSource[];
   salesPerformance: SalesPerformance[];
   targets: FinancialTarget[];
+  // New field for client revenue data
+  clientRevenueData?: {
+    totalClientRevenue: number;
+    averageClientValue: number;
+    topClients: { name: string; value: number }[];
+  };
 }
 
 export interface ReportFilters {

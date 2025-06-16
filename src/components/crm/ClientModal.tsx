@@ -4,7 +4,7 @@ import { Client, ClientFormData } from '../../types/client';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2 } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -39,6 +39,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
       scheduled_date: client.scheduled_date ? 
         // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
         format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
+      trip_value: client.trip_value || 0,
     } : undefined,
   });
 
@@ -55,6 +56,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         scheduled_date: client.scheduled_date ? 
           // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
           format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
+        trip_value: client.trip_value || 0,
       });
     }
   }, [client, reset]);
@@ -177,6 +179,16 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     }
   };
 
+  // Format currency
+  const formatCurrency = (amount?: number) => {
+    if (amount === undefined || amount === null) return '-';
+    return new Intl.NumberFormat('es-UY', {
+      style: 'currency',
+      currency: 'UYU',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   if (!isOpen || !client) return null;
 
   return (
@@ -233,6 +245,15 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                       </div>
                     </div>
                   )}
+
+                  {/* Trip Value */}
+                  <div className="flex items-center">
+                    <DollarSign className="h-5 w-5 text-primary-950 mr-3" />
+                    <div>
+                      <p className="text-sm text-secondary-500">Valor del Viaje</p>
+                      <p className="font-medium text-green-600">{formatCurrency(client.trip_value)}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -408,6 +429,32 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     Esta fecha es para uso interno del CRM. Los clientes que hacen reservas públicas no tienen fecha agendada automáticamente.
                   </p>
                 </div>
+              </div>
+
+              {/* Trip Value Field */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-secondary-900 flex items-center">
+                  <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+                  Valor del Viaje
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-secondary-500">$</span>
+                  <input
+                    type="number"
+                    {...register('trip_value', { 
+                      valueAsNumber: true,
+                      min: { value: 0, message: 'El valor no puede ser negativo' }
+                    })}
+                    className="block w-full pl-8 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="0"
+                  />
+                </div>
+                {errors.trip_value && (
+                  <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
+                )}
+                <p className="text-xs text-secondary-500 mt-1">
+                  Ingrese el valor total del viaje para este cliente (en pesos uruguayos).
+                </p>
               </div>
 
               <Textarea

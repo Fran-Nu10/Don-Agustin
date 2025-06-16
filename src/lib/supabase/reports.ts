@@ -28,6 +28,9 @@ export async function getReportsData(filters?: ReportFilters): Promise<ReportsDa
     // Get targets
     const targets = await getFinancialTargets();
 
+    // Get client revenue data
+    const clientRevenueData = await getClientRevenueData();
+
     return {
       metrics,
       revenueHistory,
@@ -35,6 +38,7 @@ export async function getReportsData(filters?: ReportFilters): Promise<ReportsDa
       revenueSources,
       salesPerformance,
       targets,
+      clientRevenueData,
     };
   } catch (error) {
     console.error('Error fetching reports data:', error);
@@ -71,6 +75,16 @@ async function getRevenueMetrics(currentMonth: number, currentYear: number, prev
     .select('*', { count: 'exact', head: true })
     .gte('created_at', `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`);
 
+  // Get client revenue data
+  const { data: clientsData } = await supabase
+    .from('clients')
+    .select('trip_value')
+    .not('trip_value', 'is', null)
+    .gt('trip_value', 0);
+
+  // Calculate client revenue
+  const clientRevenue = clientsData?.reduce((sum, client) => sum + (client.trip_value || 0), 0) || 0;
+
   // Calculate metrics
   const totalRevenue = currentRevenue?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
   const monthlyRevenue = totalRevenue;
@@ -88,6 +102,7 @@ async function getRevenueMetrics(currentMonth: number, currentYear: number, prev
     conversionRate,
     leadsGenerated: leadsGenerated || 0,
     salesActivities: (totalBookings || 0) + (leadsGenerated || 0),
+    clientRevenue,
   };
 }
 
@@ -302,6 +317,37 @@ async function getFinancialTargets(): Promise<FinancialTarget[]> {
     actualConversion: Number(item.actual_conversion),
     achievementRate: Number(item.achievement_rate),
   }));
+}
+
+// Get client revenue data
+async function getClientRevenueData() {
+  const { data: clients } = await supabase
+    .from('clients')
+    .select('name, trip_value')
+    .not('trip_value', 'is', null)
+    .gt('trip_value', 0)
+    .order('trip_value', { ascending: false });
+
+  if (!clients || clients.length === 0) {
+    return {
+      totalClientRevenue: 0,
+      averageClientValue: 0,
+      topClients: []
+    };
+  }
+
+  const totalClientRevenue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+  const averageClientValue = totalClientRevenue / clients.length;
+  const topClients = clients.slice(0, 5).map(client => ({
+    name: client.name,
+    value: client.trip_value || 0
+  }));
+
+  return {
+    totalClientRevenue,
+    averageClientValue,
+    topClients
+  };
 }
 
 // Demo data generators

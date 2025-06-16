@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Client } from '../../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download, Tag, AlertTriangle, Clock, Star } from 'lucide-react';
+import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download, Tag, AlertTriangle, Clock, Star, DollarSign } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { generateClientPDF } from '../../utils/pdfGenerator';
 
@@ -11,7 +11,7 @@ interface ClientsTableProps {
   onViewClient: (client: Client) => void;
 }
 
-type SortField = 'name' | 'email' | 'scheduled_date' | 'created_at' | 'status' | 'priority' | 'last_contact_date';
+type SortField = 'name' | 'email' | 'scheduled_date' | 'created_at' | 'status' | 'priority' | 'last_contact_date' | 'trip_value';
 type SortDirection = 'asc' | 'desc';
 
 export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
@@ -64,6 +64,10 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
       case 'last_contact_date':
         compareA = a.last_contact_date ? new Date(a.last_contact_date).getTime() : 0;
         compareB = b.last_contact_date ? new Date(b.last_contact_date).getTime() : 0;
+        break;
+      case 'trip_value':
+        compareA = a.trip_value || 0;
+        compareB = b.trip_value || 0;
         break;
       default:
         return 0;
@@ -177,6 +181,16 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     return new Date(followUpDate) < new Date();
   };
 
+  // Format currency
+  const formatCurrency = (amount?: number) => {
+    if (amount === undefined || amount === null) return '-';
+    return new Intl.NumberFormat('es-UY', {
+      style: 'currency',
+      currency: 'UYU',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -218,6 +232,13 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                 Destino Preferido
               </th>
               <SortableHeader
+                label="Valor del Viaje"
+                field="trip_value"
+                currentField={sortField}
+                direction={sortDirection}
+                onSort={handleSort}
+              />
+              <SortableHeader
                 label="Fecha Agendada"
                 field="scheduled_date"
                 currentField={sortField}
@@ -246,7 +267,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
           <tbody className="divide-y divide-secondary-200">
             {sortedClients.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-secondary-500">
+                <td colSpan={11} className="px-6 py-4 text-center text-secondary-500">
                   No hay clientes para mostrar
                 </td>
               </tr>
@@ -323,6 +344,19 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-2 text-secondary-400" />
                           {client.preferred_destination}
+                        </div>
+                      ) : (
+                        <span className="text-secondary-400">-</span>
+                      )}
+                    </td>
+                    {/* Trip Value Column */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {client.trip_value ? (
+                        <div className="flex items-center">
+                          <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+                          <span className="font-medium text-green-600">
+                            {formatCurrency(client.trip_value)}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-secondary-400">-</span>

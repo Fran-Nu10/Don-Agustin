@@ -307,6 +307,7 @@ export function generateClientPDF(client: Client) {
     ['Próximo seguimiento:', client.next_follow_up ? format(new Date(client.next_follow_up), 'dd/MM/yyyy', { locale: es }) : 'No programado'],
     ['Destino preferido:', client.preferred_destination || 'No especificado'],
     ['Rango de presupuesto:', client.budget_range || 'No especificado'],
+    ['Valor del viaje:', client.trip_value ? formatCurrency(client.trip_value) : 'No especificado'],
   ];
   
   autoTable(doc, {
@@ -401,6 +402,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
     alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
+    total_revenue: clients.reduce((sum, c) => sum + (c.trip_value || 0), 0),
   };
   
   doc.setFontSize(14);
@@ -415,6 +417,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     ['Clientes cerrados:', stats.cliente_cerrado.toString()],
     ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
     ['Alta prioridad:', stats.alta_prioridad.toString()],
+    ['Valor total:', formatCurrency(stats.total_revenue)],
   ];
   
   autoTable(doc, {
@@ -444,13 +447,14 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     c.phone || '-',
     getClientStatusLabel(c.status),
     c.priority ? getPriorityLabel(c.priority) : '-',
+    formatCurrency(c.trip_value),
     c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
   autoTable(doc, {
     startY: tableY + 5,
-    head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Prioridad', 'Fecha Agendada', 'Registro']],
+    head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Prioridad', 'Valor', 'Fecha Agendada', 'Registro']],
     body: tableData,
     theme: 'striped',
     headStyles: { 
@@ -465,11 +469,12 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     columnStyles: {
       0: { cellWidth: 25 },
       1: { cellWidth: 35 },
-      2: { cellWidth: 20 },
-      3: { cellWidth: 20, halign: 'center' },
+      2: { cellWidth: 15 },
+      3: { cellWidth: 15, halign: 'center' },
       4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 25, halign: 'center' },
-      6: { cellWidth: 15, halign: 'center' },
+      5: { cellWidth: 15, halign: 'right' },
+      6: { cellWidth: 25, halign: 'center' },
+      7: { cellWidth: 15, halign: 'center' },
     },
   });
   
@@ -508,19 +513,24 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   doc.setFontSize(10);
   doc.text(`Total de clientes: ${clients.length}`, 20, 68);
   
+  // Calcular valor total
+  const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+  doc.text(`Valor total: ${formatCurrency(totalValue)}`, 120, 68);
+  
   // Tabla de clientes
   const tableData = clients.map(c => [
     c.name,
     c.email,
     c.phone || '-',
     c.priority ? getPriorityLabel(c.priority) : '-',
+    formatCurrency(c.trip_value),
     c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
   autoTable(doc, {
     startY: 75,
-    head: [['Cliente', 'Email', 'Teléfono', 'Prioridad', 'Fecha Agendada', 'Registro']],
+    head: [['Cliente', 'Email', 'Teléfono', 'Prioridad', 'Valor', 'Fecha Agendada', 'Registro']],
     body: tableData,
     theme: 'striped',
     headStyles: { 
@@ -535,10 +545,11 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
     columnStyles: {
       0: { cellWidth: 30 },
       1: { cellWidth: 40 },
-      2: { cellWidth: 25 },
-      3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 30, halign: 'center' },
-      5: { cellWidth: 20, halign: 'center' },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 15, halign: 'center' },
+      4: { cellWidth: 20, halign: 'right' },
+      5: { cellWidth: 30, halign: 'center' },
+      6: { cellWidth: 20, halign: 'center' },
     },
   });
   
@@ -578,6 +589,10 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   doc.setFontSize(10);
   doc.text(`Total de clientes: ${clients.length}`, 20, 68);
   
+  // Calcular valor total
+  const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+  doc.text(`Valor total: ${formatCurrency(totalValue)}`, 120, 68);
+  
   // Tabla de clientes
   const tableData = clients.map(c => [
     c.name,
@@ -585,12 +600,13 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
     c.phone || '-',
     getClientStatusLabel(c.status),
     c.priority ? getPriorityLabel(c.priority) : '-',
+    formatCurrency(c.trip_value),
     format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
   ]);
   
   autoTable(doc, {
     startY: 75,
-    head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Prioridad', 'Registro']],
+    head: [['Cliente', 'Email', 'Teléfono', 'Estado', 'Prioridad', 'Valor', 'Registro']],
     body: tableData,
     theme: 'striped',
     headStyles: { 
@@ -605,10 +621,11 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
     columnStyles: {
       0: { cellWidth: 30 },
       1: { cellWidth: 40 },
-      2: { cellWidth: 25 },
-      3: { cellWidth: 25, halign: 'center' },
-      4: { cellWidth: 20, halign: 'center' },
-      5: { cellWidth: 20, halign: 'center' },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 15, halign: 'center' },
+      5: { cellWidth: 20, halign: 'right' },
+      6: { cellWidth: 20, halign: 'center' },
     },
   });
   
@@ -706,4 +723,13 @@ function getPriorityLabel(priority: string): string {
     default:
       return priority;
   }
+}
+
+// Format currency
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
+    style: 'currency',
+    currency: 'UYU',
+    minimumFractionDigits: 0,
+  }).format(amount);
 }

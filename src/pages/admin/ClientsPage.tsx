@@ -202,6 +202,15 @@ export function ClientsPage() {
     // Average response time (mock calculation)
     const avgResponseTime = 24; // This would be calculated based on actual response times
 
+    // Calculate total revenue from trip_value
+    const totalRevenue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+    
+    // Calculate average trip value
+    const clientsWithValue = clients.filter(client => client.trip_value && client.trip_value > 0);
+    const averageTripValue = clientsWithValue.length > 0 
+      ? clientsWithValue.reduce((sum, client) => sum + (client.trip_value || 0), 0) / clientsWithValue.length
+      : 0;
+
     setStats({
       total,
       byStatus,
@@ -211,6 +220,8 @@ export function ClientsPage() {
       avgResponseTime,
       upcomingFollowUps,
       overdueFollowUps,
+      totalRevenue,
+      averageTripValue,
     });
   }
 

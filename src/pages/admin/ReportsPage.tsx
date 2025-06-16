@@ -65,6 +65,16 @@ export function ReportsPage() {
     toast.success('Funcionalidad de exportación en desarrollo');
   };
 
+  // Format currency
+  const formatCurrency = (amount?: number) => {
+    if (amount === undefined || amount === null) return '$0';
+    return new Intl.NumberFormat('es-UY', {
+      style: 'currency',
+      currency: 'UYU',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   if (loading) {
     return (
       <AdminLayout>
@@ -237,6 +247,79 @@ export function ReportsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Client Revenue Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <h3 className="font-heading font-bold text-lg flex items-center">
+                <DollarSign className="h-5 w-5 mr-2" />
+                Ingresos por Cliente
+              </h3>
+            </CardHeader>
+            <CardContent>
+              {reportsData.clientRevenueData && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Total Client Revenue */}
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-lg text-green-800">Valor Total</h4>
+                      <div className="bg-green-200 p-2 rounded-full">
+                        <DollarSign className="h-6 w-6 text-green-700" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-green-700">
+                      {formatCurrency(reportsData.clientRevenueData.totalClientRevenue)}
+                    </p>
+                    <p className="text-sm text-green-600 mt-2">
+                      Valor total de viajes asignados a clientes
+                    </p>
+                  </div>
+
+                  {/* Average Client Value */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-lg text-blue-800">Valor Promedio</h4>
+                      <div className="bg-blue-200 p-2 rounded-full">
+                        <Users className="h-6 w-6 text-blue-700" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-blue-700">
+                      {formatCurrency(reportsData.clientRevenueData.averageClientValue)}
+                    </p>
+                    <p className="text-sm text-blue-600 mt-2">
+                      Valor promedio por cliente
+                    </p>
+                  </div>
+
+                  {/* Top Clients */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+                    <h4 className="font-bold text-lg text-purple-800 mb-4">Clientes Top</h4>
+                    {reportsData.clientRevenueData.topClients.length > 0 ? (
+                      <div className="space-y-3">
+                        {reportsData.clientRevenueData.topClients.map((client, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center mr-2">
+                                <span className="text-xs font-bold text-purple-800">{index + 1}</span>
+                              </div>
+                              <span className="text-sm font-medium text-purple-800 truncate max-w-[120px]">
+                                {client.name}
+                              </span>
+                            </div>
+                            <span className="font-bold text-purple-700">
+                              {formatCurrency(client.value)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-purple-600">No hay datos disponibles</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Category Performance Details */}
           <Card className="mb-6">
