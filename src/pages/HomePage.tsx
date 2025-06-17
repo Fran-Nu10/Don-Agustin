@@ -6,7 +6,6 @@ import { Button } from '../components/ui/Button';
 import { TripSearch } from '../components/trips/TripSearch';
 import { TripCarousel } from '../components/trips/TripCarousel';
 import { GroupTripsCarousel } from '../components/trips/GroupTripsCarousel';
-import { TravelCategoriesSection } from '../components/home/TravelCategoriesSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
 import { MapPin, Plane, Clock, Shield } from 'lucide-react';
@@ -158,9 +157,6 @@ export function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* Travel Categories */}
-        <TravelCategoriesSection />
 
         {/* Testimonials */}
         <TestimonialsSection />
