@@ -247,6 +247,108 @@ export const trips: Trip[] = [
       }
     ]
   },
+  // NUEVOS VIAJES NACIONALES
+  {
+    id: '19',
+    title: 'Punta del Este Exclusivo',
+    destination: 'Maldonado, Uruguay',
+    description: 'Disfruta de un fin de semana de lujo en el balneario más prestigioso de Sudamérica. Recorre sus playas, casinos y restaurantes de primer nivel.',
+    price: 28500,
+    departure_date: '2024-11-15T00:00:00Z',
+    return_date: '2024-11-17T00:00:00Z',
+    available_spots: 10,
+    image_url: 'https://images.pexels.com/photos/1320684/pexels-photo-1320684.jpeg',
+    created_at: '2024-03-15T00:00:00Z',
+    updated_at: '2024-03-15T00:00:00Z',
+    category: 'nacional',
+    itinerary: [
+      {
+        day: 1,
+        title: 'Llegada a Punta del Este',
+        description: 'Check-in en hotel boutique y paseo por La Brava.',
+      },
+      {
+        day: 2,
+        title: 'Recorrido completo',
+        description: 'Visita a Casapueblo, La Mano, puerto y Gorlero.',
+      },
+      {
+        day: 3,
+        title: 'Regreso con parada en José Ignacio',
+        description: 'Brunch en José Ignacio y regreso a Montevideo.',
+      }
+    ],
+    included_services: [
+      {
+        icon: 'Hotel',
+        title: 'Alojamiento',
+        description: '2 noches en hotel boutique 4 estrellas',
+      },
+      {
+        icon: 'Utensils',
+        title: 'Gastronomía',
+        description: 'Desayunos gourmet y cena de bienvenida',
+      },
+      {
+        icon: 'Car',
+        title: 'Transporte',
+        description: 'Traslados en vehículo premium',
+      }
+    ]
+  },
+  {
+    id: '20',
+    title: 'Salto y Daymán Termal',
+    destination: 'Salto, Uruguay',
+    description: 'Sumérgete en las aguas termales de Daymán y disfruta de la ciudad de Salto en un viaje de relax y bienestar para toda la familia.',
+    price: 19800,
+    departure_date: '2024-08-23T00:00:00Z',
+    return_date: '2024-08-26T00:00:00Z',
+    available_spots: 18,
+    image_url: 'https://images.pexels.com/photos/3225531/pexels-photo-3225531.jpeg',
+    created_at: '2024-03-15T00:00:00Z',
+    updated_at: '2024-03-15T00:00:00Z',
+    category: 'nacional',
+    itinerary: [
+      {
+        day: 1,
+        title: 'Viaje a Salto',
+        description: 'Salida desde Montevideo, llegada y check-in en hotel termal.',
+      },
+      {
+        day: 2,
+        title: 'Termas de Daymán',
+        description: 'Día completo en el parque acuático termal de Daymán.',
+      },
+      {
+        day: 3,
+        title: 'City Tour Salto',
+        description: 'Visita al centro de Salto, Represa de Salto Grande y tiempo libre.',
+      },
+      {
+        day: 4,
+        title: 'Regreso',
+        description: 'Mañana libre en las termas y regreso a Montevideo.',
+      }
+    ],
+    included_services: [
+      {
+        icon: 'Hotel',
+        title: 'Alojamiento',
+        description: '3 noches en hotel con acceso a termas',
+      },
+      {
+        icon: 'Bus',
+        title: 'Transporte',
+        description: 'Bus semicama con servicios a bordo',
+      },
+      {
+        icon: 'Ticket',
+        title: 'Entradas',
+        description: 'Acceso ilimitado a parque acuático',
+      }
+    ]
+  },
 
   // Internacional - 6 viajes
   {
@@ -474,6 +576,193 @@ export const trips: Trip[] = [
         icon: 'Train',
         title: 'Tren',
         description: 'Tren a Machu Picchu incluido',
+      }
+    ]
+  },
+  // NUEVOS VIAJES INTERNACIONALES
+  {
+    id: '21',
+    title: 'Islas Griegas Paradisíacas',
+    destination: 'Atenas, Grecia',
+    description: 'Recorre las islas más hermosas del Mar Egeo en un crucero de ensueño. Santorini, Mykonos, Creta y más te esperan en este viaje inolvidable por el Mediterráneo.',
+    price: 195000,
+    departure_date: '2024-06-10T00:00:00Z',
+    return_date: '2024-06-20T00:00:00Z',
+    available_spots: 14,
+    image_url: 'https://images.pexels.com/photos/1010657/pexels-photo-1010657.jpeg',
+    created_at: '2024-03-15T00:00:00Z',
+    updated_at: '2024-03-15T00:00:00Z',
+    category: 'internacional',
+    itinerary: [
+      {
+        day: 1,
+        title: 'Llegada a Atenas',
+        description: 'Recepción en el aeropuerto y traslado al hotel en el centro histórico.',
+      },
+      {
+        day: 2,
+        title: 'Acrópolis y Plaka',
+        description: 'Visita guiada a la Acrópolis, Partenón y paseo por el barrio de Plaka.',
+      },
+      {
+        day: 3,
+        title: 'Embarque en crucero',
+        description: 'Traslado al puerto del Pireo y embarque en crucero por las islas griegas.',
+      },
+      {
+        day: 4,
+        title: 'Mykonos',
+        description: 'Día completo en la cosmopolita isla de Mykonos.',
+      },
+      {
+        day: 5,
+        title: 'Santorini',
+        description: 'Visita a la espectacular isla de Santorini con sus casas blancas y azules.',
+      },
+      {
+        day: 6,
+        title: 'Creta',
+        description: 'Exploración de Heraklion y el Palacio de Knossos en Creta.',
+      },
+      {
+        day: 7,
+        title: 'Rodas',
+        description: 'Visita a la medieval ciudad de Rodas y sus playas.',
+      },
+      {
+        day: 8,
+        title: 'Día de navegación',
+        description: 'Disfrute de las instalaciones del crucero en día de navegación.',
+      },
+      {
+        day: 9,
+        title: 'Regreso a Atenas',
+        description: 'Desembarque y última noche en Atenas.',
+      },
+      {
+        day: 10,
+        title: 'Regreso a Uruguay',
+        description: 'Traslado al aeropuerto y vuelo de regreso.',
+      }
+    ],
+    included_services: [
+      {
+        icon: 'Plane',
+        title: 'Vuelos',
+        description: 'Vuelos internacionales con tasas incluidas',
+      },
+      {
+        icon: 'Hotel',
+        title: 'Alojamiento',
+        description: '2 noches en Atenas y 7 noches en crucero',
+      },
+      {
+        icon: 'Ship',
+        title: 'Crucero',
+        description: 'Crucero en pensión completa por las islas',
+      },
+      {
+        icon: 'Utensils',
+        title: 'Comidas',
+        description: 'Todas las comidas en el crucero incluidas',
+      },
+      {
+        icon: 'Map',
+        title: 'Excursiones',
+        description: 'Excursiones en cada isla con guía en español',
+      }
+    ]
+  },
+  {
+    id: '22',
+    title: 'Sudáfrica Safari y Ciudad',
+    destination: 'Ciudad del Cabo, Sudáfrica',
+    description: 'Combina la emoción de un safari en la sabana africana con la belleza de Ciudad del Cabo en este viaje único que te acercará a los "Big Five" y a paisajes impresionantes.',
+    price: 210000,
+    departure_date: '2024-09-25T00:00:00Z',
+    return_date: '2024-10-05T00:00:00Z',
+    available_spots: 12,
+    image_url: 'https://images.pexels.com/photos/33045/lion-wild-africa-african.jpg',
+    created_at: '2024-03-15T00:00:00Z',
+    updated_at: '2024-03-15T00:00:00Z',
+    category: 'internacional',
+    itinerary: [
+      {
+        day: 1,
+        title: 'Vuelo a Johannesburgo',
+        description: 'Salida desde Montevideo con destino a Johannesburgo.',
+      },
+      {
+        day: 2,
+        title: 'Llegada a Johannesburgo',
+        description: 'Recepción en el aeropuerto y traslado al hotel.',
+      },
+      {
+        day: 3,
+        title: 'Parque Kruger',
+        description: 'Traslado al Parque Nacional Kruger, check-in en lodge.',
+      },
+      {
+        day: 4,
+        title: 'Safari matutino',
+        description: 'Safari al amanecer para avistar los "Big Five".',
+      },
+      {
+        day: 5,
+        title: 'Safari vespertino',
+        description: 'Safari al atardecer y cena bajo las estrellas.',
+      },
+      {
+        day: 6,
+        title: 'Vuelo a Ciudad del Cabo',
+        description: 'Traslado al aeropuerto y vuelo a Ciudad del Cabo.',
+      },
+      {
+        day: 7,
+        title: 'Table Mountain',
+        description: 'Visita a Table Mountain y recorrido por la ciudad.',
+      },
+      {
+        day: 8,
+        title: 'Cabo de Buena Esperanza',
+        description: 'Excursión al Cabo de Buena Esperanza y colonia de pingüinos.',
+      },
+      {
+        day: 9,
+        title: 'Ruta de los Vinos',
+        description: 'Tour por la famosa región vinícola de Stellenbosch.',
+      },
+      {
+        day: 10,
+        title: 'Regreso a Uruguay',
+        description: 'Traslado al aeropuerto y vuelo de regreso.',
+      }
+    ],
+    included_services: [
+      {
+        icon: 'Plane',
+        title: 'Vuelos',
+        description: 'Vuelos internacionales y domésticos',
+      },
+      {
+        icon: 'Hotel',
+        title: 'Alojamiento',
+        description: 'Hoteles 4* y lodge de safari',
+      },
+      {
+        icon: 'Jeep',
+        title: 'Safaris',
+        description: '4 safaris en vehículos 4x4 abiertos',
+      },
+      {
+        icon: 'Utensils',
+        title: 'Comidas',
+        description: 'Desayunos diarios y pensión completa en safari',
+      },
+      {
+        icon: 'Users',
+        title: 'Guías',
+        description: 'Guías especializados en español',
       }
     ]
   },
