@@ -40,30 +40,30 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
           
           {/* Price tag */}
-          <div className="absolute top-4 right-4 bg-primary-600 text-white py-1 px-3 font-bold rounded-full shadow-md">
+          <div className="absolute top-4 right-4 bg-primary-600 text-white py-1 px-3 font-bold rounded-full shadow-md text-sm">
             ${trip.price.toLocaleString('es-UY')}
           </div>
           
-          {/* Category badge */}
-          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm">
+          {/* Category badge - Only on desktop */}
+          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm hidden md:block">
             {trip.category === 'nacional' ? 'Nacional' : 
              trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
           </div>
           
           {/* Title and destination - Positioned at bottom of image */}
           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-            <h3 className="font-heading font-bold text-xl mb-1 drop-shadow-md">{trip.title}</h3>
+            <h3 className="font-heading font-bold text-lg md:text-xl mb-1 drop-shadow-md">{trip.title}</h3>
             <div className="flex items-center text-white/90 text-sm mb-1">
               <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
               <span className="truncate">{trip.destination}</span>
             </div>
           </div>
           
-          {/* Subtle view details link - Positioned at bottom right */}
+          {/* Subtle view details link - Only on desktop */}
           {showActions && (
             <Link 
               to={`/viajes/${trip.id}`} 
-              className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center group-hover:bg-primary-600"
+              className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center group-hover:bg-primary-600 hidden md:flex"
             >
               <span>Ver detalles</span>
               <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
@@ -72,7 +72,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
         </div>
         
         {/* Info container - Smaller portion with key details */}
-        <div className="bg-white p-4">
+        <div className="bg-white p-3 md:p-4">
           <div className="flex items-center justify-between text-sm text-secondary-600">
             <div className="flex items-center">
               <Calendar className="h-3.5 w-3.5 mr-1 text-primary-600 flex-shrink-0" />
