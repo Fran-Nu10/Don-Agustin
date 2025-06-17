@@ -30,7 +30,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
       <Link to={`/viajes/${trip.id}`} className="block h-full">
         <div className="relative h-full overflow-hidden rounded-lg shadow-lg group">
           {/* Image container - Larger portion of the card */}
-          <div className="relative h-[280px] overflow-hidden">
+          <div className="relative h-[320px] md:h-[380px] overflow-hidden">
             <img
               src={trip.image_url}
               alt={trip.title}
@@ -41,7 +41,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
             
             {/* Price tag */}
-            <div className="absolute top-4 right-4 bg-primary-600 text-white py-1 px-3 font-bold rounded-full shadow-md text-sm">
+            <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
               ${trip.price.toLocaleString('es-UY')}
             </div>
             
@@ -52,10 +52,10 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             </div>
             
             {/* Title and destination - Positioned at bottom of image */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-              <h3 className="font-heading font-bold text-lg md:text-xl mb-1 drop-shadow-md">{trip.title}</h3>
+            <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+              <h3 className="font-heading font-bold text-xl md:text-2xl mb-2 drop-shadow-md">{trip.title}</h3>
               <div className="flex items-center text-white/90 text-sm mb-1">
-                <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
                 <span className="truncate">{trip.destination}</span>
               </div>
             </div>
@@ -72,18 +72,18 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
           </div>
           
           {/* Info container - Smaller portion with key details - Only on desktop */}
-          <div className="bg-white p-3 md:p-4 hidden md:block">
+          <div className="bg-white p-4 md:p-5 hidden md:block">
             <div className="flex items-center justify-between text-sm text-secondary-600">
               <div className="flex items-center">
-                <Calendar className="h-3.5 w-3.5 mr-1 text-primary-600 flex-shrink-0" />
-                <span className="text-xs">
+                <Calendar className="h-4 w-4 mr-1.5 text-primary-600 flex-shrink-0" />
+                <span>
                   {tripDuration} {tripDuration === 1 ? 'día' : 'días'}
                 </span>
               </div>
               
               <div className="flex items-center">
-                <Tag className="h-3.5 w-3.5 mr-1 text-primary-600 flex-shrink-0" />
-                <span className="text-xs">
+                <Tag className="h-4 w-4 mr-1.5 text-primary-600 flex-shrink-0" />
+                <span>
                   {trip.available_spots} {trip.available_spots === 1 ? 'cupo' : 'cupos'}
                 </span>
               </div>
