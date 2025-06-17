@@ -21,7 +21,8 @@ export function FeatureCard({ icon, title, description, bgImage }: FeatureCardPr
           alt={title} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-950/90 via-primary-900/70 to-primary-800/50 group-hover:from-primary-950/95"></div>
+        {/* Overlay con menos opacidad para que se vea el color original de la imagen */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-950/60 via-primary-900/40 to-transparent"></div>
       </div>
       
       {/* Content */}
