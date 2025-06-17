@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trip } from '../../types';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -16,11 +16,13 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
     const handleResize = () => {
       setItemsPerPage(1); // Always show 1 item per page for full-width design
       setCurrentPage(0); // Reset to first page on resize
+      setIsMobile(window.innerWidth < 768);
     };
     
     handleResize();
@@ -84,6 +86,27 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
         </div>
 
         <div className="relative">
+          {/* Navigation Buttons - Only show on desktop */}
+          {!isMobile && (
+            <>
+              <button
+                onClick={prevPage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-secondary-50 transition-colors hidden md:flex items-center justify-center"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="h-6 w-6 text-secondary-600" />
+              </button>
+              
+              <button
+                onClick={nextPage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-secondary-50 transition-colors hidden md:flex items-center justify-center"
+                aria-label="Siguiente"
+              >
+                <ChevronRight className="h-6 w-6 text-secondary-600" />
+              </button>
+            </>
+          )}
+
           {/* Trips Carousel - Mobile optimized */}
           <div 
             ref={containerRef}
@@ -110,36 +133,41 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         <img
                           src={trip.image_url}
                           alt={trip.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         
-                        {/* Content overlay - Simplified for mobile */}
-                        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 text-white">
-                          <div className="max-w-3xl">
-                            <div className="bg-primary-600/90 text-white inline-block px-3 py-1 rounded-full text-sm font-medium mb-3">
-                              Salida Grupal
-                            </div>
-                            
-                            <h3 className="font-heading font-bold text-2xl md:text-3xl mb-3 drop-shadow-md">
-                              {trip.title}
-                            </h3>
-                            
-                            {/* Desktop-only info */}
-                            <div className="hidden md:flex md:flex-wrap md:gap-4 md:mb-4">
-                              <div className="flex items-center text-white/90">
-                                <MapPin className="h-4 w-4 mr-2 text-primary-500" />
-                                <span>{trip.destination}</span>
-                              </div>
-                              
-                              <div className="flex items-center text-white/90">
+                        {/* Price tag */}
+                        <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
+                          ${trip.price.toLocaleString('es-UY')}
+                        </div>
+                        
+                        {/* Category badge - Only on desktop */}
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm hidden md:block">
+                          Salida Grupal
+                        </div>
+                        
+                        {/* Title and destination - Positioned at bottom of image */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                          <h3 className="font-heading font-bold text-xl md:text-2xl mb-2 drop-shadow-md">{trip.title}</h3>
+                          <div className="flex items-center text-white/90 text-sm mb-1">
+                            <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            <span className="truncate">{trip.destination}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Info container - Desktop only */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5 hidden md:block">
+                          <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 max-w-md">
+                            <div className="flex flex-wrap gap-4 text-white/90 text-sm mb-3">
+                              <div className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>
                                   {format(new Date(trip.departure_date), 'dd MMM yyyy', { locale: es })}
                                 </span>
                               </div>
                               
-                              <div className="flex items-center text-white/90">
+                              <div className="flex items-center">
                                 <Clock className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>
                                   {Math.ceil(
@@ -150,16 +178,9 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                               </div>
                             </div>
                             
-                            {/* Mobile-only destination */}
-                            <div className="flex md:hidden items-center text-white/90 mb-3">
-                              <MapPin className="h-4 w-4 mr-2 text-primary-500" />
-                              <span>{trip.destination}</span>
-                            </div>
-                            
-                            {/* Price - Smaller on mobile */}
-                            <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-lg inline-block">
-                              <p className="text-white font-bold text-xl md:text-2xl">${trip.price.toLocaleString('es-UY')}</p>
-                            </div>
+                            <p className="text-white/90 line-clamp-3 text-sm">
+                              {trip.description}
+                            </p>
                           </div>
                         </div>
                       </div>
