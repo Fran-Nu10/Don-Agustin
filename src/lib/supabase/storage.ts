@@ -5,6 +5,28 @@ import { toast } from 'react-hot-toast';
 const PDF_BUCKET = 'trip-pdfs';
 
 /**
+ * Sanitizes a filename by removing special characters and normalizing it
+ * @param filename The original filename
+ * @returns A sanitized filename safe for storage
+ */
+function sanitizeFilename(filename: string): string {
+  return filename
+    // Normalize unicode characters (converts ñ to n, á to a, etc.)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    // Replace spaces with underscores
+    .replace(/\s+/g, '_')
+    // Remove any characters that aren't alphanumeric, periods, hyphens, or underscores
+    .replace(/[^a-zA-Z0-9._-]/g, '')
+    // Remove multiple consecutive underscores
+    .replace(/_+/g, '_')
+    // Remove leading/trailing underscores
+    .replace(/^_+|_+$/g, '')
+    // Ensure it's not empty
+    || 'document';
+}
+
+/**
  * Uploads a PDF file to Supabase Storage
  * @param file The PDF file to upload
  * @param tripId The ID of the trip (used for folder organization)
@@ -26,7 +48,8 @@ export async function uploadPDF(file: File, tripId: string): Promise<{ url: stri
 
     // Create a unique file name to avoid collisions
     const timestamp = new Date().getTime();
-    const fileName = `${tripId}/${timestamp}-${file.name.replace(/\s+/g, '_')}`;
+    const sanitizedFileName = sanitizeFilename(file.name);
+    const fileName = `${tripId}/${timestamp}-${sanitizedFileName}`;
 
     // Upload the file
     const { data, error } = await supabase.storage
