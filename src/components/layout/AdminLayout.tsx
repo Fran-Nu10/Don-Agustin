@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3, ChevronLeft, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 
@@ -11,6 +11,8 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, isOwner, isEmployee, logout, loading } = useAuth();
   const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
@@ -25,16 +27,39 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return location.pathname.startsWith(path);
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
     <div className="flex h-screen bg-secondary-100">
-      {/* Sidebar - Updated with gradient background */}
-      <div className="hidden md:flex md:flex-col md:w-64 bg-gradient-to-b from-secondary-800 to-secondary-900 shadow-md">
-        <div className="p-4 border-b border-secondary-700">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-heading font-bold text-lg text-white">
-              Don Agustín Viajes
-            </span>
-          </Link>
+      {/* Sidebar - Updated with gradient background and toggle button */}
+      <div 
+        className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'md:w-20' : 'md:w-64'} bg-gradient-to-b from-secondary-800 to-secondary-900 shadow-md transition-all duration-300`}
+      >
+        <div className="p-4 border-b border-secondary-700 flex items-center justify-between">
+          {!sidebarCollapsed ? (
+            <Link to="/" className="flex items-center space-x-2">
+              <span className="font-heading font-bold text-lg text-white">
+                Panel Administrativo
+              </span>
+            </Link>
+          ) : (
+            <Link to="/" className="flex items-center justify-center">
+              <LayoutDashboard className="h-6 w-6 text-white" />
+            </Link>
+          )}
+          
+          <button 
+            onClick={toggleSidebar}
+            className="text-white hover:text-primary-300 transition-colors"
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -42,6 +67,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             to="/admin/dashboard"
             icon={<LayoutDashboard className="h-5 w-5" />}
             isActive={isActive('/admin/dashboard')}
+            collapsed={sidebarCollapsed}
           >
             Dashboard
           </SidebarLink>
@@ -50,6 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             to="/admin/viajes"
             icon={<Map className="h-5 w-5" />}
             isActive={isActive('/admin/viajes')}
+            collapsed={sidebarCollapsed}
           >
             Viajes
           </SidebarLink>
@@ -60,6 +87,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 to="/admin/clientes"
                 icon={<UserCheck className="h-5 w-5" />}
                 isActive={isActive('/admin/clientes')}
+                collapsed={sidebarCollapsed}
               >
                 CRM - Clientes
               </SidebarLink>
@@ -68,6 +96,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 to="/admin/cotizaciones"
                 icon={<Calculator className="h-5 w-5" />}
                 isActive={isActive('/admin/cotizaciones')}
+                collapsed={sidebarCollapsed}
               >
                 Cotizaciones
               </SidebarLink>
@@ -78,6 +107,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     to="/admin/reportes"
                     icon={<BarChart3 className="h-5 w-5" />}
                     isActive={isActive('/admin/reportes')}
+                    collapsed={sidebarCollapsed}
                   >
                     Reportes Financieros
                   </SidebarLink>
@@ -86,6 +116,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     to="/admin/blog"
                     icon={<FileText className="h-5 w-5" />}
                     isActive={isActive('/admin/blog')}
+                    collapsed={sidebarCollapsed}
                   >
                     Blog
                   </SidebarLink>
@@ -99,10 +130,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <Button
             onClick={() => logout()}
             variant="ghost"
-            className="w-full justify-start text-secondary-300 hover:text-white hover:bg-secondary-700"
+            className={`${sidebarCollapsed ? 'justify-center' : 'justify-start w-full'} text-secondary-300 hover:text-white hover:bg-secondary-700`}
           >
             <LogOut className="h-5 w-5 mr-2" />
-            Cerrar Sesión
+            {!sidebarCollapsed && <span>Cerrar Sesión</span>}
           </Button>
         </div>
       </div>
@@ -111,14 +142,103 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header - Updated with gradient background */}
         <header className="md:hidden bg-gradient-to-r from-secondary-800 to-secondary-900 shadow-md p-4 flex items-center justify-between">
-          <Link to="/" className="font-heading font-bold text-lg text-white">
-            Don Agustín Viajes
-          </Link>
-          
-          <div className="flex items-center space-x-4">
-            <MobileNavMenu isOwner={isOwner()} isEmployee={isEmployee()} logout={logout} />
+          <div className="font-heading font-bold text-lg text-white">
+            Panel Administrativo
           </div>
+          
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-white focus:outline-none"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
         </header>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50 bg-secondary-900/95 pt-16">
+            <nav className="p-4 space-y-2">
+              <MobileNavLink
+                to="/admin/dashboard"
+                isActive={isActive('/admin/dashboard')}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <LayoutDashboard className="h-5 w-5 mr-3" />
+                Dashboard
+              </MobileNavLink>
+              
+              <MobileNavLink
+                to="/admin/viajes"
+                isActive={isActive('/admin/viajes')}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Map className="h-5 w-5 mr-3" />
+                Viajes
+              </MobileNavLink>
+              
+              {(isOwner() || isEmployee()) && (
+                <>
+                  <MobileNavLink
+                    to="/admin/clientes"
+                    isActive={isActive('/admin/clientes')}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <UserCheck className="h-5 w-5 mr-3" />
+                    CRM - Clientes
+                  </MobileNavLink>
+                  
+                  <MobileNavLink
+                    to="/admin/cotizaciones"
+                    isActive={isActive('/admin/cotizaciones')}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Calculator className="h-5 w-5 mr-3" />
+                    Cotizaciones
+                  </MobileNavLink>
+                  
+                  {isOwner() && (
+                    <>
+                      <MobileNavLink
+                        to="/admin/reportes"
+                        isActive={isActive('/admin/reportes')}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <BarChart3 className="h-5 w-5 mr-3" />
+                        Reportes Financieros
+                      </MobileNavLink>
+                      
+                      <MobileNavLink
+                        to="/admin/blog"
+                        isActive={isActive('/admin/blog')}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <FileText className="h-5 w-5 mr-3" />
+                        Blog
+                      </MobileNavLink>
+                    </>
+                  )}
+                </>
+              )}
+              
+              <div className="border-t border-secondary-700 my-4"></div>
+              
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center w-full px-4 py-3 text-white hover:bg-secondary-700 rounded-lg transition-colors"
+              >
+                <LogOut className="h-5 w-5 mr-3" />
+                Cerrar Sesión
+              </button>
+            </nav>
+          </div>
+        )}
         
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-6">
@@ -146,117 +266,44 @@ interface SidebarLinkProps {
   icon: React.ReactNode;
   isActive: boolean;
   children: React.ReactNode;
+  collapsed: boolean;
 }
 
-function SidebarLink({ to, icon, isActive, children }: SidebarLinkProps) {
+function SidebarLink({ to, icon, isActive, children, collapsed }: SidebarLinkProps) {
   return (
     <Link
       to={to}
-      className={`flex items-center px-3 py-2 rounded-md font-medium transition-colors ${
+      className={`flex items-center ${collapsed ? 'justify-center' : 'px-3'} py-2 rounded-md font-medium transition-colors ${
         isActive
           ? 'bg-primary-600 text-white'
           : 'text-secondary-300 hover:text-white hover:bg-secondary-700/50'
       }`}
     >
-      <span className="mr-3">{icon}</span>
-      {children}
+      <span className={collapsed ? '' : 'mr-3'}>{icon}</span>
+      {!collapsed && children}
     </Link>
   );
 }
 
-interface MobileNavMenuProps {
-  isOwner: boolean;
-  isEmployee: boolean;
-  logout: () => Promise<void>;
+interface MobileNavLinkProps {
+  to: string;
+  isActive: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
 }
 
-function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-
+function MobileNavLink({ to, isActive, onClick, children }: MobileNavLinkProps) {
   return (
-    <div className="relative">
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="text-white">
-        <span className="sr-only">Open menu</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </Button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-gradient-to-b from-secondary-800 to-secondary-900 rounded-md shadow-lg py-1 z-10">
-          <Link
-            to="/admin/dashboard"
-            className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/admin/viajes"
-            className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Viajes
-          </Link>
-          {(isOwner || isEmployee) && (
-            <>
-              <Link
-                to="/admin/clientes"
-                className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                CRM - Clientes
-              </Link>
-              <Link
-                to="/admin/cotizaciones"
-                className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Cotizaciones
-              </Link>
-              {isOwner && (
-                <>
-                  <Link
-                    to="/admin/reportes"
-                    className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Reportes Financieros
-                  </Link>
-                  <Link
-                    to="/admin/blog"
-                    className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Blog
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-          <div className="border-t border-secondary-700 my-1"></div>
-          <button
-            onClick={() => {
-              logout();
-              setIsOpen(false);
-            }}
-            className="block w-full text-left px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-      )}
-    </div>
+    <Link
+      to={to}
+      className={`flex items-center px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+        isActive
+          ? 'bg-primary-600 text-white shadow-md'
+          : 'text-white hover:bg-secondary-700'
+      }`}
+      onClick={onClick}
+    >
+      {children}
+    </Link>
   );
 }
