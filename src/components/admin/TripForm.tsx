@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { TripFormData, Trip, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
 import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
 
 interface TripFormProps {
   initialData?: Trip;
@@ -95,13 +97,13 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido');
+      toast.error('Por favor selecciona un archivo de imagen válido');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo es demasiado grande. Por favor selecciona una imagen menor a 5MB');
+      toast.error('El archivo es demasiado grande. Por favor selecciona una imagen menor a 5MB');
       return;
     }
 
@@ -135,54 +137,47 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Error al subir la imagen. Por favor intenta nuevamente.');
+      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
     } finally {
       setIsUploadingImage(false);
     }
   };
 
-  // Handle PDF file selection - MEJORADO PARA ARREGLAR EL PROBLEMA
+  // Handle PDF file selection - UPDATED TO USE SUPABASE STORAGE
   const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      alert('Por favor selecciona un archivo PDF válido');
+      toast.error('Por favor selecciona un archivo PDF válido');
       return;
     }
 
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB');
+      toast.error('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB');
       return;
     }
 
     setIsUploadingPdf(true);
+    setPdfFile(file);
     
     try {
-      setPdfFile(file);
-
-      // En lugar de crear una URL temporal, usamos URLs de PDFs de ejemplo
-      // En producción, aquí subirías el archivo a tu servicio de almacenamiento
-      const demoPdfUrls = [
-        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-        'https://www.africau.edu/images/default/sample.pdf',
-        'https://file-examples.com/storage/fe86c96b3f1b8b1f7b1b1b1/2017/10/file_example_PDF_500_kB.pdf',
-        'https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf',
-      ];
+      // Generate a temporary ID if we don't have a trip ID yet
+      const tempId = initialData?.id || `temp-${Date.now()}`;
       
-      // Simular delay de carga
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Upload to Supabase Storage
+      const result = await uploadPDF(file, tempId);
       
-      // Usar una URL de ejemplo aleatoria
-      const randomPdfUrl = demoPdfUrls[Math.floor(Math.random() * demoPdfUrls.length)];
-      setValue('info_pdf_url', randomPdfUrl);
-      setValue('info_pdf_name', file.name);
-      
+      if (result) {
+        setValue('info_pdf_url', result.url);
+        setValue('info_pdf_name', result.name);
+        toast.success('PDF subido correctamente');
+      }
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      alert('Error al procesar el PDF. Por favor intenta nuevamente.');
+      toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
     } finally {
       setIsUploadingPdf(false);
     }
@@ -201,11 +196,22 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
-  // Remove PDF
-  const removePdf = () => {
-    // Liberar la URL temporal si existe
-    if (watchPdfUrl && watchPdfUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(watchPdfUrl);
+  // Remove PDF - UPDATED TO DELETE FROM SUPABASE STORAGE
+  const removePdf = async () => {
+    const currentPdfUrl = watchPdfUrl;
+    
+    if (currentPdfUrl) {
+      // If it's a Supabase Storage URL, delete it
+      if (currentPdfUrl.includes('storage.googleapis.com') || currentPdfUrl.includes('supabase.co')) {
+        try {
+          const deleted = await deletePDF(currentPdfUrl);
+          if (deleted) {
+            toast.success('PDF eliminado correctamente');
+          }
+        } catch (error) {
+          console.error('Error deleting PDF from storage:', error);
+        }
+      }
     }
     
     setPdfFile(null);
@@ -219,72 +225,34 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
-  // Función mejorada para ver PDF - COMPLETAMENTE REESCRITA
+  // View PDF - UPDATED FOR BETTER BROWSER COMPATIBILITY
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
-    try {
-      // Verificar si la URL es válida
-      if (!pdfUrl || pdfUrl.trim() === '') {
-        alert('No hay URL de PDF disponible');
-        return;
-      }
+    if (!pdfUrl) {
+      toast.error('No hay URL de PDF disponible');
+      return;
+    }
 
-      // Para URLs externas válidas, abrir en nueva pestaña con un enfoque más robusto
-      if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
-        // Crear un iframe temporal invisible
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
+    try {
+      // Open in a new tab with proper handling
+      const newWindow = window.open(pdfUrl, '_blank');
+      
+      if (!newWindow) {
+        toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
         
-        // Usar el iframe para abrir el PDF, lo que evita problemas de bloqueo de popups
-        if (iframe.contentWindow) {
-          iframe.contentWindow.document.open();
-          iframe.contentWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>${pdfName}</title>
-                <style>
-                  body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-                  .pdf-container { width: 100%; height: 100vh; }
-                </style>
-              </head>
-              <body>
-                <embed class="pdf-container" src="${pdfUrl}" type="application/pdf" />
-              </body>
-            </html>
-          `);
-          iframe.contentWindow.document.close();
-          
-          // Abrir en nueva pestaña
-          const newWindow = window.open('', '_blank');
-          if (newWindow) {
-            newWindow.document.write(iframe.contentWindow.document.documentElement.outerHTML);
-            newWindow.document.close();
-            // Eliminar el iframe temporal
-            setTimeout(() => document.body.removeChild(iframe), 100);
-          } else {
-            alert('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
-            // Ofrecer descarga directa como alternativa
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = pdfName || 'documento.pdf';
-            link.target = '_blank';
-            link.click();
-          }
-        }
+        // Fallback: create a temporary link and click it
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       } else {
-        alert('URL de PDF no válida');
+        toast.success('PDF abierto en nueva pestaña');
       }
     } catch (error) {
-      console.error('Error opening PDF:', error);
-      alert('No se pudo abrir el PDF. Intenta descargarlo directamente.');
-      
-      // Ofrecer descarga como alternativa
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = pdfName || 'documento.pdf';
-      link.target = '_blank';
-      link.click();
+      console.error('Error al abrir el PDF:', error);
+      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
@@ -474,58 +442,61 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           />
         </div>
 
-        {/* PDF Upload Section - REDISEÑADO PARA SER MÁS MINIMALISTA */}
+        {/* PDF Upload Section - UPDATED FOR SUPABASE STORAGE */}
         <div className="mt-6">
           <label className="block mb-2 text-sm font-medium text-secondary-900 flex items-center">
-            <FileText className="h-4 w-4 mr-2 text-primary-600" />
+            <FileText className="h-5 w-5 mr-2 text-primary-600" />
             PDF Informativo (Opcional)
           </label>
           
           {watchPdfUrl && watchPdfName ? (
-            <div className="bg-white border border-green-200 rounded-lg overflow-hidden">
-              <div className="flex items-center p-3 md:p-4">
-                <div className="flex-shrink-0">
-                  <div className="bg-green-100 p-2 rounded-lg">
-                    <FileText className="h-5 w-5 text-green-600" />
-                  </div>
+            <div className="bg-white border border-green-200 rounded-lg p-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-green-100 p-2 rounded-lg mr-3">
+                  <FileText className="h-6 w-6 text-green-600" />
                 </div>
-                <div className="ml-3 flex-grow min-w-0">
-                  <p className="font-medium text-secondary-900 truncate">{watchPdfName}</p>
-                  <p className="text-xs text-green-600 mt-0.5">PDF cargado correctamente</p>
+                <div>
+                  <p className="font-medium text-secondary-900">{watchPdfName}</p>
+                  <p className="text-sm text-green-600">PDF cargado correctamente</p>
                 </div>
-                <div className="flex-shrink-0 flex space-x-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleViewPdf(watchPdfUrl, watchPdfName)}
-                    className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5"
-                    title="Ver PDF"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={removePdf}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5"
-                    title="Eliminar PDF"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewPdf(watchPdfUrl, watchPdfName)}
+                  className="text-green-600 border-green-300 hover:bg-green-50"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removePdf}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           ) : (
             <div 
               onClick={() => document.getElementById('pdf-upload')?.click()}
-              className="border-2 border-dashed border-secondary-300 rounded-lg p-4 text-center hover:border-primary-300 transition-colors cursor-pointer"
+              className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors cursor-pointer"
             >
-              <FileText className="h-8 w-8 text-secondary-400 mx-auto mb-2" />
-              <p className="text-sm text-secondary-600">
+              <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
+              <p className="text-secondary-600 mb-2">
                 Haz clic para subir un PDF informativo
               </p>
+              {isUploadingPdf && (
+                <div className="mt-2 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                  <span className="ml-2 text-xs text-primary-600">Subiendo...</span>
+                </div>
+              )}
             </div>
           )}
           
@@ -536,6 +507,30 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             onChange={handlePdfChange}
             className="hidden"
           />
+          
+          <div className="mt-3 flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('pdf-upload')?.click()}
+              disabled={isUploadingPdf}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              {isUploadingPdf ? 'Procesando PDF...' : 'Seleccionar PDF'}
+            </Button>
+            
+            {watchPdfUrl && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={removePdf}
+                className="text-red-600 hover:text-red-700"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Eliminar PDF
+              </Button>
+            )}
+          </div>
           
           {/* Hidden inputs for PDF data */}
           <input type="hidden" {...register('info_pdf_url')} />

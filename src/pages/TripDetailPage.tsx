@@ -11,7 +11,7 @@ import { getTrip, getTrips } from '../lib/supabase';
 import { Trip } from '../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download } from 'lucide-react';
+import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
@@ -57,7 +57,7 @@ export function TripDetailPage() {
     }
   };
 
-  // Función mejorada para manejar la visualización del PDF
+  // Improved PDF viewing function
   const handleViewPdf = (pdfUrl: string, pdfName: string) => {
     if (!pdfUrl) {
       toast.error('No hay URL de PDF disponible');
@@ -65,14 +65,47 @@ export function TripDetailPage() {
     }
 
     try {
-      // Abrir en una nueva pestaña
-      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+      // Open in a new tab with proper handling
+      const newWindow = window.open(pdfUrl, '_blank');
       
-      // Mostrar mensaje de éxito
-      toast.success('PDF abierto en nueva pestaña');
+      if (!newWindow) {
+        toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
+        
+        // Fallback: create a temporary link and click it
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast.success('PDF abierto en nueva pestaña');
+      }
     } catch (error) {
       console.error('Error al abrir el PDF:', error);
       toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
+    }
+  };
+
+  // Download PDF function
+  const handleDownloadPdf = (pdfUrl: string, pdfName: string) => {
+    if (!pdfUrl) {
+      toast.error('No hay URL de PDF disponible');
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = pdfName || 'documento.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Descarga iniciada');
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      toast.error('No se pudo descargar el PDF. Intenta nuevamente.');
     }
   };
 
@@ -187,7 +220,7 @@ export function TripDetailPage() {
                     </div>
                   </div>
 
-                  {/* PDF Information - MEJORADO */}
+                  {/* PDF Information - IMPROVED */}
                   {trip.info_pdf_url && trip.info_pdf_name && (
                     <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                       <div className="flex items-center">
@@ -207,18 +240,17 @@ export function TripDetailPage() {
                             onClick={() => handleViewPdf(trip.info_pdf_url!, trip.info_pdf_name!)}
                             className="text-blue-600 border-blue-300 hover:bg-blue-50"
                           >
+                            <Eye className="h-4 w-4 mr-2" />
                             Ver PDF
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              window.open(trip.info_pdf_url!, '_blank');
-                              toast.success('Descarga iniciada');
-                            }}
+                            onClick={() => handleDownloadPdf(trip.info_pdf_url!, trip.info_pdf_name!)}
                             className="text-blue-600 hover:bg-blue-50"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 mr-2" />
+                            Descargar
                           </Button>
                         </div>
                       </div>
