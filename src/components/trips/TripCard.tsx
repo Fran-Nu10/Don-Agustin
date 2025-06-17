@@ -1,10 +1,9 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, MapPin, Tag } from 'lucide-react';
+import { Calendar, MapPin, Tag, ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
 import { Link } from 'react-router-dom';
-import { Button } from '../ui/Button';
 import { motion } from 'framer-motion';
 
 interface TripCardProps {
@@ -59,11 +58,22 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
               <span className="truncate">{trip.destination}</span>
             </div>
           </div>
+          
+          {/* Subtle view details link - Positioned at bottom right */}
+          {showActions && (
+            <Link 
+              to={`/viajes/${trip.id}`} 
+              className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center group-hover:bg-primary-600"
+            >
+              <span>Ver detalles</span>
+              <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          )}
         </div>
         
         {/* Info container - Smaller portion with key details */}
         <div className="bg-white p-4">
-          <div className="flex items-center justify-between text-sm text-secondary-600 mb-3">
+          <div className="flex items-center justify-between text-sm text-secondary-600">
             <div className="flex items-center">
               <Calendar className="h-3.5 w-3.5 mr-1 text-primary-600 flex-shrink-0" />
               <span className="text-xs">
@@ -82,18 +92,6 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
               {formattedDepartureDate.split(' ')[1]}
             </div>
           </div>
-          
-          {showActions && (
-            <Link to={`/viajes/${trip.id}`} className="w-full">
-              <Button 
-                variant="primary" 
-                fullWidth 
-                className="text-sm py-2"
-              >
-                Ver detalles
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
     </motion.div>

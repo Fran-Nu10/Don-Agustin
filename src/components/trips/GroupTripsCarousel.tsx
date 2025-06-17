@@ -166,10 +166,6 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                             </div>
                           </div>
                           
-                          <p className="text-white/80 mb-6 line-clamp-3 max-w-2xl">
-                            {trip.description}
-                          </p>
-                          
                           <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
                               <span className="text-white/70 text-sm">Precio</span>
@@ -177,7 +173,10 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                             </div>
                             
                             <Link to={`/viajes/${trip.id}`}>
-                              <Button variant="primary" className="shadow-lg">
+                              <Button 
+                                variant="outline" 
+                                className="bg-white/20 backdrop-blur-sm border-white/40 text-white hover:bg-white/30"
+                              >
                                 Ver detalles
                               </Button>
                             </Link>
