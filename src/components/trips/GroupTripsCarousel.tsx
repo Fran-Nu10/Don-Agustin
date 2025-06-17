@@ -85,10 +85,10 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
         </div>
 
         <div className="relative">
-          {/* Navigation Buttons - Only show on desktop */}
+          {/* Navigation Buttons */}
           <button
             onClick={prevPage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-secondary-50 transition-colors hidden md:block"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-secondary-50 transition-colors"
             aria-label="Anterior"
           >
             <ChevronLeft className="h-6 w-6 text-secondary-600" />
@@ -96,13 +96,13 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
           
           <button
             onClick={nextPage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-secondary-50 transition-colors hidden md:block"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-secondary-50 transition-colors"
             aria-label="Siguiente"
           >
             <ChevronRight className="h-6 w-6 text-secondary-600" />
           </button>
 
-          {/* Trips Carousel - IMPROVED FOR VERTICAL SCROLLING */}
+          {/* Trips Carousel - IMPROVED VISUAL DESIGN */}
           <div 
             ref={containerRef}
             className="overflow-hidden touch-pan-x-only" // Custom class for horizontal-only touch
@@ -121,55 +121,67 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                   transition={{ duration: 0.3 }}
                   style={{ touchAction: 'auto' }} // Allow normal touch behavior on the content
                 >
-                  <div className="bg-white rounded-lg overflow-hidden shadow-card">
-                    <div className="grid grid-cols-1 md:grid-cols-2">
-                      {/* Fixed height image container */}
-                      <div className="relative h-64 md:h-80 lg:h-96">
-                        <img
-                          src={trip.image_url}
-                          alt={trip.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-4 right-4 bg-primary-950 text-white py-2 px-4 rounded-full text-lg font-bold">
-                          ${trip.price.toLocaleString('es-UY')}
-                        </div>
-                      </div>
+                  <div className="relative overflow-hidden rounded-xl shadow-xl">
+                    {/* Full-width image with overlay */}
+                    <div className="relative h-[400px] md:h-[500px]">
+                      <img
+                        src={trip.image_url}
+                        alt={trip.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       
-                      {/* Content with matching height - SCROLLABLE */}
-                      <div className="p-6 md:p-8 flex flex-col min-h-64 md:min-h-80 lg:min-h-96 touch-scroll">
-                        <h3 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
-                          {trip.title}
-                        </h3>
-                        
-                        <div className="flex items-center text-secondary-600 mb-2">
-                          <Calendar className="h-5 w-5 mr-2 text-primary-950 flex-shrink-0" />
-                          <span>
-                            {format(new Date(trip.departure_date), 'dd MMM yyyy', { locale: es })}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center text-secondary-600 mb-4">
-                          <Clock className="h-5 w-5 mr-2 text-primary-950 flex-shrink-0" />
-                          <span>
-                            {Math.ceil(
-                              (new Date(trip.return_date).getTime() - new Date(trip.departure_date).getTime()) / 
-                              (1000 * 60 * 60 * 24)
-                            )} días
-                          </span>
-                        </div>
-                        
-                        <div className="flex-grow overflow-y-auto touch-scroll">
-                          <p className="text-secondary-600 mb-6">
+                      {/* Content overlay */}
+                      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 text-white">
+                        <div className="max-w-3xl">
+                          <div className="bg-primary-600/90 text-white inline-block px-3 py-1 rounded-full text-sm font-medium mb-3">
+                            Salida Grupal
+                          </div>
+                          
+                          <h3 className="font-heading font-bold text-2xl md:text-3xl mb-3 drop-shadow-md">
+                            {trip.title}
+                          </h3>
+                          
+                          <div className="flex flex-wrap gap-4 mb-4">
+                            <div className="flex items-center text-white/90">
+                              <MapPin className="h-4 w-4 mr-2 text-primary-500" />
+                              <span>{trip.destination}</span>
+                            </div>
+                            
+                            <div className="flex items-center text-white/90">
+                              <Calendar className="h-4 w-4 mr-2 text-primary-500" />
+                              <span>
+                                {format(new Date(trip.departure_date), 'dd MMM yyyy', { locale: es })}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center text-white/90">
+                              <Clock className="h-4 w-4 mr-2 text-primary-500" />
+                              <span>
+                                {Math.ceil(
+                                  (new Date(trip.return_date).getTime() - new Date(trip.departure_date).getTime()) / 
+                                  (1000 * 60 * 60 * 24)
+                                )} días
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-white/80 mb-6 line-clamp-3 max-w-2xl">
                             {trip.description}
                           </p>
-                        </div>
-                        
-                        <div className="mt-auto">
-                          <Link to={`/viajes/${trip.id}`}>
-                            <Button variant="primary" fullWidth>
-                              Ver detalles
-                            </Button>
-                          </Link>
+                          
+                          <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                              <span className="text-white/70 text-sm">Precio</span>
+                              <p className="text-white font-bold text-2xl">${trip.price.toLocaleString('es-UY')}</p>
+                            </div>
+                            
+                            <Link to={`/viajes/${trip.id}`}>
+                              <Button variant="primary" className="shadow-lg">
+                                Ver detalles
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>

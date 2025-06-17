@@ -119,7 +119,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
             </>
           )}
 
-          {/* Trips Grid with Touch Support - IMPROVED FOR VERTICAL SCROLLING */}
+          {/* Trips Grid with Touch Support */}
           <div 
             ref={containerRef}
             className="overflow-hidden touch-pan-x-only" // Custom class for horizontal-only touch
@@ -135,7 +135,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
                 style={{ touchAction: 'auto' }} // Allow normal touch behavior on the grid
               >
                 {currentTrips.map((trip) => (
