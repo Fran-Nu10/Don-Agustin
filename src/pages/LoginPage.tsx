@@ -32,7 +32,7 @@ export function LoginPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center bg-secondary-50 py-12 main-content">
+      <main className="flex-grow flex items-center justify-center bg-gradient-to-b from-secondary-50 via-white to-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-200px)]">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -40,7 +40,7 @@ export function LoginPage() {
             transition={{ duration: 0.5 }}
             className="max-w-md w-full"
           >
-            <div className="bg-white rounded-lg shadow-card p-8">
+            <div className="bg-gradient-to-br from-white via-white to-secondary-50 rounded-lg shadow-xl p-8 border border-secondary-100">
               <div className="text-center mb-6">
                 <h1 className="font-heading font-bold text-2xl mb-2 text-secondary-900">
                   Iniciar Sesión

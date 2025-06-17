@@ -152,7 +152,7 @@ export function QuotationPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-br from-white/95 via-white/90 to-secondary-50/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
               {/* Form Header */}
               <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-8 text-white">
                 <h2 className="font-heading font-bold text-2xl mb-2">
@@ -405,7 +405,7 @@ interface BenefitCardProps {
 
 function BenefitCard({ icon, title, description }: BenefitCardProps) {
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-card text-center">
+    <div className="bg-gradient-to-br from-white via-secondary-50/50 to-white backdrop-blur-sm rounded-lg p-6 shadow-card text-center hover:shadow-lg transition-all duration-300">
       <div className="flex justify-center mb-4">{icon}</div>
       <h4 className="font-heading font-bold text-lg text-secondary-900 mb-2">
         {title}

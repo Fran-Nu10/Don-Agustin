@@ -56,7 +56,7 @@ export function BlogPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 main-content">
+      <main className="flex-grow bg-gradient-to-b from-secondary-50 via-white to-secondary-50 main-content">
         {/* Hero Section with Responsive Background */}
         <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -115,7 +115,7 @@ export function BlogPage() {
                   className={`px-3 py-2 md:px-4 md:py-2 rounded-full transition-colors text-sm md:text-base ${
                     selectedCategory === category
                       ? 'bg-primary-600 text-white'
-                      : 'bg-white text-secondary-600 hover:bg-secondary-100'
+                      : 'bg-gradient-to-br from-white to-secondary-50 text-secondary-600 hover:bg-secondary-100'
                   }`}
                 >
                   {category}
@@ -131,7 +131,7 @@ export function BlogPage() {
                 placeholder="Buscar artículos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white/80 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export function BlogPage() {
               <p className="text-secondary-500">Cargando artículos...</p>
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <div className="text-center py-12 bg-gradient-to-br from-white via-secondary-50 to-white rounded-lg shadow-sm">
               <p className="text-secondary-500">No se encontraron artículos.</p>
               <p className="text-secondary-400 mt-2">
                 {searchTerm || selectedCategory !== 'Todos' 
@@ -163,7 +163,7 @@ export function BlogPage() {
                 >
                   <Link
                     to={`/blog/${post.slug}`}
-                    className="block bg-white rounded-lg overflow-hidden shadow-card group cursor-pointer h-full"
+                    className="block bg-gradient-to-br from-white via-white to-secondary-50 rounded-lg overflow-hidden shadow-card group cursor-pointer h-full hover:shadow-lg transition-all duration-300"
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img

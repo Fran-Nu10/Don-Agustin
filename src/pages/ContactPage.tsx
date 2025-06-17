@@ -58,7 +58,7 @@ export function ContactPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 main-content">
+      <main className="flex-grow bg-gradient-to-b from-secondary-50 via-white to-secondary-50 main-content">
         <div className="container mx-auto px-4 py-12">
           {/* Page Header */}
           <div className="mb-10 text-center pt-12">
@@ -73,7 +73,7 @@ export function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-card p-8">
+              <div className="bg-gradient-to-br from-white via-white to-secondary-50 rounded-lg shadow-card p-8">
                 <h2 className="font-heading font-bold text-2xl mb-6 text-secondary-900">
                   Envíanos un mensaje
                 </h2>
@@ -138,7 +138,7 @@ export function ContactPage() {
             
             {/* Contact Info */}
             <div>
-              <div className="bg-white rounded-lg shadow-card p-8">
+              <div className="bg-gradient-to-br from-white via-secondary-50 to-primary-50 rounded-lg shadow-card p-8">
                 <h2 className="font-heading font-bold text-2xl mb-6 text-secondary-900">
                   Información de contacto
                 </h2>
@@ -217,8 +217,8 @@ export function ContactPage() {
           </div>
         </div>
 
-        {/* Full Width Map Section - SIN ESPACIO EXTRA */}
-        <div className="w-full bg-white">
+        {/* Full Width Map Section */}
+        <div className="w-full bg-gradient-to-b from-white to-secondary-50">
           <div className="container mx-auto px-4 py-8">
             <h2 className="font-heading font-bold text-2xl text-center text-secondary-900 mb-2">
               Nuestra Ubicación

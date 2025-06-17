@@ -4,7 +4,7 @@ import { Award, Users, Target, Shield } from 'lucide-react';
 
 export function AboutSection() {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gradient-to-b from-white via-secondary-50/50 to-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
             viewport={{ once: true }}
-            className="bg-secondary-50 p-8 rounded-lg"
+            className="bg-gradient-to-br from-secondary-50 via-secondary-100/50 to-secondary-50 p-8 rounded-lg shadow-md"
           >
             <h3 className="font-heading font-bold text-2xl text-secondary-900 mb-4">
               Nuestra Misión
@@ -98,7 +98,7 @@ export function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
             viewport={{ once: true }}
-            className="bg-secondary-50 p-8 rounded-lg"
+            className="bg-gradient-to-br from-secondary-50 via-secondary-100/50 to-secondary-50 p-8 rounded-lg shadow-md"
           >
             <h3 className="font-heading font-bold text-2xl text-secondary-900 mb-4">
               Nuestra Visión
@@ -122,9 +122,9 @@ interface ValueCardProps {
 
 function ValueCard({ icon, title, description }: ValueCardProps) {
   return (
-    <div className="bg-secondary-50 p-6 rounded-lg">
+    <div className="bg-gradient-to-br from-white via-secondary-50 to-primary-50 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gradient-to-br hover:from-primary-50 hover:via-primary-100/50 hover:to-white">
       <div className="flex items-center mb-3">
-        <div className="bg-white p-2 rounded-lg mr-3">
+        <div className="bg-white p-2 rounded-lg mr-3 shadow-sm">
           {icon}
         </div>
         <h4 className="font-heading font-bold text-lg text-secondary-900">

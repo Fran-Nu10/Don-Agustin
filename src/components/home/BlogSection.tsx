@@ -28,7 +28,7 @@ export function BlogSection() {
 
   if (loading) {
     return (
-      <section className="py-16 bg-secondary-50">
+      <section className="py-16 bg-gradient-to-b from-secondary-50 via-white/80 to-secondary-50">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-secondary-500">Cargando artículos del blog...</p>
@@ -43,7 +43,7 @@ export function BlogSection() {
   }
 
   return (
-    <section className="py-16 bg-secondary-50">
+    <section className="py-16 bg-gradient-to-b from-secondary-50 via-white/80 to-secondary-50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -71,7 +71,7 @@ export function BlogSection() {
             >
               <Link
                 to={`/blog/${post.slug}`}
-                className="block bg-white rounded-lg overflow-hidden shadow-card group cursor-pointer h-full"
+                className="block bg-gradient-to-br from-white to-secondary-50 rounded-lg overflow-hidden shadow-card group cursor-pointer h-full hover:shadow-lg transition-all duration-300"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img

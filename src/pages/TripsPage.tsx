@@ -74,7 +74,7 @@ export function TripsPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow bg-secondary-50 py-12 main-content">
+      <main className="flex-grow bg-gradient-to-b from-secondary-50 via-white to-secondary-50 py-12 main-content">
         <div className="container mx-auto px-4">
           {/* Page Header */}
           <div className="mb-10 text-center pt-12">
@@ -87,7 +87,7 @@ export function TripsPage() {
           </div>
           
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="bg-gradient-to-r from-white via-secondary-50/50 to-white rounded-lg shadow-sm p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Search */}
               <div className="relative">
@@ -129,7 +129,7 @@ export function TripsPage() {
           {/* Search Results Info */}
           {hasSearchCriteria && (
             <div className="mb-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-gradient-to-r from-blue-50 via-blue-100/30 to-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center">
                   <Search className="h-5 w-5 text-blue-600 mr-2" />
                   <div>
@@ -176,7 +176,7 @@ export function TripsPage() {
                 /* No results found - show message and all trips */
                 <div className="space-y-8">
                   {/* No results message */}
-                  <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-orange-200">
+                  <div className="text-center py-8 bg-gradient-to-r from-orange-50 via-orange-100/30 to-orange-50 rounded-lg shadow-sm border border-orange-200">
                     <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
                     <h3 className="font-heading font-bold text-xl text-secondary-900 mb-2">
                       No encontramos viajes con esas características
