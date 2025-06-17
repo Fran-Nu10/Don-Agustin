@@ -27,11 +27,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex h-screen bg-secondary-100">
-      {/* Sidebar */}
-      <div className="hidden md:flex md:flex-col md:w-64 bg-white shadow-md">
-        <div className="p-4 border-b border-secondary-200">
+      {/* Sidebar - Updated with gradient background */}
+      <div className="hidden md:flex md:flex-col md:w-64 bg-gradient-to-b from-secondary-800 to-secondary-900 shadow-md">
+        <div className="p-4 border-b border-secondary-700">
           <Link to="/" className="flex items-center space-x-2">
-            <span className="font-heading font-bold text-lg text-secondary-950">
+            <span className="font-heading font-bold text-lg text-white">
               Don Agustín Viajes
             </span>
           </Link>
@@ -95,11 +95,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           )}
         </nav>
 
-        <div className="p-4 border-t border-secondary-200">
+        <div className="p-4 border-t border-secondary-700">
           <Button
             onClick={() => logout()}
             variant="ghost"
-            className="w-full justify-start text-secondary-600"
+            className="w-full justify-start text-secondary-300 hover:text-white hover:bg-secondary-700"
           >
             <LogOut className="h-5 w-5 mr-2" />
             Cerrar Sesión
@@ -109,9 +109,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <Link to="/" className="font-heading font-bold text-lg text-secondary-950">
+        {/* Mobile Header - Updated with gradient background */}
+        <header className="md:hidden bg-gradient-to-r from-secondary-800 to-secondary-900 shadow-md p-4 flex items-center justify-between">
+          <Link to="/" className="font-heading font-bold text-lg text-white">
             Don Agustín Viajes
           </Link>
           
@@ -154,8 +154,8 @@ function SidebarLink({ to, icon, isActive, children }: SidebarLinkProps) {
       to={to}
       className={`flex items-center px-3 py-2 rounded-md font-medium transition-colors ${
         isActive
-          ? 'bg-primary-100 text-primary-950'
-          : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100'
+          ? 'bg-primary-600 text-white'
+          : 'text-secondary-300 hover:text-white hover:bg-secondary-700/50'
       }`}
     >
       <span className="mr-3">{icon}</span>
@@ -175,7 +175,7 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
 
   return (
     <div className="relative">
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="text-white">
         <span className="sr-only">Open menu</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -194,17 +194,17 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+        <div className="absolute right-0 mt-2 w-48 bg-gradient-to-b from-secondary-800 to-secondary-900 rounded-md shadow-lg py-1 z-10">
           <Link
             to="/admin/dashboard"
-            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+            className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
             onClick={() => setIsOpen(false)}
           >
             Dashboard
           </Link>
           <Link
             to="/admin/viajes"
-            className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+            className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
             onClick={() => setIsOpen(false)}
           >
             Viajes
@@ -213,14 +213,14 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
             <>
               <Link
                 to="/admin/clientes"
-                className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
                 onClick={() => setIsOpen(false)}
               >
                 CRM - Clientes
               </Link>
               <Link
                 to="/admin/cotizaciones"
-                className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
                 onClick={() => setIsOpen(false)}
               >
                 Cotizaciones
@@ -229,14 +229,14 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
                 <>
                   <Link
                     to="/admin/reportes"
-                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Reportes Financieros
                   </Link>
                   <Link
                     to="/admin/blog"
-                    className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+                    className="block px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Blog
@@ -245,12 +245,13 @@ function MobileNavMenu({ isOwner, isEmployee, logout }: MobileNavMenuProps) {
               )}
             </>
           )}
+          <div className="border-t border-secondary-700 my-1"></div>
           <button
             onClick={() => {
               logout();
               setIsOpen(false);
             }}
-            className="block w-full text-left px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100"
+            className="block w-full text-left px-4 py-2 text-sm text-secondary-100 hover:bg-secondary-700 hover:text-white"
           >
             Cerrar Sesión
           </button>
