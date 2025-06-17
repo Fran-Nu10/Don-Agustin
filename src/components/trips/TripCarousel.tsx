@@ -122,11 +122,11 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
           {/* Trips Grid with Touch Support */}
           <div 
             ref={containerRef}
-            className="overflow-hidden touch-pan-x-only" // Custom class for horizontal-only touch
+            className="overflow-hidden touch-pan-x-only" 
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            style={{ touchAction: 'pan-x pinch-zoom' }} // Allow horizontal pan and pinch, but not vertical pan
+            style={{ touchAction: 'pan-x pinch-zoom' }} 
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -136,7 +136,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-                style={{ touchAction: 'auto' }} // Allow normal touch behavior on the grid
+                style={{ touchAction: 'auto' }} 
               >
                 {currentTrips.map((trip) => (
                   <div key={trip.id} style={{ touchAction: 'auto' }}>

@@ -114,7 +114,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         
-                        {/* Content overlay */}
+                        {/* Content overlay - Simplified for mobile */}
                         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 text-white">
                           <div className="max-w-3xl">
                             <div className="bg-primary-600/90 text-white inline-block px-3 py-1 rounded-full text-sm font-medium mb-3">
@@ -125,7 +125,8 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                               {trip.title}
                             </h3>
                             
-                            <div className="flex flex-wrap gap-4 mb-4">
+                            {/* Desktop-only info */}
+                            <div className="hidden md:flex md:flex-wrap md:gap-4 md:mb-4">
                               <div className="flex items-center text-white/90">
                                 <MapPin className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>{trip.destination}</span>
@@ -149,9 +150,15 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                               </div>
                             </div>
                             
-                            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg inline-block">
-                              <span className="text-white/70 text-sm">Precio</span>
-                              <p className="text-white font-bold text-2xl">${trip.price.toLocaleString('es-UY')}</p>
+                            {/* Mobile-only destination */}
+                            <div className="flex md:hidden items-center text-white/90 mb-3">
+                              <MapPin className="h-4 w-4 mr-2 text-primary-500" />
+                              <span>{trip.destination}</span>
+                            </div>
+                            
+                            {/* Price - Smaller on mobile */}
+                            <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 md:px-4 md:py-2 rounded-lg inline-block">
+                              <p className="text-white font-bold text-xl md:text-2xl">${trip.price.toLocaleString('es-UY')}</p>
                             </div>
                           </div>
                         </div>
