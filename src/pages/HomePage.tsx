@@ -12,6 +12,7 @@ import { BlogSection } from '../components/home/BlogSection';
 import { MapPin, Plane, Clock, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTrips } from '../hooks/useTrips';
+import { FeatureCard } from '../components/home/FeatureCard';
 
 export function HomePage() {
   const { trips, loading } = useTrips();
@@ -123,7 +124,7 @@ export function HomePage() {
         )}
 
         {/* Features Section - Moved below all trip sections */}
-        <section className="py-12 md:py-16 bg-white">
+        <section className="py-12 md:py-16 bg-gradient-to-b from-white to-secondary-50">
           <div className="container mx-auto px-4">
             <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-8 md:mb-12 text-secondary-900">
               ¿Por qué elegirnos?
@@ -131,24 +132,28 @@ export function HomePage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               <FeatureCard
-                icon={<MapPin className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                icon={<MapPin className="h-8 w-8" />}
                 title="Destinos Únicos"
                 description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
+                bgImage="https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg"
               />
               <FeatureCard
-                icon={<Plane className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                icon={<Plane className="h-8 w-8" />}
                 title="Transporte de Calidad"
                 description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
+                bgImage="https://images.pexels.com/photos/2026324/pexels-photo-2026324.jpeg"
               />
               <FeatureCard
-                icon={<Clock className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                icon={<Clock className="h-8 w-8" />}
                 title="Más de 25 Años"
                 description="Más de dos décadas de experiencia organizando viajes perfectos para nuestros clientes."
+                bgImage="https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg"
               />
               <FeatureCard
-                icon={<Shield className="h-8 w-8 md:h-10 md:w-10 text-primary-600" />}
+                icon={<Shield className="h-8 w-8" />}
                 title="Garantía de Satisfacción"
                 description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
+                bgImage="https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg"
               />
             </div>
           </div>
@@ -200,24 +205,5 @@ export function HomePage() {
       
       <Footer />
     </div>
-  );
-}
-
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
-  return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      className="bg-white rounded-lg p-4 md:p-6 text-center shadow-card hover:shadow-card-hover transition-all duration-300"
-    >
-      <div className="flex justify-center mb-3 md:mb-4">{icon}</div>
-      <h3 className="font-heading font-bold text-lg md:text-xl mb-2 text-secondary-900">{title}</h3>
-      <p className="text-secondary-600 text-sm md:text-base">{description}</p>
-    </motion.div>
   );
 }
