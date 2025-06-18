@@ -144,7 +144,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                 <Bar data={chartData} options={chartOptions} />
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-secondary-500">
+              <div className="h-64 flex items-center justify-center text-secondary-400">
                 <div className="text-center">
                   <Map className="h-12 w-12 mx-auto mb-4 text-secondary-300" />
                   <p className="text-lg font-medium mb-2">Sin reservas aún</p>
@@ -235,7 +235,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-bold text-green-600">
-                    {stats.conversionRate || 0}%
+                    {stats.conversionRate?.toFixed(1) || 0}%
                   </span>
                 </div>
               </div>
