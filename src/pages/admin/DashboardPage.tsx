@@ -34,16 +34,8 @@ export function DashboardPage() {
       loadStats();
     }
     
-    // Set up interval to refresh stats every 30 seconds
-    const intervalId = setInterval(() => {
-      if (isOwner()) {
-        console.log('Refreshing dashboard statistics...');
-        loadStats();
-      }
-    }, 30000);
+    // Removed the interval that refreshed stats every 30 seconds
     
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
   }, [isOwner]);
 
   return (
