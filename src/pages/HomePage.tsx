@@ -8,6 +8,7 @@ import { TripCarousel } from '../components/trips/TripCarousel';
 import { GroupTripsCarousel } from '../components/trips/GroupTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
+import { DreamTripsSection } from '../components/home/DreamTripsSection';
 import { MapPin, Plane, Clock, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTrips } from '../hooks/useTrips';
@@ -157,6 +158,11 @@ export function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Dream Trips Section - NUEVA SECCIÓN */}
+        {!loading && trips.length > 0 && (
+          <DreamTripsSection trips={trips} />
+        )}
 
         {/* Testimonials */}
         <TestimonialsSection />

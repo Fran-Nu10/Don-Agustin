@@ -39,6 +39,7 @@ export interface Trip {
   category: 'nacional' | 'internacional' | 'grupal';
   info_pdf_url?: string;
   info_pdf_name?: string;
+  tags?: string[]; // Nueva propiedad para etiquetas como "dream"
 }
 
 // Blog Types
@@ -82,6 +83,7 @@ export interface TripFormData {
   included_services: IncludedService[];
   info_pdf_url?: string;
   info_pdf_name?: string;
+  tags?: string[]; // Nueva propiedad para etiquetas como "dream"
 }
 
 export interface BookingFormData {

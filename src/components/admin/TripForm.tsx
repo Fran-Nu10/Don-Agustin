@@ -4,7 +4,7 @@ import { TripFormData, Trip, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye, Tag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
 
@@ -22,6 +22,9 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   // PDF states
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+
+  // Tags state
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
 
   const {
     register,
@@ -46,10 +49,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           info_pdf_name: initialData.info_pdf_name,
           itinerary: initialData.itinerary || [],
           included_services: initialData.included_services || [],
+          tags: initialData.tags || [],
         }
       : {
           itinerary: [{ day: 1, title: '', description: '' }],
           included_services: [{ icon: 'Hotel', title: '', description: '' }],
+          tags: [],
         },
   });
 
@@ -74,6 +79,11 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     name: 'included_services',
   });
 
+  // Update form when tags change
+  useEffect(() => {
+    setValue('tags', selectedTags);
+  }, [selectedTags, setValue]);
+
   const addItineraryDay = () => {
     appendItinerary({
       day: itineraryFields.length + 1,
@@ -88,6 +98,15 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       title: '',
       description: '',
     });
+  };
+
+  // Toggle tag selection
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
   };
 
   // Handle image file selection
@@ -262,6 +281,9 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     'Shield', 'Heart', 'Star', 'Coffee', 'Wifi'
   ];
 
+  // Available tags
+  const availableTags = ['dream', 'featured', 'popular', 'new', 'sale'];
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Información básica */}
@@ -364,6 +386,39 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             error={errors.return_date?.message}
             {...register('return_date', { required: 'La fecha de regreso es obligatoria' })}
           />
+        </div>
+
+        {/* Tags Section */}
+        <div className="mt-6">
+          <label className="block mb-2 text-sm font-medium text-secondary-900 flex items-center">
+            <Tag className="h-5 w-5 mr-2 text-primary-600" />
+            Etiquetas (opcional)
+          </label>
+          
+          <div className="flex flex-wrap gap-2">
+            {availableTags.map(tag => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedTags.includes(tag)
+                    ? 'bg-primary-100 text-primary-800 border border-primary-300'
+                    : 'bg-secondary-100 text-secondary-700 border border-secondary-200 hover:bg-secondary-200'
+                }`}
+              >
+                <Tag className="h-3.5 w-3.5 mr-1.5" />
+                {tag}
+              </button>
+            ))}
+          </div>
+          
+          <p className="mt-2 text-xs text-secondary-500">
+            La etiqueta "dream" muestra el viaje en la sección de ofertas especiales en la página principal.
+          </p>
+          
+          {/* Hidden input for tags */}
+          <input type="hidden" {...register('tags')} />
         </div>
         
         {/* Image Upload Section */}
