@@ -36,8 +36,6 @@ export function ClientsPage() {
     budgetRange: '',
     destination: '',
     tags: [],
-    hasScheduledDate: 'all',
-    lastContactDays: 'all',
   });
 
   const itemsPerPage = 10;
@@ -104,38 +102,10 @@ export function ClientsPage() {
 
     // Filter by destination - usar preferred_destination del cliente
     if (filters.destination) {
-      filtered = filtered.filter(client => client.preferred_destination === filters.destination);
-    }
-
-    // Filter by budget range
-    if (filters.budgetRange) {
-      filtered = filtered.filter(client => {
-        if (!client.budget_range) return false;
-        return client.budget_range === filters.budgetRange;
-      });
-    }
-
-    // Filter by scheduled date
-    if (filters.hasScheduledDate !== 'all') {
-      if (filters.hasScheduledDate === 'scheduled') {
-        filtered = filtered.filter(client => client.scheduled_date);
-      } else if (filters.hasScheduledDate === 'unscheduled') {
-        filtered = filtered.filter(client => !client.scheduled_date);
-      }
-    }
-
-    // Filter by last contact
-    if (filters.lastContactDays !== 'all') {
-      const now = new Date();
-      if (filters.lastContactDays === 'never') {
-        filtered = filtered.filter(client => !client.last_contact_date);
-      } else {
-        const days = parseInt(filters.lastContactDays);
-        const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-        filtered = filtered.filter(client => 
-          client.last_contact_date && new Date(client.last_contact_date) >= cutoffDate
-        );
-      }
+      filtered = filtered.filter(client => 
+        client.preferred_destination === filters.destination ||
+        (client.message && client.message.toLowerCase().includes(filters.destination.toLowerCase()))
+      );
     }
 
     // Filter by date range
@@ -274,8 +244,6 @@ export function ClientsPage() {
       budgetRange: '',
       destination: '',
       tags: [],
-      hasScheduledDate: 'all',
-      lastContactDays: 'all',
     });
   };
 
