@@ -52,8 +52,6 @@ export interface ClientFilters {
   budgetRange: string;
   destination: string;
   tags: string[];
-  hasScheduledDate: string; // 'all', 'scheduled', 'unscheduled'
-  lastContactDays: string; // '7', '30', '90', 'all'
 }
 
 export interface ClientStatsType {
@@ -65,4 +63,6 @@ export interface ClientStatsType {
   avgResponseTime: number;
   upcomingFollowUps: number;
   overdueFollowUps: number;
+  totalRevenue: number;
+  averageTripValue: number;
 }

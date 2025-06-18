@@ -34,6 +34,10 @@ function sanitizeFilename(filename: string): string {
  */
 export async function uploadPDF(file: File, tripId: string): Promise<{ url: string; name: string } | null> {
   try {
+    console.log('Starting PDF upload process...');
+    console.log('File:', file.name, file.type, file.size);
+    console.log('Trip ID:', tripId);
+    
     // Validate file type
     if (file.type !== 'application/pdf') {
       toast.error('Solo se permiten archivos PDF');
@@ -46,10 +50,24 @@ export async function uploadPDF(file: File, tripId: string): Promise<{ url: stri
       return null;
     }
 
+    // Check if bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some(bucket => bucket.name === PDF_BUCKET);
+    
+    if (!bucketExists) {
+      console.error(`Bucket "${PDF_BUCKET}" does not exist`);
+      toast.error('Error de configuración del almacenamiento. Contacte al administrador.');
+      return null;
+    }
+    
+    console.log(`Bucket "${PDF_BUCKET}" exists, proceeding with upload`);
+
     // Create a unique file name to avoid collisions
     const timestamp = new Date().getTime();
     const sanitizedFileName = sanitizeFilename(file.name);
     const fileName = `${tripId}/${timestamp}-${sanitizedFileName}`;
+    
+    console.log('Uploading file with path:', fileName);
 
     // Upload the file
     const { data, error } = await supabase.storage
@@ -64,11 +82,15 @@ export async function uploadPDF(file: File, tripId: string): Promise<{ url: stri
       toast.error('Error al subir el PDF. Por favor intenta nuevamente.');
       return null;
     }
+    
+    console.log('Upload successful, data:', data);
 
     // Get the public URL
     const { data: publicUrlData } = supabase.storage
       .from(PDF_BUCKET)
       .getPublicUrl(data.path);
+    
+    console.log('Public URL:', publicUrlData.publicUrl);
 
     return {
       url: publicUrlData.publicUrl,

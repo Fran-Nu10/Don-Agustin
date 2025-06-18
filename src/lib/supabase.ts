@@ -443,19 +443,32 @@ export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
 export async function getStats(): Promise<Stats> {
   return handleSupabaseError(async () => {
     try {
-      // Get total trips
+      console.log('Fetching dashboard statistics...');
+      
+      // Get total trips with count
       const { data: tripsData, error: tripsError, count: totalTrips } = await supabase
         .from('trips')
         .select('*', { count: 'exact' });
 
-      if (tripsError) throw tripsError;
+      if (tripsError) {
+        console.error('Error fetching trips:', tripsError);
+        throw tripsError;
+      }
+      
+      console.log(`Found ${totalTrips} total trips`);
 
-      // Get total bookings
+      // Get total bookings with count - FORCE REFRESH
       const { data: bookingsData, error: bookingsError, count: totalBookings } = await supabase
         .from('bookings')
-        .select('*', { count: 'exact' });
+        .select('*', { count: 'exact' })
+        .limit(1000); // Ensure we get all bookings
 
-      if (bookingsError) throw bookingsError;
+      if (bookingsError) {
+        console.error('Error fetching bookings:', bookingsError);
+        throw bookingsError;
+      }
+      
+      console.log(`Found ${totalBookings} total bookings`);
 
       // Get upcoming trips
       const { data: upcomingTripsData, error: upcomingError, count: upcomingTrips } = await supabase
@@ -463,15 +476,21 @@ export async function getStats(): Promise<Stats> {
         .select('*', { count: 'exact' })
         .gt('departure_date', new Date().toISOString());
 
-      if (upcomingError) throw upcomingError;
+      if (upcomingError) {
+        console.error('Error fetching upcoming trips:', upcomingError);
+        throw upcomingError;
+      }
+      
+      console.log(`Found ${upcomingTrips} upcoming trips`);
 
-      // Get popular destinations based on actual bookings
+      // Get bookings with trip details for destination analysis
       const { data: bookingsWithTrips, error: bookingsWithTripsError } = await supabase
         .from('bookings')
         .select(`
           id,
           created_at,
-          trip:trips!inner(
+          trip_id,
+          trip:trips(
             id,
             destination,
             category,
@@ -479,12 +498,16 @@ export async function getStats(): Promise<Stats> {
           )
         `);
 
-      if (bookingsWithTripsError) throw bookingsWithTripsError;
+      if (bookingsWithTripsError) {
+        console.error('Error fetching bookings with trips:', bookingsWithTripsError);
+        throw bookingsWithTripsError;
+      }
 
       // Count bookings by destination
       const destinationCounts: { [key: string]: number } = {};
       
       if (bookingsWithTrips && bookingsWithTrips.length > 0) {
+        console.log('Processing bookings for destination counts...');
         bookingsWithTrips.forEach(booking => {
           if (booking.trip && booking.trip.destination) {
             const destination = booking.trip.destination;
@@ -493,6 +516,7 @@ export async function getStats(): Promise<Stats> {
         });
       } else {
         // Si no hay reservas, usar los destinos de los viajes disponibles
+        console.log('No bookings found, using trip destinations instead');
         tripsData?.forEach(trip => {
           const destination = trip.destination;
           destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
@@ -504,6 +528,8 @@ export async function getStats(): Promise<Stats> {
         .map(([destination, count]) => ({ destination, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5); // Top 5 destinations
+      
+      console.log('Popular destinations:', popularDestinations);
 
       // Calculate category distribution
       const categoryCount: { [key: string]: number } = {};
@@ -520,27 +546,51 @@ export async function getStats(): Promise<Stats> {
         count,
         percentage: totalTripsCount > 0 ? (count / totalTripsCount) * 100 : 0
       }));
+      
+      console.log('Category distribution:', categoryDistribution);
 
-      // Calculate booking trend (mock data for now)
-      const bookingTrend = 5.2; // Ejemplo: 5.2% de crecimiento
-
-      // Calculate average bookings per day (mock data for now)
-      const averageBookingsPerDay = totalBookings ? (totalBookings / 30).toFixed(1) : 0;
-
-      // Calculate recent bookings count (last 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Calculate booking trend
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
       
       const recentBookings = bookingsData?.filter(booking => 
         new Date(booking.created_at) >= sevenDaysAgo
       ) || [];
       
+      const previousWeekBookings = bookingsData?.filter(booking => {
+        const bookingDate = new Date(booking.created_at);
+        return bookingDate >= fourteenDaysAgo && bookingDate < sevenDaysAgo;
+      }) || [];
+      
+      const currentWeekCount = recentBookings.length;
+      const previousWeekCount = previousWeekBookings.length;
+      
+      const bookingTrend = previousWeekCount > 0 
+        ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100 
+        : currentWeekCount > 0 ? 100 : 0;
+      
+      console.log(`Booking trend: ${bookingTrend.toFixed(1)}% (${currentWeekCount} vs ${previousWeekCount})`);
+
+      // Calculate average bookings per day
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const last30DaysBookings = bookingsData?.filter(booking => 
+        new Date(booking.created_at) >= thirtyDaysAgo
+      ) || [];
+      
+      const averageBookingsPerDay = last30DaysBookings.length / 30;
+      console.log(`Average bookings per day: ${averageBookingsPerDay.toFixed(2)}`);
+
+      // Calculate recent bookings count
       const recentBookingsCount = recentBookings.length;
+      console.log(`Recent bookings (last 7 days): ${recentBookingsCount}`);
 
       // Calculate conversion rate
       const conversionRate = totalTrips && totalTrips > 0 
         ? ((totalBookings || 0) / totalTrips) * 100 
         : 0;
+      
+      console.log(`Conversion rate: ${conversionRate.toFixed(1)}%`);
 
       return {
         totalTrips: totalTrips || 0,
@@ -548,8 +598,8 @@ export async function getStats(): Promise<Stats> {
         upcomingTrips: upcomingTrips || 0,
         popularDestinations,
         categoryDistribution,
-        bookingTrend,
-        averageBookingsPerDay: parseFloat(averageBookingsPerDay as string),
+        bookingTrend: Math.round(bookingTrend * 10) / 10,
+        averageBookingsPerDay: Math.round(averageBookingsPerDay * 10) / 10,
         recentBookingsCount,
         conversionRate,
       };
