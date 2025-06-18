@@ -60,12 +60,14 @@ export interface BlogPost {
 export interface Booking {
   id: string;
   trip_id: string;
-  name: string;
-  email: string;
-  phone: string;
+  client_id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
   created_at: string;
   user_id?: string;
   trip?: Trip;
+  client?: any; // Cliente asociado a la reserva
 }
 
 // Form Types

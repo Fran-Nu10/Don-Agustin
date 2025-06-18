@@ -391,10 +391,58 @@ export async function deleteTrip(id: string): Promise<void> {
 // Booking functions
 export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Promise<Booking> {
   return handleSupabaseError(async () => {
+    console.log('Creating booking with data:', booking);
+    
+    // First, check if a client with this email already exists
+    const { data: existingClient, error: clientError } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('email', booking.email)
+      .maybeSingle();
+    
+    if (clientError) {
+      console.error('Error checking for existing client:', clientError);
+      throw clientError;
+    }
+    
+    let clientId: string;
+    
+    if (existingClient) {
+      // Use existing client
+      clientId = existingClient.id;
+      console.log('Using existing client with ID:', clientId);
+    } else {
+      // Create new client
+      console.log('Creating new client for booking');
+      const { data: newClient, error: newClientError } = await supabase
+        .from('clients')
+        .insert([{
+          name: booking.name,
+          email: booking.email,
+          phone: booking.phone || '',
+          message: `Reserva para viaje ID: ${booking.trip_id}`,
+          status: 'cliente_cerrado',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }])
+        .select()
+        .single();
+      
+      if (newClientError) {
+        console.error('Error creating new client:', newClientError);
+        throw newClientError;
+      }
+      
+      clientId = newClient.id;
+      console.log('Created new client with ID:', clientId);
+    }
+    
+    // Now create the booking with the client_id
     const { data, error } = await supabase
       .from('bookings')
       .insert([{
-        ...booking,
+        trip_id: booking.trip_id,
+        client_id: clientId,
         created_at: new Date().toISOString(),
       }])
       .select(`
@@ -403,7 +451,12 @@ export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>)
       `)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating booking:', error);
+      throw error;
+    }
+    
+    console.log('Booking created successfully:', data);
     return data;
   }, 'Create booking');
 }
@@ -414,7 +467,8 @@ export async function getBookings(): Promise<Booking[]> {
       .from('bookings')
       .select(`
         *,
-        trip:trips(*)
+        trip:trips(*),
+        client:clients(*)
       `)
       .order('created_at', { ascending: false });
 
@@ -429,7 +483,8 @@ export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
       .from('bookings')
       .select(`
         *,
-        trip:trips(*)
+        trip:trips(*),
+        client:clients(*)
       `)
       .eq('trip_id', tripId)
       .order('created_at', { ascending: false });
