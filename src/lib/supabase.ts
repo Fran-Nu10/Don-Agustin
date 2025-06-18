@@ -425,7 +425,7 @@ export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>)
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }])
-        .select()
+        .select('id')
         .single();
       
       if (newClientError) {
@@ -437,27 +437,42 @@ export async function createBooking(booking: Omit<Booking, 'id' | 'created_at'>)
       console.log('Created new client with ID:', clientId);
     }
     
-    // Now create the booking with the client_id
-    const { data, error } = await supabase
+    // Insert the booking and get only the ID
+    const { data: insertedBooking, error: insertError } = await supabase
       .from('bookings')
       .insert([{
         trip_id: booking.trip_id,
         client_id: clientId,
         created_at: new Date().toISOString(),
       }])
-      .select(`
-        *,
-        trip:trips(*)
-      `)
+      .select('id')
       .single();
 
-    if (error) {
-      console.error('Error creating booking:', error);
-      throw error;
+    if (insertError) {
+      console.error('Error creating booking:', insertError);
+      throw insertError;
     }
     
-    console.log('Booking created successfully:', data);
-    return data;
+    console.log('Booking inserted with ID:', insertedBooking.id);
+    
+    // Now fetch the complete booking data with relations in a separate query
+    const { data: completeBooking, error: fetchError } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        trip:trips(*),
+        client:clients(*)
+      `)
+      .eq('id', insertedBooking.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching complete booking:', fetchError);
+      throw fetchError;
+    }
+    
+    console.log('Booking created successfully:', completeBooking);
+    return completeBooking;
   }, 'Create booking');
 }
 
