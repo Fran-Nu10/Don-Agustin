@@ -8,7 +8,7 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Download, BarChart3, FileText, Users, Filter, Calendar, Plus } from 'lucide-react';
 import { Client, ClientFilters, ClientFormData, ClientStatsType } from '../../types/client';
-import { getClients, updateClient, deleteClient, getClientStats } from '../../lib/supabase/clients';
+import { getClients, updateClient, deleteClient } from '../../lib/supabase/clients';
 import { getTrips } from '../../lib/supabase';
 import { generateClientPDF, generateClientsSummaryPDF, generateClientsByStatusPDF, generateClientsBySourcePDF } from '../../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
@@ -66,10 +66,6 @@ export function ClientsPage() {
       // Extract unique destinations from trips
       const uniqueDestinations = [...new Set(tripsData.map(trip => trip.destination))].sort();
       setDestinations(uniqueDestinations);
-      
-      // Get client stats
-      const statsData = await getClientStats();
-      setStats(statsData);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Error al cargar los datos');
@@ -136,15 +132,67 @@ export function ClientsPage() {
   }
 
   function calculateStats() {
-    if (!stats) return;
+    const total = clients.length;
     
-    // Apply filters to calculate stats based on filtered clients
-    const filteredStats = { ...stats };
-    filteredStats.total = filteredClients.length;
+    // Status distribution
+    const byStatus = clients.reduce((acc, client) => {
+      acc[client.status] = (acc[client.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Source distribution
+    const bySource = clients.reduce((acc, client) => {
+      const source = client.source || 'unknown';
+      acc[source] = (acc[source] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Priority distribution
+    const byPriority = clients.reduce((acc, client) => {
+      const priority = client.priority || 'normal';
+      acc[priority] = (acc[priority] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Conversion rate (closed clients / total clients)
+    const closedClients = clients.filter(c => c.status === 'cliente_cerrado').length;
+    const conversionRate = total > 0 ? (closedClients / total) * 100 : 0;
+
+    // Upcoming follow-ups
+    const now = new Date();
+    const upcomingFollowUps = clients.filter(client => 
+      client.next_follow_up && new Date(client.next_follow_up) > now
+    ).length;
+
+    // Overdue follow-ups
+    const overdueFollowUps = clients.filter(client => 
+      client.next_follow_up && new Date(client.next_follow_up) < now
+    ).length;
+
+    // Average response time (mock calculation)
+    const avgResponseTime = 24; // This would be calculated based on actual response times
+
+    // Calculate total revenue from trip_value
+    const totalRevenue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
     
-    // Update other stats based on filtered clients if needed
-    
-    setStats(filteredStats);
+    // Calculate average trip value
+    const clientsWithValue = clients.filter(client => client.trip_value && client.trip_value > 0);
+    const averageTripValue = clientsWithValue.length > 0 
+      ? clientsWithValue.reduce((sum, client) => sum + (client.trip_value || 0), 0) / clientsWithValue.length
+      : 0;
+
+    setStats({
+      total,
+      byStatus,
+      bySource,
+      byPriority,
+      conversionRate,
+      avgResponseTime,
+      upcomingFollowUps,
+      overdueFollowUps,
+      totalRevenue,
+      averageTripValue,
+    });
   }
 
   const handleViewClient = (client: Client) => {
