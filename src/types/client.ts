@@ -18,7 +18,12 @@ export interface Client {
   last_contact_date?: string;
   next_follow_up?: string;
   tags?: string[];
-  trip_value?: number; // Nuevo campo para el valor del viaje
+  trip_value?: number; // Valor del viaje
+  // New trip-related fields
+  last_booked_trip_id?: string;
+  last_booked_trip_title?: string;
+  last_booked_trip_destination?: string;
+  last_booked_trip_date?: string;
 }
 
 export interface ClientFormData {
@@ -37,7 +42,12 @@ export interface ClientFormData {
   last_contact_date?: string;
   next_follow_up?: string;
   tags?: string[];
-  trip_value?: number; // Nuevo campo para el valor del viaje
+  trip_value?: number; // Valor del viaje
+  // New trip-related fields
+  last_booked_trip_id?: string;
+  last_booked_trip_title?: string;
+  last_booked_trip_destination?: string;
+  last_booked_trip_date?: string;
 }
 
 export interface ClientFilters {

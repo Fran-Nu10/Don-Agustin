@@ -36,6 +36,13 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
       phone: clientData.phone || null,
       message: clientData.message || null,
       status: clientData.status || 'nuevo',
+      // Trip-related fields
+      last_booked_trip_id: clientData.last_booked_trip_id || null,
+      last_booked_trip_title: clientData.last_booked_trip_title || null,
+      last_booked_trip_destination: clientData.last_booked_trip_destination || null,
+      last_booked_trip_date: clientData.last_booked_trip_date || null,
+      preferred_destination: clientData.preferred_destination || clientData.last_booked_trip_destination || null,
+      trip_value: clientData.trip_value || null,
       // Set scheduled_date automatically for public bookings
       scheduled_date: new Date().toISOString(),
     };
@@ -87,6 +94,12 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
         scheduled_date: dataToInsert.scheduled_date,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        last_booked_trip_id: dataToInsert.last_booked_trip_id,
+        last_booked_trip_title: dataToInsert.last_booked_trip_title,
+        last_booked_trip_destination: dataToInsert.last_booked_trip_destination,
+        last_booked_trip_date: dataToInsert.last_booked_trip_date,
+        preferred_destination: dataToInsert.preferred_destination,
+        trip_value: dataToInsert.trip_value,
       } as Client;
     }
   } catch (error) {

@@ -4,6 +4,7 @@ import { Trip } from '../../types';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { createClient } from '../../lib/supabase/clients';
+import { createBooking } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 
 interface BookingFormData {
@@ -37,19 +38,51 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
     try {
       setIsSubmitting(true);
       
-      // Create client in CRM with trip information - NO scheduled_date for public bookings
+      // 1. Create client in CRM with trip information
       const clientData = {
         name: data.name,
         email: data.email,
         phone: data.phone || '',
         message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
         status: 'nuevo' as const,
-        // NO incluir scheduled_date - esto es solo para uso interno del CRM
+        // Add trip-related fields
+        last_booked_trip_id: trip.id,
+        last_booked_trip_title: trip.title,
+        last_booked_trip_destination: trip.destination,
+        last_booked_trip_date: trip.departure_date,
+        preferred_destination: trip.destination,
+        trip_value: trip.price,
       };
 
       console.log('Creating client with data:', clientData);
       
-      await createClient(clientData);
+      // Create client record
+      const client = await createClient(clientData);
+      
+      // 2. Create booking record to maintain dashboard statistics and trigger available_spots update
+      if (client && client.id && client.id !== 'created') {
+        const bookingData = {
+          trip_id: trip.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          client_id: client.id
+        };
+        
+        console.log('Creating booking with data:', bookingData);
+        await createBooking(bookingData);
+      } else {
+        // For anonymous users where we don't get the client ID back
+        const bookingData = {
+          trip_id: trip.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+        };
+        
+        console.log('Creating booking without client_id:', bookingData);
+        await createBooking(bookingData);
+      }
       
       toast.success('¡Reserva realizada con éxito! Nos pondremos en contacto contigo pronto.');
       reset();

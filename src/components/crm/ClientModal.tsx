@@ -4,7 +4,7 @@ import { Client, ClientFormData } from '../../types/client';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2, DollarSign } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2, DollarSign, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -40,6 +40,12 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
         format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
       trip_value: client.trip_value || 0,
+      preferred_destination: client.preferred_destination || '',
+      last_booked_trip_id: client.last_booked_trip_id || '',
+      last_booked_trip_title: client.last_booked_trip_title || '',
+      last_booked_trip_destination: client.last_booked_trip_destination || '',
+      last_booked_trip_date: client.last_booked_trip_date ? 
+        format(new Date(client.last_booked_trip_date), "yyyy-MM-dd'T'HH:mm") : '',
     } : undefined,
   });
 
@@ -57,6 +63,12 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
           // Convert to datetime-local format (YYYY-MM-DDTHH:MM)
           format(new Date(client.scheduled_date), "yyyy-MM-dd'T'HH:mm") : '',
         trip_value: client.trip_value || 0,
+        preferred_destination: client.preferred_destination || '',
+        last_booked_trip_id: client.last_booked_trip_id || '',
+        last_booked_trip_title: client.last_booked_trip_title || '',
+        last_booked_trip_destination: client.last_booked_trip_destination || '',
+        last_booked_trip_date: client.last_booked_trip_date ? 
+          format(new Date(client.last_booked_trip_date), "yyyy-MM-dd'T'HH:mm") : '',
       });
     }
   }, [client, reset]);
@@ -70,6 +82,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         ...data,
         scheduled_date: data.scheduled_date ? 
           new Date(data.scheduled_date).toISOString() : null,
+        last_booked_trip_date: data.last_booked_trip_date ? 
+          new Date(data.last_booked_trip_date).toISOString() : null,
       };
       
       await onSave(client.id, submitData);
@@ -282,6 +296,29 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 </div>
               </div>
 
+              {/* Trip Information */}
+              {client.last_booked_trip_title && (
+                <div>
+                  <div className="flex items-center mb-2">
+                    <MapPin className="h-5 w-5 text-primary-950 mr-2" />
+                    <p className="text-sm font-medium text-secondary-500">Último Viaje Reservado</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-blue-800 mb-2">{client.last_booked_trip_title}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <p className="text-blue-700">
+                        <strong>Destino:</strong> {client.last_booked_trip_destination}
+                      </p>
+                      {client.last_booked_trip_date && (
+                        <p className="text-blue-700">
+                          <strong>Fecha:</strong> {format(new Date(client.last_booked_trip_date), 'dd MMM yyyy', { locale: es })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Message */}
               {client.message && (
                 <div>
@@ -423,29 +460,79 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 </div>
               </div>
 
-              {/* Valor del viaje */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-secondary-900">
-                  Valor del viaje (UYU)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <DollarSign className="h-5 w-5 text-secondary-400" />
+              {/* Destino preferido */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Destino preferido"
+                  id="preferred_destination"
+                  type="text"
+                  fullWidth
+                  error={errors.preferred_destination?.message}
+                  {...register('preferred_destination')}
+                />
+
+                {/* Valor del viaje */}
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-secondary-900">
+                    Valor del viaje (UYU)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <DollarSign className="h-5 w-5 text-secondary-400" />
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      {...register('trip_value', { 
+                        valueAsNumber: true,
+                        min: { value: 0, message: 'El valor no puede ser negativo' }
+                      })}
+                    />
                   </div>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1000"
-                    className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    {...register('trip_value', { 
-                      valueAsNumber: true,
-                      min: { value: 0, message: 'El valor no puede ser negativo' }
-                    })}
+                  {errors.trip_value && (
+                    <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Información del último viaje reservado */}
+              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <h4 className="font-medium text-blue-800 mb-3">Información del último viaje reservado</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Título del viaje"
+                    id="last_booked_trip_title"
+                    type="text"
+                    fullWidth
+                    {...register('last_booked_trip_title')}
+                  />
+                  
+                  <Input
+                    label="Destino del viaje"
+                    id="last_booked_trip_destination"
+                    type="text"
+                    fullWidth
+                    {...register('last_booked_trip_destination')}
+                  />
+                  
+                  <Input
+                    label="Fecha del viaje"
+                    id="last_booked_trip_date"
+                    type="datetime-local"
+                    fullWidth
+                    {...register('last_booked_trip_date')}
+                  />
+                  
+                  <Input
+                    label="ID del viaje"
+                    id="last_booked_trip_id"
+                    type="text"
+                    fullWidth
+                    {...register('last_booked_trip_id')}
                   />
                 </div>
-                {errors.trip_value && (
-                  <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
-                )}
               </div>
 
               <Textarea
