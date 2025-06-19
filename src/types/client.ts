@@ -11,7 +11,7 @@ export interface Client {
   updated_at: string;
   // New fields for enhanced CRM
   source?: string; // 'website', 'referral', 'social_media', 'phone', 'email'
-  priority?: 'baja' | 'normal' | 'media' | 'alta' | 'urgente' | 'muy_alta';
+  priority?: 'baja' | 'normal' | 'media' | 'alta' | 'urgente';
   budget_range?: string;
   preferred_destination?: string;
   travel_date?: string;

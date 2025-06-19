@@ -43,40 +43,10 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.setTextColor(statusColor.r, statusColor.g, statusColor.b);
   doc.text(`Estado: ${statusLabel}`, 120, 68);
   
-  // Información del viaje cotizado (si está disponible)
-  let yPos = 90;
-  if (quotation.trip_id) {
-    doc.setFontSize(14);
-    doc.setTextColor(40, 40, 40);
-    doc.text('INFORMACIÓN DEL VIAJE COTIZADO', 20, yPos);
-    
-    const tripData = [
-      ['Viaje:', quotation.trip_title || 'No especificado'],
-      ['Destino:', quotation.trip_destination || 'No especificado'],
-      ['Precio:', quotation.trip_price ? `$${quotation.trip_price.toLocaleString('es-UY')}` : 'No especificado'],
-    ];
-    
-    autoTable(doc, {
-      startY: yPos + 5,
-      body: tripData,
-      theme: 'plain',
-      styles: {
-        fontSize: 10,
-        cellPadding: 2,
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 30 },
-        1: { cellWidth: 80 },
-      },
-    });
-    
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-  
   // Información del cliente
   doc.setFontSize(14);
   doc.setTextColor(40, 40, 40);
-  doc.text('INFORMACIÓN DEL CLIENTE', 20, yPos);
+  doc.text('INFORMACIÓN DEL CLIENTE', 20, 90);
   
   const clientData = [
     ['Nombre:', quotation.name],
@@ -86,7 +56,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   ];
   
   autoTable(doc, {
-    startY: yPos + 5,
+    startY: 95,
     body: clientData,
     theme: 'plain',
     styles: {
@@ -106,7 +76,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.text('INFORMACIÓN DEL VIAJE', 20, finalY);
   
   const tripData = [
-    ['Destino:', quotation.destination || quotation.trip_destination || 'A definir'],
+    ['Destino:', quotation.destination || 'A definir'],
     ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
     ['Fecha de regreso:', quotation.return_date ? format(new Date(quotation.return_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
     ['Fechas flexibles:', quotation.flexible_dates ? 'Sí' : 'No'],
@@ -215,7 +185,7 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   const tableData = quotations.map(q => [
     q.name,
     q.email,
-    q.destination || q.trip_destination || 'A definir',
+    q.destination || 'A definir',
     `${q.adults}A${q.children > 0 ? ` + ${q.children}N` : ''}`,
     getQuotationStatusLabel(q.status),
     format(new Date(q.created_at), 'dd/MM/yy', { locale: es }),
