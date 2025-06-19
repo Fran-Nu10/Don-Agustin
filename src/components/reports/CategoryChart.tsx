@@ -25,13 +25,19 @@ export function CategoryChart({ data }: CategoryChartProps) {
     '#8B5CF6', // Purple
   ];
 
+  // Convert UYU to USD for chart data
+  const convertedData = data.map(item => ({
+    ...item,
+    revenue: item.revenue / 40, // Using an approximate conversion rate of 40 UYU = 1 USD
+  }));
+
   const chartData = {
-    labels: data.map(item => item.category),
+    labels: convertedData.map(item => item.category),
     datasets: [
       {
-        data: data.map(item => item.revenue),
-        backgroundColor: colors.slice(0, data.length),
-        borderColor: colors.slice(0, data.length).map(color => color),
+        data: convertedData.map(item => item.revenue),
+        backgroundColor: colors.slice(0, convertedData.length),
+        borderColor: colors.slice(0, convertedData.length).map(color => color),
         borderWidth: 2,
         hoverBorderWidth: 3,
         hoverOffset: 10,
@@ -65,7 +71,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
           label: function(context: any) {
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const percentage = ((context.parsed / total) * 100).toFixed(1);
-            return `${context.label}: $${context.parsed.toLocaleString('es-UY')} (${percentage}%)`;
+            return `${context.label}: USD ${context.parsed.toLocaleString('en-US')} (${percentage}%)`;
           },
         },
       },

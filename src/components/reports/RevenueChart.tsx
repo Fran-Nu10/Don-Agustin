@@ -30,12 +30,18 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  // Convert UYU to USD for chart data
+  const convertedData = data.map(item => ({
+    ...item,
+    revenue: item.revenue / 40, // Using an approximate conversion rate of 40 UYU = 1 USD
+  }));
+
   const chartData = {
-    labels: data.map(item => item.month),
+    labels: convertedData.map(item => item.month),
     datasets: [
       {
         label: 'Ingresos',
-        data: data.map(item => item.revenue),
+        data: convertedData.map(item => item.revenue),
         borderColor: '#FF6B00',
         backgroundColor: 'rgba(255, 107, 0, 0.1)',
         borderWidth: 3,
@@ -49,7 +55,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
       },
       {
         label: 'Reservas',
-        data: data.map(item => item.bookings * 1000), // Scale for visibility
+        data: convertedData.map(item => item.bookings * 1000), // Scale for visibility
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         borderWidth: 2,
@@ -95,7 +101,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         callbacks: {
           label: function(context: any) {
             if (context.datasetIndex === 0) {
-              return `Ingresos: $${context.parsed.y.toLocaleString('es-UY')}`;
+              return `Ingresos: USD ${context.parsed.y.toLocaleString('en-US')}`;
             } else {
               return `Reservas: ${(context.parsed.y / 1000).toFixed(0)}`;
             }
@@ -128,7 +134,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
           },
           color: '#6B7280',
           callback: function(value: any) {
-            return '$' + value.toLocaleString('es-UY');
+            return 'USD ' + value.toLocaleString('en-US');
           },
         },
       },

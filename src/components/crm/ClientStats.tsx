@@ -8,14 +8,19 @@ interface ClientStatsProps {
 }
 
 export function ClientStats({ stats }: ClientStatsProps) {
-  // Format currency
+  // Format currency in USD
   const formatCurrency = (amount?: number) => {
     if (amount === undefined || amount === null) return '$0';
-    return new Intl.NumberFormat('es-UY', {
+    
+    // Convert from UYU to USD (approximate conversion rate)
+    const usdAmount = amount / 40; // Using an approximate conversion rate of 40 UYU = 1 USD
+    
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'UYU',
+      currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(amount);
+      maximumFractionDigits: 0,
+    }).format(usdAmount);
   };
 
   // Format percentage

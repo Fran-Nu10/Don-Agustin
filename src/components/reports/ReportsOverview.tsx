@@ -10,11 +10,15 @@ interface ReportsOverviewProps {
 
 export function ReportsOverview({ metrics }: ReportsOverviewProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-UY', {
+    // Convert from UYU to USD (approximate conversion rate)
+    const usdAmount = amount / 40; // Using an approximate conversion rate of 40 UYU = 1 USD
+    
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'UYU',
+      currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(amount);
+      maximumFractionDigits: 0,
+    }).format(usdAmount);
   };
 
   const formatPercentage = (value: number) => {

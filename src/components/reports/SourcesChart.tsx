@@ -26,12 +26,18 @@ interface SourcesChartProps {
 }
 
 export function SourcesChart({ data }: SourcesChartProps) {
+  // Convert UYU to USD for chart data
+  const convertedData = data.map(item => ({
+    ...item,
+    amount: item.amount / 40, // Using an approximate conversion rate of 40 UYU = 1 USD
+  }));
+
   const chartData = {
-    labels: data.map(item => item.source),
+    labels: convertedData.map(item => item.source),
     datasets: [
       {
         label: 'Ingresos por Fuente',
-        data: data.map(item => item.amount),
+        data: convertedData.map(item => item.amount),
         backgroundColor: [
           'rgba(255, 107, 0, 0.8)',
           'rgba(59, 130, 246, 0.8)',
@@ -71,9 +77,9 @@ export function SourcesChart({ data }: SourcesChartProps) {
         cornerRadius: 8,
         callbacks: {
           label: function(context: any) {
-            const dataPoint = data[context.dataIndex];
+            const dataPoint = convertedData[context.dataIndex];
             return [
-              `Ingresos: $${context.parsed.y.toLocaleString('es-UY')}`,
+              `Ingresos: USD ${context.parsed.y.toLocaleString('en-US')}`,
               `Reservas: ${dataPoint.bookings}`,
               `ROI: ${dataPoint.roi}%`,
             ];
@@ -103,7 +109,7 @@ export function SourcesChart({ data }: SourcesChartProps) {
           },
           color: '#6B7280',
           callback: function(value: any) {
-            return '$' + value.toLocaleString('es-UY');
+            return 'USD ' + value.toLocaleString('en-US');
           },
         },
       },

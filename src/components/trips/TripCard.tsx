@@ -20,6 +20,9 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
   const returnDate = new Date(trip.return_date);
   const tripDuration = Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24));
   
+  // Convert price from UYU to USD
+  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -40,9 +43,9 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             {/* Overlay gradient for text readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
             
-            {/* Price tag */}
+            {/* Price tag - Now in USD */}
             <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-              ${trip.price.toLocaleString('es-UY')}
+              USD {priceUSD}
             </div>
             
             {/* Category badge - Only on desktop */}

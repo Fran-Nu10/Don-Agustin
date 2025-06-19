@@ -65,14 +65,19 @@ export function ReportsPage() {
     toast.success('Funcionalidad de exportación en desarrollo');
   };
 
-  // Format currency
+  // Format currency in USD
   const formatCurrency = (amount?: number) => {
     if (amount === undefined || amount === null) return '$0';
-    return new Intl.NumberFormat('es-UY', {
+    
+    // Convert from UYU to USD (approximate conversion rate)
+    const usdAmount = amount / 40; // Using an approximate conversion rate of 40 UYU = 1 USD
+    
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'UYU',
+      currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(amount);
+      maximumFractionDigits: 0,
+    }).format(usdAmount);
   };
 
   if (loading) {
@@ -349,7 +354,7 @@ export function ReportsPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-lg text-primary-950">
-                          ${category.revenue.toLocaleString('es-UY')}
+                          {formatCurrency(category.revenue)}
                         </p>
                         <p className={`text-sm flex items-center ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {category.growth >= 0 ? '↗' : '↘'} {Math.abs(category.growth).toFixed(1)}%
@@ -391,7 +396,7 @@ export function ReportsPage() {
                         <div className="flex justify-between">
                           <span className="text-secondary-600">Ingresos:</span>
                           <span className="font-medium text-secondary-900">
-                            ${source.amount.toLocaleString('es-UY')}
+                            {formatCurrency(source.amount)}
                           </span>
                         </div>
                         
@@ -484,7 +489,7 @@ export function ReportsPage() {
                             {performance.opportunities}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">
-                            ${performance.revenue.toLocaleString('es-UY')}
+                            {formatCurrency(performance.revenue)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -496,7 +501,7 @@ export function ReportsPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                            ${performance.averageDealSize.toLocaleString('es-UY')}
+                            {formatCurrency(performance.averageDealSize)}
                           </td>
                         </tr>
                       ))}
@@ -523,87 +528,93 @@ export function ReportsPage() {
             <CardContent>
               {reportsData.targets.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {reportsData.targets.map((target, index) => (
-                    <div key={index} className="bg-gradient-to-br from-secondary-50 to-secondary-100 p-6 rounded-lg border border-secondary-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-lg text-secondary-900 capitalize">
-                          {target.targetType === 'monthly' ? 'Mensual' :
-                           target.targetType === 'quarterly' ? 'Trimestral' :
-                           'Anual'} - {target.targetPeriod}
-                        </h4>
-                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                          target.achievementRate >= 100 ? 'bg-green-100 text-green-800' :
-                          target.achievementRate >= 75 ? 'bg-yellow-100 text-yellow-800' :
-                          target.achievementRate >= 50 ? 'bg-orange-100 text-orange-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {target.achievementRate.toFixed(1)}%
-                        </span>
+                  {reportsData.targets.map((target, index) => {
+                    // Convert values to USD
+                    const revenueTargetUSD = target.revenueTarget / 40;
+                    const actualRevenueUSD = target.actualRevenue / 40;
+                    
+                    return (
+                      <div key={index} className="bg-gradient-to-br from-secondary-50 to-secondary-100 p-6 rounded-lg border border-secondary-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-bold text-lg text-secondary-900 capitalize">
+                            {target.targetType === 'monthly' ? 'Mensual' :
+                             target.targetType === 'quarterly' ? 'Trimestral' :
+                             'Anual'} - {target.targetPeriod}
+                          </h4>
+                          <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                            target.achievementRate >= 100 ? 'bg-green-100 text-green-800' :
+                            target.achievementRate >= 75 ? 'bg-yellow-100 text-yellow-800' :
+                            target.achievementRate >= 50 ? 'bg-orange-100 text-orange-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {target.achievementRate.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-secondary-600 font-medium">💰 Ingresos</span>
+                              <span className="font-bold text-secondary-900">
+                                USD {actualRevenueUSD.toLocaleString('en-US')} / USD {revenueTargetUSD.toLocaleString('en-US')}
+                              </span>
+                            </div>
+                            <div className="w-full bg-secondary-200 rounded-full h-3">
+                              <div 
+                                className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                style={{ width: `${Math.min((target.actualRevenue / target.revenueTarget) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-secondary-600 font-medium">📋 Reservas</span>
+                              <span className="font-bold text-secondary-900">
+                                {target.actualBookings} / {target.bookingsTarget}
+                              </span>
+                            </div>
+                            <div className="w-full bg-secondary-200 rounded-full h-3">
+                              <div 
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                style={{ width: `${Math.min((target.actualBookings / target.bookingsTarget) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-secondary-600 font-medium">🎯 Leads</span>
+                              <span className="font-bold text-secondary-900">
+                                {target.actualLeads} / {target.leadsTarget}
+                              </span>
+                            </div>
+                            <div className="w-full bg-secondary-200 rounded-full h-3">
+                              <div 
+                                className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                style={{ width: `${Math.min((target.actualLeads / target.leadsTarget) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-secondary-600 font-medium">📈 Conversión</span>
+                              <span className="font-bold text-secondary-900">
+                                {target.actualConversion.toFixed(1)}% / {target.conversionTarget.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-secondary-200 rounded-full h-3">
+                              <div 
+                                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-700 shadow-sm"
+                                style={{ width: `${Math.min((target.actualConversion / target.conversionTarget) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-secondary-600 font-medium">💰 Ingresos</span>
-                            <span className="font-bold text-secondary-900">
-                              ${target.actualRevenue.toLocaleString('es-UY')} / ${target.revenueTarget.toLocaleString('es-UY')}
-                            </span>
-                          </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-3">
-                            <div 
-                              className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.min((target.actualRevenue / target.revenueTarget) * 100, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-secondary-600 font-medium">📋 Reservas</span>
-                            <span className="font-bold text-secondary-900">
-                              {target.actualBookings} / {target.bookingsTarget}
-                            </span>
-                          </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-3">
-                            <div 
-                              className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.min((target.actualBookings / target.bookingsTarget) * 100, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-secondary-600 font-medium">🎯 Leads</span>
-                            <span className="font-bold text-secondary-900">
-                              {target.actualLeads} / {target.leadsTarget}
-                            </span>
-                          </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-3">
-                            <div 
-                              className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.min((target.actualLeads / target.leadsTarget) * 100, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-secondary-600 font-medium">📈 Conversión</span>
-                            <span className="font-bold text-secondary-900">
-                              {target.actualConversion.toFixed(1)}% / {target.conversionTarget.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-secondary-200 rounded-full h-3">
-                            <div 
-                              className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.min((target.actualConversion / target.conversionTarget) * 100, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">

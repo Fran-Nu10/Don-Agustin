@@ -5,6 +5,12 @@ import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+// Convert UYU to USD
+const convertToUSD = (amount: number): number => {
+  // Using an approximate conversion rate of 40 UYU = 1 USD
+  return amount / 40;
+};
+
 export function generateQuotationPDF(quotation: Quotation) {
   const doc = new jsPDF();
   
@@ -75,6 +81,13 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.setTextColor(40, 40, 40);
   doc.text('INFORMACIÓN DEL VIAJE', 20, finalY);
   
+  // Convert price to USD if available
+  let priceDisplay = 'A definir';
+  if (quotation.trip_price) {
+    const usdPrice = convertToUSD(quotation.trip_price);
+    priceDisplay = `USD ${usdPrice.toFixed(0)}`;
+  }
+  
   const tripData = [
     ['Destino:', quotation.destination || 'A definir'],
     ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
@@ -82,6 +95,7 @@ export function generateQuotationPDF(quotation: Quotation) {
     ['Fechas flexibles:', quotation.flexible_dates ? 'Sí' : 'No'],
     ['Adultos:', quotation.adults.toString()],
     ['Menores:', quotation.children.toString()],
+    ['Precio estimado:', priceDisplay],
   ];
   
   autoTable(doc, {
@@ -182,18 +196,28 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   doc.setTextColor(40, 40, 40);
   doc.text('LISTADO DE COTIZACIONES', 20, tableY);
   
-  const tableData = quotations.map(q => [
-    q.name,
-    q.email,
-    q.destination || 'A definir',
-    `${q.adults}A${q.children > 0 ? ` + ${q.children}N` : ''}`,
-    getQuotationStatusLabel(q.status),
-    format(new Date(q.created_at), 'dd/MM/yy', { locale: es }),
-  ]);
+  const tableData = quotations.map(q => {
+    // Convert price to USD if available
+    let priceDisplay = '-';
+    if (q.trip_price) {
+      const usdPrice = convertToUSD(q.trip_price);
+      priceDisplay = `USD ${usdPrice.toFixed(0)}`;
+    }
+    
+    return [
+      q.name,
+      q.email,
+      q.destination || 'A definir',
+      `${q.adults}A${q.children > 0 ? ` + ${q.children}N` : ''}`,
+      getQuotationStatusLabel(q.status),
+      format(new Date(q.created_at), 'dd/MM/yy', { locale: es }),
+      priceDisplay
+    ];
+  });
   
   autoTable(doc, {
     startY: tableY + 5,
-    head: [['Cliente', 'Email', 'Destino', 'Pax', 'Estado', 'Fecha']],
+    head: [['Cliente', 'Email', 'Destino', 'Pax', 'Estado', 'Fecha', 'Precio Est.']],
     body: tableData,
     theme: 'striped',
     headStyles: { 
@@ -206,12 +230,13 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
       cellPadding: 2,
     },
     columnStyles: {
-      0: { cellWidth: 35 },
-      1: { cellWidth: 45 },
-      2: { cellWidth: 35 },
-      3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 25, halign: 'center' },
-      5: { cellWidth: 20, halign: 'center' },
+      0: { cellWidth: 30 },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 15, halign: 'center' },
+      4: { cellWidth: 20, halign: 'center' },
+      5: { cellWidth: 15, halign: 'center' },
+      6: { cellWidth: 20, halign: 'center' },
     },
   });
   
@@ -265,6 +290,13 @@ export function generateClientPDF(client: Client) {
   doc.setTextColor(statusColor.r, statusColor.g, statusColor.b);
   doc.text(`Estado: ${statusLabel}`, 120, 68);
   
+  // Convert trip value to USD
+  let tripValueDisplay = 'No especificado';
+  if (client.trip_value) {
+    const usdValue = convertToUSD(client.trip_value);
+    tripValueDisplay = `USD ${usdValue.toFixed(0)}`;
+  }
+  
   // Información personal
   doc.setFontSize(14);
   doc.setTextColor(40, 40, 40);
@@ -278,7 +310,7 @@ export function generateClientPDF(client: Client) {
     ['Fuente:', client.source || 'No especificada'],
     ['Fecha de registro:', format(new Date(client.created_at), 'dd/MM/yyyy HH:mm', { locale: es })],
     ['Última actualización:', format(new Date(client.updated_at), 'dd/MM/yyyy HH:mm', { locale: es })],
-    ['Valor del viaje:', client.trip_value ? `$${client.trip_value.toLocaleString('es-UY')} UYU` : 'No especificado'],
+    ['Valor del viaje:', tripValueDisplay],
   ];
   
   autoTable(doc, {
@@ -394,6 +426,9 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   doc.line(20, 45, 190, 45);
   
   // Estadísticas
+  const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+  const totalValueUSD = convertToUSD(totalValue);
+  
   const stats = {
     total: clients.length,
     nuevo: clients.filter(c => c.status === 'nuevo').length,
@@ -404,7 +439,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     seguimientos_proximos: clients.filter(c => c.status === 'seguimientos_proximos').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
     alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
-    total_valor: clients.reduce((sum, client) => sum + (client.trip_value || 0), 0),
+    total_valor: totalValueUSD,
   };
   
   doc.setFontSize(14);
@@ -421,7 +456,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     ['Clientes perdidos:', stats.cliente_perdido.toString()],
     ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
     ['Alta prioridad:', stats.alta_prioridad.toString()],
-    ['Valor total:', `$${stats.total_valor.toLocaleString('es-UY')} UYU`],
+    ['Valor total:', `USD ${stats.total_valor.toFixed(0)}`],
   ];
   
   autoTable(doc, {
@@ -445,16 +480,25 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   doc.setTextColor(40, 40, 40);
   doc.text('LISTADO DE CLIENTES', 20, tableY);
   
-  const tableData = clients.map(c => [
-    c.name,
-    c.email,
-    c.phone || '-',
-    getClientStatusLabel(c.status),
-    c.priority ? getPriorityLabel(c.priority) : '-',
-    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
-    c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
-    format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
-  ]);
+  const tableData = clients.map(c => {
+    // Convert trip value to USD
+    let valueDisplay = '-';
+    if (c.trip_value) {
+      const usdValue = convertToUSD(c.trip_value);
+      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+    }
+    
+    return [
+      c.name,
+      c.email,
+      c.phone || '-',
+      getClientStatusLabel(c.status),
+      c.priority ? getPriorityLabel(c.priority) : '-',
+      valueDisplay,
+      c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
+      format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
+    ];
+  });
   
   autoTable(doc, {
     startY: tableY + 5,
@@ -517,20 +561,30 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   doc.setFontSize(10);
   doc.text(`Total de clientes: ${clients.length}`, 20, 68);
   
-  // Calcular valor total
+  // Calcular valor total en USD
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  doc.text(`Valor total: $${totalValue.toLocaleString('es-UY')} UYU`, 20, 74);
+  const totalValueUSD = convertToUSD(totalValue);
+  doc.text(`Valor total: USD ${totalValueUSD.toFixed(0)}`, 20, 74);
   
   // Tabla de clientes
-  const tableData = clients.map(c => [
-    c.name,
-    c.email,
-    c.phone || '-',
-    c.priority ? getPriorityLabel(c.priority) : '-',
-    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
-    c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
-    format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
-  ]);
+  const tableData = clients.map(c => {
+    // Convert trip value to USD
+    let valueDisplay = '-';
+    if (c.trip_value) {
+      const usdValue = convertToUSD(c.trip_value);
+      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+    }
+    
+    return [
+      c.name,
+      c.email,
+      c.phone || '-',
+      c.priority ? getPriorityLabel(c.priority) : '-',
+      valueDisplay,
+      c.scheduled_date ? format(new Date(c.scheduled_date), 'dd/MM/yy HH:mm', { locale: es }) : 'Sin agendar',
+      format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
+    ];
+  });
   
   autoTable(doc, {
     startY: 80,
@@ -593,20 +647,30 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   doc.setFontSize(10);
   doc.text(`Total de clientes: ${clients.length}`, 20, 68);
   
-  // Calcular valor total
+  // Calcular valor total en USD
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  doc.text(`Valor total: $${totalValue.toLocaleString('es-UY')} UYU`, 20, 74);
+  const totalValueUSD = convertToUSD(totalValue);
+  doc.text(`Valor total: USD ${totalValueUSD.toFixed(0)}`, 20, 74);
   
   // Tabla de clientes
-  const tableData = clients.map(c => [
-    c.name,
-    c.email,
-    c.phone || '-',
-    getClientStatusLabel(c.status),
-    c.priority ? getPriorityLabel(c.priority) : '-',
-    c.trip_value ? `$${c.trip_value.toLocaleString('es-UY')}` : '-',
-    format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
-  ]);
+  const tableData = clients.map(c => {
+    // Convert trip value to USD
+    let valueDisplay = '-';
+    if (c.trip_value) {
+      const usdValue = convertToUSD(c.trip_value);
+      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+    }
+    
+    return [
+      c.name,
+      c.email,
+      c.phone || '-',
+      getClientStatusLabel(c.status),
+      c.priority ? getPriorityLabel(c.priority) : '-',
+      valueDisplay,
+      format(new Date(c.created_at), 'dd/MM/yy', { locale: es }),
+    ];
+  });
   
   autoTable(doc, {
     startY: 80,
