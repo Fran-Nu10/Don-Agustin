@@ -155,8 +155,8 @@ export function ClientsPage() {
     }, {} as Record<string, number>);
 
     // Conversion rate (closed clients / total clients)
-    const closedClients = clients.filter(c => c.status === 'cliente_cerrado').length;
-    const conversionRate = total > 0 ? (closedClients / total) * 100 : 0;
+    const closedClientsCount = clients.filter(c => c.status === 'cliente_cerrado').length;
+    const conversionRate = total > 0 ? (closedClientsCount / total) * 100 : 0;
 
     // Upcoming follow-ups
     const now = new Date();
