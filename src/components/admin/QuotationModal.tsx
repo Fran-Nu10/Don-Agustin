@@ -4,7 +4,7 @@ import { Quotation, QuotationFormData } from '../../types/quotation';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { X, Calendar, Phone, Mail, User, MapPin, Users, MessageSquare } from 'lucide-react';
+import { X, Calendar, Phone, Mail, User, MapPin, Users, MessageSquare, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -37,6 +37,7 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
       adults: quotation.adults,
       children: quotation.children,
       observations: quotation.observations || '',
+      status: quotation.status,
     } : undefined,
   });
 
@@ -54,6 +55,7 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
         adults: quotation.adults,
         children: quotation.children,
         observations: quotation.observations || '',
+        status: quotation.status,
       });
     }
   }, [quotation, reset]);
@@ -135,6 +137,32 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                   </span>
                 </div>
               </div>
+
+              {/* Trip Info (if available) */}
+              {quotation.trip_id && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h3 className="font-heading font-bold text-lg text-secondary-900 mb-2 flex items-center">
+                    <Tag className="h-5 w-5 mr-2 text-blue-600" />
+                    Información del Viaje Cotizado
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-secondary-500">Viaje</p>
+                      <p className="font-medium text-secondary-900">{quotation.trip_title || 'No especificado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-secondary-500">Destino</p>
+                      <p className="font-medium text-secondary-900">{quotation.trip_destination || 'No especificado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-secondary-500">Precio</p>
+                      <p className="font-medium text-secondary-900">
+                        {quotation.trip_price ? `$${quotation.trip_price.toLocaleString('es-UY')}` : 'No especificado'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Client Info */}
               <div>
@@ -358,6 +386,21 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                     className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-secondary-900">
+                  Estado
+                </label>
+                <select
+                  {...register('status')}
+                  className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="pending">Pendiente</option>
+                  <option value="processing">Procesando</option>
+                  <option value="quoted">Cotizado</option>
+                  <option value="closed">Cerrado</option>
+                </select>
               </div>
 
               <Textarea
