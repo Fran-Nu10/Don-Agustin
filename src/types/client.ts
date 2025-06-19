@@ -4,7 +4,7 @@ export interface Client {
   email: string;
   phone?: string;
   message?: string;
-  status: 'nuevo' | 'presupuesto_enviado' | 'en_seguimiento' | 'cliente_cerrado' | 'en_proceso' | 'cliente_perdido';
+  status: 'nuevo' | 'presupuesto_enviado' | 'en_seguimiento' | 'cliente_cerrado' | 'en_proceso' | 'cliente_perdido' | 'seguimientos_proximos';
   internal_notes?: string;
   scheduled_date?: string;
   created_at: string;

@@ -54,8 +54,8 @@ export function ClientStats({ stats }: ClientStatsProps) {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center">
-            <div className="p-2 rounded-full bg-yellow-100 mr-4">
-              <Calendar className="h-6 w-6 text-yellow-600" />
+            <div className="p-2 rounded-full bg-indigo-100 mr-4">
+              <Clock className="h-6 w-6 text-indigo-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-secondary-500">Seguimientos Próximos</p>

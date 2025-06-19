@@ -92,6 +92,8 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         return 'bg-orange-100 text-orange-800';
       case 'cliente_perdido':
         return 'bg-red-100 text-red-800';
+      case 'seguimientos_proximos':
+        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -111,6 +113,8 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         return 'En Proceso';
       case 'cliente_perdido':
         return 'Cliente Perdido';
+      case 'seguimientos_proximos':
+        return 'Seguimientos Próximos';
       default:
         return status;
     }

@@ -401,6 +401,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
     cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
     cliente_perdido: clients.filter(c => c.status === 'cliente_perdido').length,
+    seguimientos_proximos: clients.filter(c => c.status === 'seguimientos_proximos').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
     alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
     total_valor: clients.reduce((sum, client) => sum + (client.trip_value || 0), 0),
@@ -415,6 +416,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     ['Nuevos:', stats.nuevo.toString()],
     ['Presupuesto enviado:', stats.presupuesto_enviado.toString()],
     ['En seguimiento:', stats.en_seguimiento.toString()],
+    ['Seguimientos próximos:', stats.seguimientos_proximos.toString()],
     ['Clientes cerrados:', stats.cliente_cerrado.toString()],
     ['Clientes perdidos:', stats.cliente_perdido.toString()],
     ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
@@ -688,6 +690,8 @@ function getClientStatusLabel(status: Client['status']): string {
       return 'En Proceso';
     case 'cliente_perdido':
       return 'Cliente Perdido';
+    case 'seguimientos_proximos':
+      return 'Seguimientos Próximos';
     default:
       return status;
   }
@@ -707,6 +711,8 @@ function getClientStatusColor(status: Client['status']): { r: number; g: number;
       return { r: 249, g: 115, b: 22 }; // Orange
     case 'cliente_perdido':
       return { r: 239, g: 68, b: 68 }; // Red
+    case 'seguimientos_proximos':
+      return { r: 79, g: 70, b: 229 }; // Indigo
     default:
       return { r: 107, g: 114, b: 128 }; // Gray
   }
