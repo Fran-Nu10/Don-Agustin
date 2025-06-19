@@ -185,6 +185,12 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
     return new Date(followUpDate) < new Date();
   };
 
+  // Convert trip value from UYU to USD
+  const getTripValueUSD = (value?: number) => {
+    if (!value) return null;
+    return Math.round(value / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -262,6 +268,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
               sortedClients.map((client) => {
                 const formattedScheduledDate = formatScheduledDate(client.scheduled_date);
                 const isFollowUpOverdue = isOverdue(client.next_follow_up);
+                const tripValueUSD = getTripValueUSD(client.trip_value);
                 
                 return (
                   <tr key={client.id} className={`hover:bg-secondary-50 ${isFollowUpOverdue ? 'bg-red-50' : ''}`}>
@@ -337,11 +344,11 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                      {client.trip_value ? (
+                      {tripValueUSD ? (
                         <div className="flex items-center">
                           <DollarSign className="h-4 w-4 mr-2 text-green-600" />
                           <span className="text-green-600 font-medium">
-                            ${client.trip_value.toLocaleString('es-UY')}
+                            USD {tripValueUSD}
                           </span>
                         </div>
                       ) : (

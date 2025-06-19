@@ -101,6 +101,12 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
     }
   };
 
+  // Convert price from UYU to USD
+  const getPriceUSD = (uyuPrice?: number) => {
+    if (!uyuPrice) return 'No especificado';
+    return `USD ${Math.round(uyuPrice / 40)}`; // Using an approximate conversion rate of 40 UYU = 1 USD
+  };
+
   if (!isOpen || !quotation) return null;
 
   return (
@@ -157,7 +163,7 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                     <div>
                       <p className="text-sm text-secondary-500">Precio</p>
                       <p className="font-medium text-secondary-900">
-                        {quotation.trip_price ? `$${quotation.trip_price.toLocaleString('es-UY')}` : 'No especificado'}
+                        {getPriceUSD(quotation.trip_price)}
                       </p>
                     </div>
                   </div>

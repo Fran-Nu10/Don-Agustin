@@ -29,6 +29,9 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
     formState: { errors },
   } = useForm<BookingFormData>();
 
+  // Convert price from UYU to USD
+  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+
   const onSubmit = async (data: BookingFormData) => {
     if (trip.available_spots <= 0) {
       toast.error('Lo sentimos, no hay cupos disponibles para este viaje.');
@@ -43,7 +46,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
+        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,

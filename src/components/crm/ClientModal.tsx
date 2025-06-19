@@ -197,6 +197,12 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     }
   };
 
+  // Convert trip value from UYU to USD
+  const getTripValueUSD = (value?: number) => {
+    if (!value) return 0;
+    return Math.round(value / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+  };
+
   if (!isOpen || !client) return null;
 
   return (
@@ -254,13 +260,13 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     </div>
                   )}
                   
-                  {/* Valor del viaje */}
+                  {/* Valor del viaje - Now in USD */}
                   <div className="flex items-center">
                     <DollarSign className="h-5 w-5 text-primary-950 mr-3" />
                     <div>
                       <p className="text-sm text-secondary-500">Valor del viaje</p>
                       <p className="font-medium text-secondary-900">
-                        ${client.trip_value?.toLocaleString('es-UY') || '0'} UYU
+                        USD {getTripValueUSD(client.trip_value)}
                       </p>
                     </div>
                   </div>
@@ -476,10 +482,10 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                   {...register('preferred_destination')}
                 />
 
-                {/* Valor del viaje */}
+                {/* Valor del viaje - Now in USD */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-secondary-900">
-                    Valor del viaje (UYU)
+                    Valor del viaje (USD)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -488,17 +494,24 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     <input
                       type="number"
                       min="0"
-                      step="1000"
+                      step="100"
                       className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       {...register('trip_value', { 
                         valueAsNumber: true,
-                        min: { value: 0, message: 'El valor no puede ser negativo' }
+                        min: { value: 0, message: 'El valor no puede ser negativo' },
+                        // Convert USD to UYU on input
+                        setValueAs: (v) => v ? parseFloat(v) * 40 : 0 // Multiply by 40 to convert to UYU
                       })}
+                      // Display the USD value in the input
+                      defaultValue={getTripValueUSD(client.trip_value)}
                     />
                   </div>
                   {errors.trip_value && (
                     <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
                   )}
+                  <p className="text-xs text-secondary-500 mt-1">
+                    Ingrese el valor en dólares americanos (USD). Se convertirá automáticamente a pesos uruguayos.
+                  </p>
                 </div>
               </div>
 

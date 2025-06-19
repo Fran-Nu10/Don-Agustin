@@ -29,6 +29,9 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
     formState: { errors },
   } = useForm<QuotationFormData>();
 
+  // Convert price from UYU to USD
+  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+
   const onSubmit = async (data: QuotationFormData) => {
     try {
       setIsSubmitting(true);
@@ -38,7 +41,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: $${trip.price.toLocaleString('es-UY')}.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
+        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,
