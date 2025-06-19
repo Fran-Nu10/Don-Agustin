@@ -45,7 +45,7 @@ export function DashboardPage() {
           Dashboard
         </h1>
         <p className="text-secondary-500">
-          Bienvenido al panel de administración de Don Agustín Viajes
+          Bienvenido al panel de administración de TravelSuite360
         </p>
       </div>
       

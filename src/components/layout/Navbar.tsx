@@ -204,7 +204,7 @@ export function Navbar() {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="md:hidden overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, #F2940A 0%, #EB951C 25%, #FF6B00 50%, #E66B00 75%, #C4730A 100%)'
+                  background: 'linear-gradient(135deg, #F9A826 0%, #FF8C00 25%, #FF7F50 50%, #FF6B00 75%, #FF5722 100%)'
                 }}
               >
                 <div className="container mx-auto px-4 py-6">

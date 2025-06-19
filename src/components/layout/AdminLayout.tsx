@@ -35,24 +35,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-screen bg-secondary-100">
       {/* Sidebar - Updated with gradient background and toggle button */}
       <div 
-        className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'md:w-20' : 'md:w-64'} bg-gradient-to-b from-secondary-800 to-secondary-900 shadow-md transition-all duration-300`}
+        className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'md:w-20' : 'md:w-64'} bg-gradient-to-b from-[#1A2238] to-[#121A2F] shadow-md transition-all duration-300`}
       >
         <div className="p-4 border-b border-secondary-700 flex items-center justify-between">
           {!sidebarCollapsed ? (
             <Link to="/" className="flex items-center space-x-2">
-              <span className="font-heading font-bold text-lg text-white">
-                Panel Administrativo
+              <span className="font-heading font-bold text-lg text-[#E9D8B4]">
+                TravelSuite360
               </span>
             </Link>
           ) : (
             <Link to="/" className="flex items-center justify-center">
-              <LayoutDashboard className="h-6 w-6 text-white" />
+              <LayoutDashboard className="h-6 w-6 text-[#E9D8B4]" />
             </Link>
           )}
           
           <button 
             onClick={toggleSidebar}
-            className="text-white hover:text-primary-300 transition-colors"
+            className="text-white hover:text-[#E9D8B4] transition-colors"
           >
             {sidebarCollapsed ? (
               <ChevronRight className="h-5 w-5" />
@@ -141,9 +141,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header - Updated with gradient background */}
-        <header className="md:hidden bg-gradient-to-r from-secondary-800 to-secondary-900 shadow-md p-4 flex items-center justify-between">
-          <div className="font-heading font-bold text-lg text-white">
-            Panel Administrativo
+        <header className="md:hidden bg-gradient-to-r from-[#1A2238] to-[#121A2F] shadow-md p-4 flex items-center justify-between">
+          <div className="font-heading font-bold text-lg text-[#E9D8B4]">
+            TravelSuite360
           </div>
           
           <button
@@ -160,7 +160,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-secondary-900/95 pt-16">
+          <div className="md:hidden fixed inset-0 z-50 bg-gradient-to-br from-[#1A2238]/95 via-[#121A2F]/95 to-[#1A2238]/95 pt-16">
             <nav className="p-4 space-y-2">
               <MobileNavLink
                 to="/admin/dashboard"
