@@ -77,4 +77,9 @@ export interface ClientStatsType {
   closedRevenue: number; // New field for closed clients revenue
   averageTripValue: number;
   clientsWithValue: number; // New field to track clients with value
+  // New conversion rate fields
+  newToQuotedConversion: number;
+  quotedToFollowUpConversion: number;
+  followUpToClosedConversion: number;
+  globalConversion: number;
 }

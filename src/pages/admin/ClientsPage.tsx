@@ -154,8 +154,19 @@ export function ClientsPage() {
       return acc;
     }, {} as Record<string, number>);
 
+    // Count clients by status for conversion rates
+    const newCount = byStatus['nuevo'] || 0;
+    const quotedCount = byStatus['presupuesto_enviado'] || 0;
+    const followUpCount = byStatus['en_seguimiento'] || 0;
+    const closedClientsCount = byStatus['cliente_cerrado'] || 0;
+
+    // Calculate conversion rates
+    const newToQuotedConversion = newCount > 0 ? (quotedCount / newCount) * 100 : 0;
+    const quotedToFollowUpConversion = quotedCount > 0 ? (followUpCount / quotedCount) * 100 : 0;
+    const followUpToClosedConversion = followUpCount > 0 ? (closedClientsCount / followUpCount) * 100 : 0;
+    const globalConversion = newCount > 0 ? (closedClientsCount / newCount) * 100 : 0;
+
     // Conversion rate (closed clients / total clients)
-    const closedClientsCount = clients.filter(c => c.status === 'cliente_cerrado').length;
     const conversionRate = total > 0 ? (closedClientsCount / total) * 100 : 0;
 
     // Upcoming follow-ups
@@ -199,6 +210,11 @@ export function ClientsPage() {
       closedRevenue,
       averageTripValue,
       clientsWithValue: clientsWithValue.length,
+      // Add conversion rates
+      newToQuotedConversion,
+      quotedToFollowUpConversion,
+      followUpToClosedConversion,
+      globalConversion
     });
   }
 
