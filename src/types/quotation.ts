@@ -14,6 +14,10 @@ export interface Quotation {
   status: 'pending' | 'processing' | 'quoted' | 'closed';
   created_at: string;
   updated_at: string;
+  trip_id?: string;
+  trip_title?: string;
+  trip_destination?: string;
+  trip_price?: number;
 }
 
 export interface QuotationFormData {
@@ -28,6 +32,10 @@ export interface QuotationFormData {
   adults: number;
   children: number;
   observations?: string;
+  trip_id?: string;
+  trip_title?: string;
+  trip_destination?: string;
+  trip_price?: number;
 }
 
 export interface QuotationFilters {

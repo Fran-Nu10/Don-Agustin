@@ -457,18 +457,18 @@ export async function getStats(): Promise<Stats> {
       
       console.log(`Found ${totalTrips} total trips`);
 
-      // Get total bookings with count - FORCE REFRESH
-      const { data: bookingsData, error: bookingsError, count: totalBookings } = await supabase
-        .from('bookings')
+      // Get total quotations with count - UPDATED FROM BOOKINGS TO QUOTATIONS
+      const { data: quotationsData, error: quotationsError, count: totalQuotations } = await supabase
+        .from('quotations')
         .select('*', { count: 'exact' })
-        .limit(1000); // Ensure we get all bookings
+        .limit(1000); // Ensure we get all quotations
 
-      if (bookingsError) {
-        console.error('Error fetching bookings:', bookingsError);
-        throw bookingsError;
+      if (quotationsError) {
+        console.error('Error fetching quotations:', quotationsError);
+        throw quotationsError;
       }
       
-      console.log(`Found ${totalBookings} total bookings`);
+      console.log(`Found ${totalQuotations} total quotations`);
 
       // Get upcoming trips
       const { data: upcomingTripsData, error: upcomingError, count: upcomingTrips } = await supabase
@@ -483,40 +483,37 @@ export async function getStats(): Promise<Stats> {
       
       console.log(`Found ${upcomingTrips} upcoming trips`);
 
-      // Get bookings with trip details for destination analysis
-      const { data: bookingsWithTrips, error: bookingsWithTripsError } = await supabase
-        .from('bookings')
+      // Get quotations with trip details for destination analysis - UPDATED FROM BOOKINGS TO QUOTATIONS
+      const { data: quotationsWithTrips, error: quotationsWithTripsError } = await supabase
+        .from('quotations')
         .select(`
           id,
           created_at,
           trip_id,
-          trip:trips(
-            id,
-            destination,
-            category,
-            price
-          )
+          trip_destination,
+          destination
         `);
 
-      if (bookingsWithTripsError) {
-        console.error('Error fetching bookings with trips:', bookingsWithTripsError);
-        throw bookingsWithTripsError;
+      if (quotationsWithTripsError) {
+        console.error('Error fetching quotations with trips:', quotationsWithTripsError);
+        throw quotationsWithTripsError;
       }
 
-      // Count bookings by destination
+      // Count quotations by destination - UPDATED FROM BOOKINGS TO QUOTATIONS
       const destinationCounts: { [key: string]: number } = {};
       
-      if (bookingsWithTrips && bookingsWithTrips.length > 0) {
-        console.log('Processing bookings for destination counts...');
-        bookingsWithTrips.forEach(booking => {
-          if (booking.trip && booking.trip.destination) {
-            const destination = booking.trip.destination;
+      if (quotationsWithTrips && quotationsWithTrips.length > 0) {
+        console.log('Processing quotations for destination counts...');
+        quotationsWithTrips.forEach(quotation => {
+          // Use trip_destination if available, otherwise use destination
+          const destination = quotation.trip_destination || quotation.destination;
+          if (destination) {
             destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
           }
         });
       } else {
-        // Si no hay reservas, usar los destinos de los viajes disponibles
-        console.log('No bookings found, using trip destinations instead');
+        // Si no hay cotizaciones, usar los destinos de los viajes disponibles
+        console.log('No quotations found, using trip destinations instead');
         tripsData?.forEach(trip => {
           const destination = trip.destination;
           destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
@@ -549,58 +546,58 @@ export async function getStats(): Promise<Stats> {
       
       console.log('Category distribution:', categoryDistribution);
 
-      // Calculate booking trend
+      // Calculate quotation trend - UPDATED FROM BOOKINGS TO QUOTATIONS
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
       
-      const recentBookings = bookingsData?.filter(booking => 
-        new Date(booking.created_at) >= sevenDaysAgo
+      const recentQuotations = quotationsData?.filter(quotation => 
+        new Date(quotation.created_at) >= sevenDaysAgo
       ) || [];
       
-      const previousWeekBookings = bookingsData?.filter(booking => {
-        const bookingDate = new Date(booking.created_at);
-        return bookingDate >= fourteenDaysAgo && bookingDate < sevenDaysAgo;
+      const previousWeekQuotations = quotationsData?.filter(quotation => {
+        const quotationDate = new Date(quotation.created_at);
+        return quotationDate >= fourteenDaysAgo && quotationDate < sevenDaysAgo;
       }) || [];
       
-      const currentWeekCount = recentBookings.length;
-      const previousWeekCount = previousWeekBookings.length;
+      const currentWeekCount = recentQuotations.length;
+      const previousWeekCount = previousWeekQuotations.length;
       
-      const bookingTrend = previousWeekCount > 0 
+      const quotationTrend = previousWeekCount > 0 
         ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100 
         : currentWeekCount > 0 ? 100 : 0;
       
-      console.log(`Booking trend: ${bookingTrend.toFixed(1)}% (${currentWeekCount} vs ${previousWeekCount})`);
+      console.log(`Quotation trend: ${quotationTrend.toFixed(1)}% (${currentWeekCount} vs ${previousWeekCount})`);
 
-      // Calculate average bookings per day
+      // Calculate average quotations per day - UPDATED FROM BOOKINGS TO QUOTATIONS
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const last30DaysBookings = bookingsData?.filter(booking => 
-        new Date(booking.created_at) >= thirtyDaysAgo
+      const last30DaysQuotations = quotationsData?.filter(quotation => 
+        new Date(quotation.created_at) >= thirtyDaysAgo
       ) || [];
       
-      const averageBookingsPerDay = last30DaysBookings.length / 30;
-      console.log(`Average bookings per day: ${averageBookingsPerDay.toFixed(2)}`);
+      const averageQuotationsPerDay = last30DaysQuotations.length / 30;
+      console.log(`Average quotations per day: ${averageQuotationsPerDay.toFixed(2)}`);
 
-      // Calculate recent bookings count
-      const recentBookingsCount = recentBookings.length;
-      console.log(`Recent bookings (last 7 days): ${recentBookingsCount}`);
+      // Calculate recent quotations count - UPDATED FROM BOOKINGS TO QUOTATIONS
+      const recentQuotationsCount = recentQuotations.length;
+      console.log(`Recent quotations (last 7 days): ${recentQuotationsCount}`);
 
       // Calculate conversion rate
       const conversionRate = totalTrips && totalTrips > 0 
-        ? ((totalBookings || 0) / totalTrips) * 100 
+        ? ((totalQuotations || 0) / totalTrips) * 100 
         : 0;
       
       console.log(`Conversion rate: ${conversionRate.toFixed(1)}%`);
 
       return {
         totalTrips: totalTrips || 0,
-        totalBookings: totalBookings || 0,
+        totalBookings: totalQuotations || 0, // Now represents total quotations
         upcomingTrips: upcomingTrips || 0,
         popularDestinations,
         categoryDistribution,
-        bookingTrend: Math.round(bookingTrend * 10) / 10,
-        averageBookingsPerDay: Math.round(averageBookingsPerDay * 10) / 10,
-        recentBookingsCount,
+        bookingTrend: Math.round(quotationTrend * 10) / 10, // Now represents quotation trend
+        averageBookingsPerDay: Math.round(averageQuotationsPerDay * 10) / 10, // Now represents average quotations per day
+        recentBookingsCount: recentQuotationsCount, // Now represents recent quotations count
         conversionRate,
       };
     } catch (error) {

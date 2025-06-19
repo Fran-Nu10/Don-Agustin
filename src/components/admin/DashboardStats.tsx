@@ -33,7 +33,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     labels: stats.popularDestinations.map((d) => d.destination),
     datasets: [
       {
-        label: 'Reservas por destino',
+        label: 'Cotizaciones por destino',
         data: stats.popularDestinations.map((d) => d.count),
         backgroundColor: '#FF6B00',
         borderColor: '#E66B00',
@@ -51,7 +51,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       },
       title: {
         display: true,
-        text: 'Destinos más reservados',
+        text: 'Destinos más solicitados',
       },
     },
     scales: {
@@ -83,7 +83,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           </CardContent>
         </Card>
 
-        {/* Total Bookings */}
+        {/* Total Quotations */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -91,7 +91,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                 <Users className="h-6 w-6 text-primary-950" />
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-500">Total de reservas</p>
+                <p className="text-sm font-medium text-secondary-500">Total de cotizaciones</p>
                 <h4 className="text-2xl font-bold text-secondary-900">{stats.totalBookings}</h4>
               </div>
             </div>
@@ -113,7 +113,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           </CardContent>
         </Card>
 
-        {/* Avg Bookings per Trip */}
+        {/* Avg Quotations per Trip */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -121,7 +121,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                 <TrendingUp className="h-6 w-6 text-primary-950" />
               </div>
               <div>
-                <p className="text-sm font-medium text-secondary-500">Promedio de reservas</p>
+                <p className="text-sm font-medium text-secondary-500">Promedio de cotizaciones</p>
                 <h4 className="text-2xl font-bold text-secondary-900">
                   {stats.totalTrips > 0
                     ? (stats.totalBookings / stats.totalTrips).toFixed(1)
@@ -138,7 +138,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
         {/* Popular Destinations Chart */}
         <Card>
           <CardContent className="p-6">
-            <h3 className="font-heading font-bold text-lg mb-4">Destinos más populares</h3>
+            <h3 className="font-heading font-bold text-lg mb-4">Destinos más solicitados</h3>
             {stats.popularDestinations.length > 0 ? (
               <div className="h-64">
                 <Bar data={chartData} options={chartOptions} />
@@ -147,8 +147,8 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
               <div className="h-64 flex items-center justify-center text-secondary-400">
                 <div className="text-center">
                   <Map className="h-12 w-12 mx-auto mb-4 text-secondary-300" />
-                  <p className="text-lg font-medium mb-2">Sin reservas aún</p>
-                  <p className="text-sm">Las estadísticas aparecerán cuando los clientes hagan reservas</p>
+                  <p className="text-lg font-medium mb-2">Sin cotizaciones aún</p>
+                  <p className="text-sm">Las estadísticas aparecerán cuando los clientes soliciten cotizaciones</p>
                 </div>
               </div>
             )}
@@ -160,7 +160,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           <CardContent className="p-6">
             <h3 className="font-heading font-bold text-lg mb-4">Análisis de Tendencias</h3>
             <div className="space-y-4">
-              {/* Booking Trend */}
+              {/* Quotation Trend */}
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
                 <div className="flex items-center">
                   <div className={`p-2 rounded-full mr-3 ${
@@ -193,7 +193,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                     <Activity className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-secondary-700">Reservas recientes</p>
+                    <p className="text-sm font-medium text-secondary-700">Cotizaciones recientes</p>
                     <p className="text-xs text-secondary-500">últimos 7 días</p>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-secondary-700">Tasa de conversión</p>
-                    <p className="text-xs text-secondary-500">reservas por viaje</p>
+                    <p className="text-xs text-secondary-500">cotizaciones por viaje</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -271,7 +271,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                     <div className="text-right">
                       <span className="text-lg font-bold text-primary-950">{destination.count}</span>
                       <span className="text-sm text-secondary-500 ml-1">
-                        {destination.count === 1 ? 'reserva' : 'reservas'}
+                        {destination.count === 1 ? 'cotización' : 'cotizaciones'}
                       </span>
                     </div>
                   </div>

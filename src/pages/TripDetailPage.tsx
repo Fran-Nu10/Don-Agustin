@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { Button } from '../components/ui/Button';
-import { BookingForm } from '../components/trips/BookingForm';
+import { QuotationRequestForm } from '../components/trips/QuotationRequestForm';
 import { TripItinerary } from '../components/trips/TripItinerary';
 import { IncludedServices } from '../components/trips/IncludedServices';
 import { RelatedTrips } from '../components/trips/RelatedTrips';
@@ -20,7 +20,7 @@ export function TripDetailPage() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [quotationSuccess, setQuotationSuccess] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -49,8 +49,8 @@ export function TripDetailPage() {
     loadData();
   }, [id]);
 
-  const handleBookingSuccess = () => {
-    setBookingSuccess(true);
+  const handleQuotationSuccess = () => {
+    setQuotationSuccess(true);
     // Optionally refresh trip data to update available spots
     if (id) {
       getTrip(id).then(setTrip);
@@ -284,14 +284,14 @@ export function TripDetailPage() {
               </div>
             </motion.div>
             
-            {/* Booking Form */}
+            {/* Quotation Form */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:sticky lg:top-24"
             >
-              {bookingSuccess ? (
+              {quotationSuccess ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
@@ -310,20 +310,20 @@ export function TripDetailPage() {
                     </svg>
                   </div>
                   <h3 className="font-heading font-bold text-xl mb-2 text-secondary-900">
-                    ¡Reserva exitosa!
+                    ¡Solicitud enviada!
                   </h3>
                   <p className="text-secondary-600 mb-4">
-                    Gracias por reservar con Don Agustín Viajes. Te hemos enviado un correo con los detalles de tu reserva.
+                    Gracias por solicitar una cotización con Don Agustín Viajes. Te hemos enviado un correo con los detalles y nos pondremos en contacto contigo pronto.
                   </p>
                   <Button
                     variant="outline"
-                    onClick={() => setBookingSuccess(false)}
+                    onClick={() => setQuotationSuccess(false)}
                   >
-                    Hacer otra reserva
+                    Solicitar otra cotización
                   </Button>
                 </div>
               ) : (
-                <BookingForm trip={trip} onSuccess={handleBookingSuccess} />
+                <QuotationRequestForm trip={trip} onSuccess={handleQuotationSuccess} />
               )}
             </motion.div>
           </div>
