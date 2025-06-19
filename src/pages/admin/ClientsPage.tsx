@@ -172,8 +172,13 @@ export function ClientsPage() {
     // Average response time (mock calculation)
     const avgResponseTime = 24; // This would be calculated based on actual response times
 
-    // Calculate total revenue from trip_value
-    const totalRevenue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+    // Calculate potential revenue from clients that are not closed
+    const potentialClients = clients.filter(client => client.status !== 'cliente_cerrado' && client.status !== 'cliente_perdido');
+    const potentialRevenue = potentialClients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
+    
+    // Calculate closed revenue from clients with 'cliente_cerrado' status
+    const closedClients = clients.filter(client => client.status === 'cliente_cerrado');
+    const closedRevenue = closedClients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
     
     // Calculate average trip value
     const clientsWithValue = clients.filter(client => client.trip_value && client.trip_value > 0);
@@ -190,8 +195,10 @@ export function ClientsPage() {
       avgResponseTime,
       upcomingFollowUps,
       overdueFollowUps,
-      totalRevenue,
+      potentialRevenue,
+      closedRevenue,
       averageTripValue,
+      clientsWithValue: clientsWithValue.length,
     });
   }
 

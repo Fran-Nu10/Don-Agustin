@@ -1,7 +1,7 @@
 import React from 'react';
 import { ClientStatsType } from '../../types/client';
 import { Card, CardContent } from '../ui/Card';
-import { Users, TrendingUp, Calendar, AlertTriangle, DollarSign } from 'lucide-react';
+import { Users, TrendingUp, Calendar, AlertTriangle, DollarSign, CheckCircle } from 'lucide-react';
 
 interface ClientStatsProps {
   stats: ClientStatsType;
@@ -19,7 +19,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
       {/* Total Clients */}
       <Card>
         <CardContent className="p-6">
@@ -82,7 +82,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
         </CardContent>
       </Card>
 
-      {/* Total Revenue */}
+      {/* Potential Total Value - RENAMED */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center">
@@ -90,9 +90,26 @@ export function ClientStats({ stats }: ClientStatsProps) {
               <DollarSign className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-secondary-500">Valor Total</p>
+              <p className="text-sm font-medium text-secondary-500">Valor Total Potencial</p>
               <h4 className="text-2xl font-bold text-secondary-900">
-                {formatCurrency(stats.totalRevenue)}
+                {formatCurrency(stats.potentialRevenue)}
+              </h4>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Closed Clients Total Value - NEW */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center">
+            <div className="p-2 rounded-full bg-blue-100 mr-4">
+              <CheckCircle className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-secondary-500">Valor Total Cerrado</p>
+              <h4 className="text-2xl font-bold text-secondary-900">
+                {formatCurrency(stats.closedRevenue)}
               </h4>
             </div>
           </div>
@@ -170,7 +187,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
       </Card>
 
       {/* Revenue Distribution */}
-      <Card className="md:col-span-1 lg:col-span-2">
+      <Card className="md:col-span-2 lg:col-span-2">
         <CardContent className="p-6">
           <h4 className="font-semibold text-secondary-900 mb-4 flex items-center">
             <DollarSign className="h-5 w-5 mr-2" />
@@ -189,11 +206,14 @@ export function ClientStats({ stats }: ClientStatsProps) {
           </div>
           <div className="mt-4 pt-4 border-t border-secondary-200">
             <p className="text-sm text-secondary-600">
-              Valor total de viajes: <span className="font-medium text-secondary-900">{formatCurrency(stats.totalRevenue)}</span>
+              Valor total potencial: <span className="font-medium text-secondary-900">{formatCurrency(stats.potentialRevenue)}</span>
+            </p>
+            <p className="text-sm text-secondary-600 mt-1">
+              Valor total cerrado: <span className="font-medium text-secondary-900">{formatCurrency(stats.closedRevenue)}</span>
             </p>
             <p className="text-sm text-secondary-600 mt-1">
               Clientes con valor asignado: <span className="font-medium text-secondary-900">
-                {stats.total > 0 ? Math.round((stats.totalRevenue || 0) / (stats.averageTripValue || 1)) : 0}
+                {stats.clientsWithValue}
               </span>
             </p>
           </div>

@@ -73,6 +73,8 @@ export interface ClientStatsType {
   avgResponseTime: number;
   upcomingFollowUps: number;
   overdueFollowUps: number;
-  totalRevenue: number;
+  potentialRevenue: number; // Renamed from totalRevenue
+  closedRevenue: number; // New field for closed clients revenue
   averageTripValue: number;
+  clientsWithValue: number; // New field to track clients with value
 }
