@@ -1,7 +1,7 @@
 import React from 'react';
 import { ClientStatsType } from '../../types/client';
 import { Card, CardContent } from '../ui/Card';
-import { Users, TrendingUp, Calendar, AlertTriangle, DollarSign, CheckCircle } from 'lucide-react';
+import { Users, TrendingUp, Calendar, AlertTriangle, DollarSign, CheckCircle, Clock } from 'lucide-react';
 
 interface ClientStatsProps {
   stats: ClientStatsType;
@@ -91,7 +91,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-secondary-500">Valor Total Potencial</p>
-              <h4 className="text-2xl font-bold text-secondary-900">
+              <h4 className="text-2xl font-bold text-secondary-900 text-nowrap overflow-hidden text-ellipsis">
                 {formatCurrency(stats.potentialRevenue)}
               </h4>
             </div>
@@ -108,7 +108,7 @@ export function ClientStats({ stats }: ClientStatsProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-secondary-500">Valor Total Cerrado</p>
-              <h4 className="text-2xl font-bold text-secondary-900">
+              <h4 className="text-2xl font-bold text-secondary-900 text-nowrap overflow-hidden text-ellipsis">
                 {formatCurrency(stats.closedRevenue)}
               </h4>
             </div>
