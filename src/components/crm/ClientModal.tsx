@@ -84,6 +84,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
           new Date(data.scheduled_date).toISOString() : null,
         last_booked_trip_date: data.last_booked_trip_date ? 
           new Date(data.last_booked_trip_date).toISOString() : null,
+        // Convert empty strings to null for UUID fields
+        last_booked_trip_id: data.last_booked_trip_id?.trim() || null,
       };
       
       await onSave(client.id, submitData);
