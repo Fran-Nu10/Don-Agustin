@@ -4,14 +4,14 @@ export interface Client {
   email: string;
   phone?: string;
   message?: string;
-  status: 'nuevo' | 'presupuesto_enviado' | 'en_seguimiento' | 'cliente_cerrado' | 'en_proceso' | 'cerrado';
+  status: 'nuevo' | 'presupuesto_enviado' | 'en_seguimiento' | 'cliente_cerrado' | 'en_proceso' | 'cliente_perdido';
   internal_notes?: string;
   scheduled_date?: string;
   created_at: string;
   updated_at: string;
   // New fields for enhanced CRM
   source?: string; // 'website', 'referral', 'social_media', 'phone', 'email'
-  priority?: 'baja' | 'normal' | 'media' | 'alta' | 'urgente';
+  priority?: 'baja' | 'normal' | 'media' | 'alta' | 'urgente' | 'muy_alta';
   budget_range?: string;
   preferred_destination?: string;
   travel_date?: string;

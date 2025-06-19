@@ -122,8 +122,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         return 'bg-green-100 text-green-800';
       case 'en_proceso':
         return 'bg-orange-100 text-orange-800';
-      case 'cerrado':
-        return 'bg-gray-100 text-gray-800';
+      case 'cliente_perdido':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -141,8 +141,8 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
         return 'Cliente Cerrado';
       case 'en_proceso':
         return 'En Proceso';
-      case 'cerrado':
-        return 'Cerrado';
+      case 'cliente_perdido':
+        return 'Cliente Perdido';
       default:
         return status;
     }
@@ -422,7 +422,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     <option value="en_seguimiento">En Seguimiento</option>
                     <option value="cliente_cerrado">Cliente Cerrado</option>
                     <option value="en_proceso">En Proceso</option>
-                    <option value="cerrado">Cerrado</option>
+                    <option value="cliente_perdido">Cliente Perdido</option>
                   </select>
                   {errors.status && (
                     <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>

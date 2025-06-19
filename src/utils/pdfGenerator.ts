@@ -106,7 +106,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.text('INFORMACIÓN DEL VIAJE', 20, finalY);
   
   const tripData = [
-    ['Destino:', quotation.destination || 'A definir'],
+    ['Destino:', quotation.destination || quotation.trip_destination || 'A definir'],
     ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
     ['Fecha de regreso:', quotation.return_date ? format(new Date(quotation.return_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
     ['Fechas flexibles:', quotation.flexible_dates ? 'Sí' : 'No'],
@@ -430,6 +430,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     presupuesto_enviado: clients.filter(c => c.status === 'presupuesto_enviado').length,
     en_seguimiento: clients.filter(c => c.status === 'en_seguimiento').length,
     cliente_cerrado: clients.filter(c => c.status === 'cliente_cerrado').length,
+    cliente_perdido: clients.filter(c => c.status === 'cliente_perdido').length,
     con_fecha_agendada: clients.filter(c => c.scheduled_date).length,
     alta_prioridad: clients.filter(c => c.priority === 'alta' || c.priority === 'urgente').length,
     total_valor: clients.reduce((sum, client) => sum + (client.trip_value || 0), 0),
@@ -445,6 +446,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
     ['Presupuesto enviado:', stats.presupuesto_enviado.toString()],
     ['En seguimiento:', stats.en_seguimiento.toString()],
     ['Clientes cerrados:', stats.cliente_cerrado.toString()],
+    ['Clientes perdidos:', stats.cliente_perdido.toString()],
     ['Con fecha agendada:', stats.con_fecha_agendada.toString()],
     ['Alta prioridad:', stats.alta_prioridad.toString()],
     ['Valor total:', `$${stats.total_valor.toLocaleString('es-UY')} UYU`],
@@ -714,8 +716,8 @@ function getClientStatusLabel(status: Client['status']): string {
       return 'Cliente Cerrado';
     case 'en_proceso':
       return 'En Proceso';
-    case 'cerrado':
-      return 'Cerrado';
+    case 'cliente_perdido':
+      return 'Cliente Perdido';
     default:
       return status;
   }
@@ -733,8 +735,8 @@ function getClientStatusColor(status: Client['status']): { r: number; g: number;
       return { r: 34, g: 197, b: 94 }; // Green
     case 'en_proceso':
       return { r: 249, g: 115, b: 22 }; // Orange
-    case 'cerrado':
-      return { r: 107, g: 114, b: 128 }; // Gray
+    case 'cliente_perdido':
+      return { r: 239, g: 68, b: 68 }; // Red
     default:
       return { r: 107, g: 114, b: 128 }; // Gray
   }

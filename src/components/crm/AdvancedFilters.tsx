@@ -86,7 +86,7 @@ export function AdvancedFilters({
             <option value="en_seguimiento">En Seguimiento</option>
             <option value="cliente_cerrado">Cliente Cerrado</option>
             <option value="en_proceso">En Proceso</option>
-            <option value="cerrado">Cerrado</option>
+            <option value="cliente_perdido">Cliente Perdido</option>
           </select>
         </div>
 
