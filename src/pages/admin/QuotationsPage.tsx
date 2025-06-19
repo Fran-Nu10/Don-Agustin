@@ -4,7 +4,7 @@ import { QuotationsTable } from '../../components/admin/QuotationsTable';
 import { QuotationModal } from '../../components/admin/QuotationModal';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Button } from '../ui/Button';
+import { Button } from '../../components/ui/Button';
 import { Search, Filter, FileText, Clock, CheckCircle, XCircle, Download, BarChart3 } from 'lucide-react';
 import { Quotation, QuotationFilters, QuotationFormData } from '../../types/quotation';
 import { getQuotations, updateQuotation } from '../../lib/supabase/quotations';
