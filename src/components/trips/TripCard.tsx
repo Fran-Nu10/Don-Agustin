@@ -48,11 +48,25 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
               USD {priceUSD}
             </div>
             
-            {/* Category badge - Only on desktop */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm hidden md:block">
+            {/* Category badge */}
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm">
               {trip.category === 'nacional' ? 'Nacional' : 
                trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
             </div>
+            
+            {/* Tags if available */}
+            {trip.tags && trip.tags.length > 0 && (
+              <div className="absolute top-12 left-4 flex flex-wrap gap-1 max-w-[70%]">
+                {trip.tags.map((tag, i) => (
+                  <span 
+                    key={i} 
+                    className="bg-primary-500/80 text-white text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
             
             {/* Title and destination - Positioned at bottom of image */}
             <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
