@@ -35,10 +35,10 @@ export function RelatedTrips({ currentTrip, allTrips }: RelatedTripsProps) {
 
   return (
     <div>
-      <h3 className="font-heading font-bold text-2xl mb-6 text-secondary-900">
-        Otros viajes que te pueden interesar
+      <h3 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
+        Otros paquetes que te pueden interesar
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {relatedTrips.map((trip) => (
           <TripCard key={trip.id} trip={trip} />
         ))}

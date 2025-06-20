@@ -34,7 +34,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
 
   const onSubmit = async (data: BookingFormData) => {
     if (trip.available_spots <= 0) {
-      toast.error('Lo sentimos, no hay cupos disponibles para este viaje.');
+      toast.error('Lo sentimos, no hay cupos disponibles para este paquete.');
       return;
     }
 
@@ -46,7 +46,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
+        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.message ? ` Mensaje adicional: ${data.message}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,
@@ -114,7 +114,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
   if (trip.available_spots <= 0) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4 text-center">
-        <p className="text-red-700 font-medium">Lo sentimos, no hay cupos disponibles para este viaje.</p>
+        <p className="text-red-700 font-medium">Lo sentimos, no hay cupos disponibles para este paquete.</p>
       </div>
     );
   }
@@ -164,7 +164,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
           label="Mensaje adicional (opcional)"
           id="message"
           type="text"
-          placeholder="Alguna consulta específica sobre el viaje..."
+          placeholder="Alguna consulta específica sobre el paquete..."
           fullWidth
           error={errors.message?.message}
           {...register('message')}
@@ -177,7 +177,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
         </div>
         
         <p className="text-xs text-secondary-500 mt-4">
-          Al reservar, aceptas nuestros términos y condiciones. Te contactaremos para coordinar el pago y brindarte más detalles sobre el viaje.
+          Al reservar, aceptas nuestros términos y condiciones. Te contactaremos para coordinar el pago y brindarte más detalles sobre el paquete.
         </p>
       </form>
     </div>

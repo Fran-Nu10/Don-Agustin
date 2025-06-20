@@ -114,7 +114,7 @@ export function TripDetailPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-grow flex items-center justify-center">
-          <p className="text-secondary-500">Cargando información del viaje...</p>
+          <p className="text-secondary-500">Cargando información del paquete...</p>
         </div>
         <Footer />
       </div>
@@ -128,13 +128,13 @@ export function TripDetailPage() {
         <main className="flex-grow flex flex-col items-center justify-center bg-secondary-50">
           <div className="text-center max-w-md mx-auto px-4">
             <h1 className="text-3xl font-bold text-secondary-900 mb-4">
-              Viaje no encontrado
+              Paquete no encontrado
             </h1>
             <p className="text-secondary-600 mb-6">
-              El viaje que buscas no existe o ha sido eliminado.
+              El paquete que buscas no existe o ha sido eliminado.
             </p>
             <Link to="/viajes">
-              <Button variant="primary">Ver todos los viajes</Button>
+              <Button variant="primary">Ver todos los paquetes</Button>
             </Link>
           </div>
         </main>
@@ -164,7 +164,7 @@ export function TripDetailPage() {
           <div className="mb-6 pt-8">
             <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver a viajes
+              Volver a paquetes
             </Link>
           </div>
           
@@ -271,7 +271,7 @@ export function TripDetailPage() {
                   {/* Itinerary */}
                   <div className="mb-8">
                     <h2 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
-                      Itinerario del viaje
+                      Itinerario del paquete
                     </h2>
                     <TripItinerary itinerary={trip.itinerary} />
                   </div>
@@ -332,7 +332,7 @@ export function TripDetailPage() {
           </div>
 
           {/* Related Trips */}
-          <div className="mt-12">
+          <div className="mt-8">
             <RelatedTrips currentTrip={trip} allTrips={allTrips} />
           </div>
         </div>

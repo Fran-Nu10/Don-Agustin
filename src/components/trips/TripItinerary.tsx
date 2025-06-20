@@ -11,7 +11,7 @@ export function TripItinerary({ itinerary }: TripItineraryProps) {
   const [openDay, setOpenDay] = useState<number | null>(0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {itinerary.map((day, index) => (
         <div
           key={index}

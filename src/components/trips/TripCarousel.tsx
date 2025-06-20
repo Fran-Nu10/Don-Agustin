@@ -86,9 +86,9 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
   );
 
   return (
-    <div className="py-8">
+    <div className="py-6">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-2">
             {title}
           </h2>
@@ -148,7 +148,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center mt-6 space-x-2">
+          <div className="flex justify-center mt-4 space-x-2">
             {Array.from({ length: totalPages }).map((_, index) => (
               <button
                 key={index}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Plane, Umbrella, Users, Mountain, Anchor } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MapPin, Plane, Umbrella, Users, Mountain, Anchor } from 'lucide-react';
 
 const categories = [
   {
@@ -50,14 +50,14 @@ const categories = [
 
 export function TravelCategoriesSection() {
   return (
-    <section className="py-8 bg-gradient-to-b from-secondary-50 via-white/80 to-secondary-50">
+    <section className="py-6 bg-gradient-to-b from-secondary-50 via-white/80 to-secondary-50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-3">
             Descubre Nuestros Paquetes
@@ -67,7 +67,7 @@ export function TravelCategoriesSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}
@@ -81,21 +81,17 @@ export function TravelCategoriesSection() {
                 className="block h-full rounded-lg overflow-hidden shadow-lg group"
               >
                 <div className="h-full bg-gradient-to-br from-white via-secondary-50 to-primary-50 p-6 transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-primary-50 group-hover:via-primary-100/50 group-hover:to-white">
-                  <div className="flex items-center mb-4">
-                    <div className="bg-primary-100 p-3 rounded-lg mr-4 group-hover:bg-primary-200 transition-colors">
-                      <div className="text-primary-600">
-                        {category.icon}
-                      </div>
+                  <div className="flex items-center mb-3">
+                    <div className="bg-white p-2 rounded-lg mr-3 shadow-sm">
+                      {category.icon}
                     </div>
-                    <div>
-                      <h3 className="font-heading font-bold text-xl text-secondary-900 group-hover:text-primary-600 transition-colors">
-                        {category.title}
-                      </h3>
-                      <p className="text-secondary-600">
-                        {category.description}
-                      </p>
-                    </div>
+                    <h4 className="font-heading font-bold text-lg text-secondary-900">
+                      {category.title}
+                    </h4>
                   </div>
+                  <p className="text-secondary-600">
+                    {category.description}
+                  </p>
                 </div>
               </Link>
             </motion.div>

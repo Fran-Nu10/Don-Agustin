@@ -23,7 +23,7 @@ export function TripDetail({ trip }: TripDetailProps) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
-        Detalles del viaje
+        Detalles del paquete
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

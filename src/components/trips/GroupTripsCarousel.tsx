@@ -74,9 +74,9 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
   );
 
   return (
-    <section className="py-8 bg-secondary-50">
+    <section className="py-6 bg-secondary-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-2">
             Salidas Grupales
           </h2>
@@ -137,9 +137,9 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         
-                        {/* Price tag */}
+                        {/* Price tag - Convert to USD */}
                         <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-                          ${trip.price.toLocaleString('es-UY')}
+                          USD {Math.floor(trip.price / 40)}
                         </div>
                         
                         {/* Category badge - Only on desktop */}
@@ -192,7 +192,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center mt-6 space-x-2">
+          <div className="flex justify-center mt-4 space-x-2">
             {Array.from({ length: totalPages }).map((_, index) => (
               <button
                 key={index}

@@ -41,7 +41,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el viaje: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
+        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,
@@ -106,7 +106,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
   if (trip.available_spots <= 0) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4 text-center">
-        <p className="text-red-700 font-medium">Lo sentimos, no hay cupos disponibles para este viaje.</p>
+        <p className="text-red-700 font-medium">Lo sentimos, no hay cupos disponibles para este paquete.</p>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
           label="Observaciones o consultas (opcional)"
           id="observations"
           type="text"
-          placeholder="Alguna consulta específica sobre el viaje..."
+          placeholder="Alguna consulta específica sobre el paquete..."
           fullWidth
           error={errors.observations?.message}
           {...register('observations')}
@@ -169,7 +169,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         </div>
         
         <p className="text-xs text-secondary-500 mt-4">
-          Al solicitar una cotización, aceptas nuestros términos y condiciones. Te contactaremos para brindarte más detalles sobre el viaje y responder tus consultas.
+          Al solicitar una cotización, aceptas nuestros términos y condiciones. Te contactaremos para brindarte más detalles sobre el paquete y responder tus consultas.
         </p>
       </form>
     </div>
