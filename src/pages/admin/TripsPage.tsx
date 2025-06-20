@@ -23,10 +23,10 @@ export function AdminTripsPage() {
       await createTrip(data);
       await refetch(); // Refresh the trips list
       setShowForm(false);
-      toast.success('Viaje creado con éxito');
+      toast.success('Paquete creado con éxito');
     } catch (error) {
       console.error('Error creating trip:', error);
-      toast.error('Error al crear el viaje');
+      toast.error('Error al crear el paquete');
     } finally {
       setIsSubmitting(false);
     }
@@ -40,27 +40,27 @@ export function AdminTripsPage() {
       await updateTrip(editingTrip.id, data);
       await refetch(); // Refresh the trips list
       setEditingTrip(null);
-      toast.success('Viaje actualizado con éxito');
+      toast.success('Paquete actualizado con éxito');
     } catch (error) {
       console.error('Error updating trip:', error);
-      toast.error('Error al actualizar el viaje');
+      toast.error('Error al actualizar el paquete');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteTrip = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este viaje? Esta acción no se puede deshacer.')) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este paquete? Esta acción no se puede deshacer.')) {
       return;
     }
     
     try {
       await deleteTrip(id);
       await refetch(); // Refresh the trips list
-      toast.success('Viaje eliminado con éxito');
+      toast.success('Paquete eliminado con éxito');
     } catch (error) {
       console.error('Error deleting trip:', error);
-      toast.error('Error al eliminar el viaje');
+      toast.error('Error al eliminar el paquete');
     }
   };
 
@@ -97,10 +97,10 @@ export function AdminTripsPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading font-bold text-2xl text-secondary-900">
-            Gestión de Viajes
+            Gestión de Paquetes
           </h1>
           <p className="text-secondary-500">
-            Administra los viajes disponibles en la plataforma
+            Administra los paquetes disponibles en la plataforma
           </p>
         </div>
         
@@ -109,7 +109,7 @@ export function AdminTripsPage() {
           setShowForm(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
-          Nuevo viaje
+          Nuevo paquete
         </Button>
       </div>
       
@@ -118,7 +118,7 @@ export function AdminTripsPage() {
         <Card className="mb-8">
           <CardHeader>
             <h2 className="font-heading font-bold text-xl text-secondary-900">
-              {editingTrip ? 'Editar viaje' : 'Crear nuevo viaje'}
+              {editingTrip ? 'Editar paquete' : 'Crear nuevo paquete'}
             </h2>
           </CardHeader>
           <CardContent>
@@ -159,12 +159,12 @@ export function AdminTripsPage() {
       {/* Trips List */}
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-secondary-500">Cargando viajes...</p>
+          <p className="text-secondary-500">Cargando paquetes...</p>
         </div>
       ) : filteredTrips.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p className="text-secondary-500">No hay viajes que coincidan con tu búsqueda.</p>
-          <p className="text-secondary-400 mt-2">Intenta con otros términos o crea un nuevo viaje.</p>
+          <p className="text-secondary-500">No hay paquetes que coincidan con tu búsqueda.</p>
+          <p className="text-secondary-400 mt-2">Intenta con otros términos o crea un nuevo paquete.</p>
         </div>
       ) : (
         <div className="space-y-6">

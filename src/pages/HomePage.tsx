@@ -94,7 +94,7 @@ export function HomePage() {
         {/* Featured Trips - REDUCED SPACING */}
         {loading ? (
           <div className="text-center py-8">
-            <p className="text-secondary-500">Cargando viajes...</p>
+            <p className="text-secondary-500">Cargando paquetes...</p>
           </div>
         ) : (
           <>
@@ -103,7 +103,7 @@ export function HomePage() {
               <div className="py-8">
                 <TripCarousel
                   trips={nationalTrips}
-                  title="Viajes Nacionales"
+                  title="Paquetes Nacionales"
                   subtitle="Descubre los mejores destinos de Uruguay"
                 />
               </div>
@@ -114,7 +114,7 @@ export function HomePage() {
               <div className="py-8">
                 <TripCarousel
                   trips={internationalTrips}
-                  title="Viajes Internacionales"
+                  title="Paquetes Internacionales"
                   subtitle="Explora destinos alrededor del mundo"
                 />
               </div>
@@ -152,7 +152,7 @@ export function HomePage() {
               <FeatureCard
                 icon={<Clock className="h-8 w-8" />}
                 title="Más de 25 Años"
-                description="Más de dos décadas de experiencia organizando viajes perfectos para nuestros clientes."
+                description="Más de dos décadas de experiencia organizando paquetes perfectos para nuestros clientes."
                 bgImage="https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg"
               />
               <FeatureCard
@@ -199,7 +199,7 @@ export function HomePage() {
               ¿Listo para tu próxima aventura?
             </h2>
             <p className="text-lg md:text-xl text-white mb-6 max-w-3xl mx-auto">
-              Explora nuestros destinos y encuentra el viaje perfecto para ti. Déjanos llevarte a lugares increíbles.
+              Explora nuestros destinos y encuentra el paquete perfecto para ti. Déjanos llevarte a lugares increíbles.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
               <Link to="/viajes">

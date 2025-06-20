@@ -67,7 +67,7 @@ export function Footer() {
                   to="/viajes"
                   className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
-                  Viajes
+                  Paquetes
                 </Link>
               </li>
               <li>

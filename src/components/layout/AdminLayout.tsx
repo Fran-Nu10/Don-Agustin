@@ -78,7 +78,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             isActive={isActive('/admin/viajes')}
             collapsed={sidebarCollapsed}
           >
-            Viajes
+            Paquetes
           </SidebarLink>
           
           {(isOwner() || isEmployee()) && (
@@ -177,7 +177,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Map className="h-5 w-5 mr-3" />
-                Viajes
+                Paquetes
               </MobileNavLink>
               
               {(isOwner() || isEmployee()) && (

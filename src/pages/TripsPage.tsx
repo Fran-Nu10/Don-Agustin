@@ -79,10 +79,10 @@ export function TripsPage() {
           {/* Page Header */}
           <div className="mb-10 text-center pt-12">
             <h1 className="font-heading font-bold text-4xl mb-6 text-secondary-900">
-              Nuestros Viajes
+              Nuestros Paquetes
             </h1>
             <p className="text-xl text-secondary-600 max-w-3xl mx-auto">
-              Explora nuestros destinos y encuentra el viaje perfecto para tus próximas vacaciones.
+              Explora nuestros destinos y encuentra el paquete perfecto para tus próximas vacaciones.
             </p>
           </div>
           
@@ -135,9 +135,9 @@ export function TripsPage() {
                   <div>
                     <p className="text-blue-800 font-medium">
                       {hasResults ? (
-                        <>Encontramos {filteredTrips.length} {filteredTrips.length === 1 ? 'viaje' : 'viajes'}</>
+                        <>Encontramos {filteredTrips.length} {filteredTrips.length === 1 ? 'paquete' : 'paquetes'}</>
                       ) : (
-                        <>No encontramos viajes</>
+                        <>No encontramos paquetes</>
                       )}
                       {searchTerm && (
                         <> para "{searchTerm}"</>
@@ -148,7 +148,7 @@ export function TripsPage() {
                     </p>
                     {!hasResults && (
                       <p className="text-blue-600 text-sm mt-1">
-                        Te mostramos todos nuestros viajes disponibles
+                        Te mostramos todos nuestros paquetes disponibles
                       </p>
                     )}
                   </div>
@@ -161,7 +161,7 @@ export function TripsPage() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
-              <p className="text-secondary-500">Cargando viajes...</p>
+              <p className="text-secondary-500">Cargando paquetes...</p>
             </div>
           ) : (
             <>
@@ -179,21 +179,21 @@ export function TripsPage() {
                   <div className="text-center py-8 bg-gradient-to-r from-orange-50 via-orange-100/30 to-orange-50 rounded-lg shadow-sm border border-orange-200">
                     <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
                     <h3 className="font-heading font-bold text-xl text-secondary-900 mb-2">
-                      No encontramos viajes con esas características
+                      No encontramos paquetes con esas características
                     </h3>
                     <p className="text-secondary-600 mb-4">
-                      No hay viajes que coincidan con tu búsqueda "{searchTerm}"
+                      No hay paquetes que coincidan con tu búsqueda "{searchTerm}"
                       {selectedDestination && ` en ${selectedDestination}`}.
                     </p>
                     <p className="text-secondary-500">
-                      Te mostramos todos nuestros viajes disponibles para que puedas explorar otras opciones.
+                      Te mostramos todos nuestros paquetes disponibles para que puedas explorar otras opciones.
                     </p>
                   </div>
 
                   {/* Show all trips */}
                   <div>
                     <h2 className="font-heading font-bold text-2xl text-secondary-900 mb-6 text-center">
-                      Todos nuestros viajes
+                      Todos nuestros paquetes
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {trips.map((trip) => (

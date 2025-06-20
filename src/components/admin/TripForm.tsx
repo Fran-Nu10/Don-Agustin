@@ -307,7 +307,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Título del viaje"
+            label="Título del paquete"
             id="title"
             type="text"
             fullWidth
@@ -439,7 +439,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           </div>
           
           <p className="mt-2 text-xs text-secondary-500">
-            La etiqueta "dream" muestra el viaje en la sección de ofertas especiales en la página principal.
+            La etiqueta "dream" muestra el paquete en la sección de ofertas especiales en la página principal.
           </p>
           
           {/* Hidden input for tags */}
@@ -449,7 +449,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         {/* Image Upload Section */}
         <div className="mt-6">
           <label className="block mb-2 text-sm font-medium text-secondary-900">
-            Imagen del viaje
+            Imagen del paquete
           </label>
           
           {imagePreview ? (
@@ -623,7 +623,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-heading font-bold text-lg text-secondary-900 flex items-center">
             <Calendar className="h-5 w-5 mr-2 text-primary-950" />
-            Itinerario del viaje
+            Itinerario del paquete
           </h3>
           <Button type="button" variant="outline" size="sm" onClick={addItineraryDay}>
             <Plus className="h-4 w-4 mr-2" />
@@ -743,7 +743,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       
       <div className="pt-4">
         <Button type="submit" isLoading={isSubmitting} size="lg">
-          {initialData ? 'Actualizar viaje' : 'Crear viaje'}
+          {initialData ? 'Actualizar paquete' : 'Crear paquete'}
         </Button>
       </div>
     </form>

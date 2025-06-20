@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const categories = [
   {
     id: '1',
-    title: 'Viajes Nacionales',
+    title: 'Paquetes Nacionales',
     description: 'Descubre los tesoros de Uruguay',
     icon: <MapPin className="h-8 w-8" />,
     link: '/viajes?category=nacional',
@@ -60,10 +60,10 @@ export function TravelCategoriesSection() {
           className="text-center mb-8"
         >
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-3">
-            Descubre Nuestros Viajes
+            Descubre Nuestros Paquetes
           </h2>
           <p className="text-lg text-secondary-600">
-            Encuentra el viaje perfecto para cada ocasión
+            Encuentra el paquete perfecto para cada ocasión
           </p>
         </motion.div>
 

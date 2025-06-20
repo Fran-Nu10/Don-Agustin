@@ -112,7 +112,7 @@ export function Navbar() {
                   linkClasses={linkClasses}
                   activeLinkClasses={activeLinkClasses}
                 >
-                  Viajes
+                  Paquetes
                 </NavLink>
                 <NavLink 
                   to="/sobre-nosotros" 
@@ -221,7 +221,7 @@ export function Navbar() {
                       isActive={isActive('/viajes')}
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Viajes
+                      Paquetes
                     </MobileNavLink>
                     <MobileNavLink
                       to="/sobre-nosotros"
