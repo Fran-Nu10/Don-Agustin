@@ -28,7 +28,7 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="relative py-12 md:py-16 overflow-hidden">
+    <section className="relative py-8 overflow-hidden">
       {/* Responsive Background Image */}
       <div className="absolute inset-0 z-0">
         {/* Desktop Background */}
@@ -64,9 +64,9 @@ export function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-8 md:mb-12"
+          className="text-center mb-6"
         >
-          <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-4">
+          <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-3">
             Lo que dicen nuestros clientes
           </h2>
           <p className="text-lg text-white/90 max-w-3xl mx-auto">

@@ -4,16 +4,16 @@ import { Award, Users, Target, Shield } from 'lucide-react';
 
 export function AboutSection() {
   return (
-    <section className="py-16 bg-gradient-to-b from-white via-secondary-50/50 to-white">
+    <section className="py-8 bg-gradient-to-b from-white via-secondary-50/50 to-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center mb-12"
+          className="max-w-4xl mx-auto text-center mb-8"
         >
-          <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-4">
+          <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-3">
             Don Agustín - Viajes y Turismo
           </h2>
           <p className="text-lg text-secondary-600">
@@ -21,7 +21,7 @@ export function AboutSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -75,7 +75,7 @@ export function AboutSection() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -74,9 +74,9 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
   );
 
   return (
-    <section className="py-16 bg-secondary-50">
+    <section className="py-8 bg-secondary-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-2">
             Salidas Grupales
           </h2>
@@ -192,7 +192,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center mt-8 space-x-2">
+          <div className="flex justify-center mt-6 space-x-2">
             {Array.from({ length: totalPages }).map((_, index) => (
               <button
                 key={index}

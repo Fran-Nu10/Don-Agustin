@@ -30,8 +30,8 @@ export function HomePage() {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Hero Section with Improved Responsive Background */}
-        <section className="relative h-[100vh] flex items-center justify-center overflow-hidden">
+        {/* Hero Section with Improved Responsive Background - REDUCED HEIGHT */}
+        <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
           {/* Responsive Background with Multiple Images */}
           <div className="absolute inset-0 z-0">
             {/* Desktop Background */}
@@ -91,42 +91,48 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Featured Trips */}
+        {/* Featured Trips - REDUCED SPACING */}
         {loading ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8">
             <p className="text-secondary-500">Cargando viajes...</p>
           </div>
         ) : (
           <>
             {/* National Trips - Moved up */}
             {nationalTrips.length > 0 && (
-              <TripCarousel
-                trips={nationalTrips}
-                title="Viajes Nacionales"
-                subtitle="Descubre los mejores destinos de Uruguay"
-              />
+              <div className="py-8">
+                <TripCarousel
+                  trips={nationalTrips}
+                  title="Viajes Nacionales"
+                  subtitle="Descubre los mejores destinos de Uruguay"
+                />
+              </div>
             )}
             
             {/* International Trips - Moved up */}
             {internationalTrips.length > 0 && (
-              <TripCarousel
-                trips={internationalTrips}
-                title="Viajes Internacionales"
-                subtitle="Explora destinos alrededor del mundo"
-              />
+              <div className="py-8">
+                <TripCarousel
+                  trips={internationalTrips}
+                  title="Viajes Internacionales"
+                  subtitle="Explora destinos alrededor del mundo"
+                />
+              </div>
             )}
             
             {/* Group Trips - Moved down */}
             {groupTrips.length > 0 && (
-              <GroupTripsCarousel trips={groupTrips} />
+              <div className="py-8">
+                <GroupTripsCarousel trips={groupTrips} />
+              </div>
             )}
           </>
         )}
 
-        {/* Features Section - Moved below all trip sections */}
-        <section className="py-12 md:py-16 bg-gradient-to-b from-white to-secondary-50">
+        {/* Features Section - Moved below all trip sections - REDUCED SPACING */}
+        <section className="py-8 bg-gradient-to-b from-white to-secondary-50">
           <div className="container mx-auto px-4">
-            <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-8 md:mb-12 text-secondary-900">
+            <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-6 text-secondary-900">
               ¿Por qué elegirnos?
             </h2>
             
@@ -159,19 +165,25 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Dream Trips Section - NUEVA SECCIÓN */}
+        {/* Dream Trips Section - REDUCED SPACING */}
         {!loading && trips.length > 0 && (
-          <DreamTripsSection trips={trips} />
+          <div className="py-8 bg-white">
+            <DreamTripsSection trips={trips} />
+          </div>
         )}
 
-        {/* Testimonials */}
-        <TestimonialsSection />
+        {/* Testimonials - REDUCED SPACING */}
+        <div className="py-8">
+          <TestimonialsSection />
+        </div>
 
-        {/* Blog Section */}
-        <BlogSection />
+        {/* Blog Section - REDUCED SPACING */}
+        <div className="py-8">
+          <BlogSection />
+        </div>
         
-        {/* CTA Section with Responsive Background */}
-        <section className="relative py-12 md:py-16 overflow-hidden">
+        {/* CTA Section with Responsive Background - REDUCED SPACING */}
+        <section className="relative py-8 overflow-hidden">
           {/* Responsive Background */}
           <div className="absolute inset-0 z-0">
             <div 
@@ -183,10 +195,10 @@ export function HomePage() {
           </div>
           
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-4 md:mb-6">
+            <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-4">
               ¿Listo para tu próxima aventura?
             </h2>
-            <p className="text-lg md:text-xl text-white mb-6 md:mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-white mb-6 max-w-3xl mx-auto">
               Explora nuestros destinos y encuentra el viaje perfecto para ti. Déjanos llevarte a lugares increíbles.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">

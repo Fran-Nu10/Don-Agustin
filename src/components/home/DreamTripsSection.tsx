@@ -63,14 +63,14 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-4">
             ¡Las mejores ofertas de Paquetes!
@@ -81,67 +81,72 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-          {filledTrips.map((trip, index) => (
-            <motion.div
-              key={`${trip.id}-${index}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className={`relative overflow-hidden rounded-lg ${getItemClass(index)}`}
-            >
-              <Link to={`/viajes/${trip.id}`} className="block group">
-                <div className={`relative ${getImageHeight(index)} overflow-hidden`}>
-                  <img
-                    src={trip.image_url}
-                    alt={trip.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                  
-                  {/* Price tag */}
-                  <div className="absolute top-4 right-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold">
-                    Desde US$ {Math.floor(trip.price / 40)} {/* Conversión aproximada UYU a USD */}
-                  </div>
-                  
-                  {/* Optional "últimos lugares" tag */}
-                  {trip.available_spots <= 5 && (
-                    <div className="absolute top-4 left-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold uppercase">
-                      Últimos lugares
+          {filledTrips.map((trip, index) => {
+            // Convert price from UYU to USD
+            const priceUSD = Math.floor(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+            
+            return (
+              <motion.div
+                key={`${trip.id}-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className={`relative overflow-hidden rounded-lg ${getItemClass(index)}`}
+              >
+                <Link to={`/viajes/${trip.id}`} className="block group">
+                  <div className={`relative ${getImageHeight(index)} overflow-hidden`}>
+                    <img
+                      src={trip.image_url}
+                      alt={trip.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    
+                    {/* Overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                    
+                    {/* Price tag */}
+                    <div className="absolute top-4 right-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold">
+                      Desde US$ {priceUSD}
                     </div>
-                  )}
-                  
-                  {/* Title and destination */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="font-heading font-bold text-xl md:text-2xl lg:text-3xl mb-1 drop-shadow-md">
-                      {index === 0 || index === 1 || index === 2 
-                        ? trip.destination.split(',')[0]
-                        : trip.title.length > 15 ? trip.title.substring(0, 15) + '...' : trip.title
-                      }
-                    </h3>
-                    {(index === 0 || index === 1 || index === 2) && (
-                      <p className="text-white/90 text-sm md:text-base font-medium">
-                        {trip.title.includes('Vacaciones') 
-                          ? trip.title 
-                          : `Vacaciones de ${new Date(trip.departure_date).toLocaleString('es-ES', { month: 'long' })}`
-                        }
-                      </p>
+                    
+                    {/* Optional "últimos lugares" tag */}
+                    {trip.available_spots <= 5 && (
+                      <div className="absolute top-4 left-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold uppercase">
+                        Últimos lugares
+                      </div>
                     )}
-                  </div>
-                  
-                  {/* View details link */}
-                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center">
-                      <span>Ver detalles</span>
-                      <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
+                    
+                    {/* Title and destination */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <h3 className="font-heading font-bold text-xl md:text-2xl lg:text-3xl mb-1 drop-shadow-md">
+                        {index === 0 || index === 1 || index === 2 
+                          ? trip.destination.split(',')[0]
+                          : trip.title.length > 15 ? trip.title.substring(0, 15) + '...' : trip.title
+                        }
+                      </h3>
+                      {(index === 0 || index === 1 || index === 2) && (
+                        <p className="text-white/90 text-sm md:text-base font-medium">
+                          {trip.title.includes('Vacaciones') 
+                            ? trip.title 
+                            : `Vacaciones de ${new Date(trip.departure_date).toLocaleString('es-ES', { month: 'long' })}`
+                          }
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* View details link */}
+                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center">
+                        <span>Ver detalles</span>
+                        <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
