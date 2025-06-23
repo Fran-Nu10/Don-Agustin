@@ -23,6 +23,40 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
   // Convert price from UYU to USD
   const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
   
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-500 text-white';
+      case 'vuelos':
+        return 'bg-blue-500 text-white';
+      case 'baja temporada':
+        return 'bg-purple-500 text-white';
+      case 'verano':
+        return 'bg-yellow-500 text-black';
+      case 'eventos':
+        return 'bg-red-500 text-white';
+      case 'exprés':
+        return 'bg-orange-500 text-white';
+      default:
+        return 'bg-primary-500/80 text-white';
+    }
+  };
+  
+  // Get destination color based on category
+  const getDestinationColor = () => {
+    switch (trip.category) {
+      case 'nacional':
+        return 'bg-blue-600/90 text-white';
+      case 'internacional':
+        return 'bg-purple-600/90 text-white';
+      case 'grupal':
+        return 'bg-green-600/90 text-white';
+      default:
+        return 'bg-white/90 backdrop-blur-sm text-primary-950';
+    }
+  };
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -48,19 +82,19 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
               USD {priceUSD}
             </div>
             
-            {/* Category badge */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm">
+            {/* Category badge with new colors */}
+            <div className={`absolute top-4 left-4 ${getDestinationColor()} text-xs px-3 py-1 rounded-full shadow-sm`}>
               {trip.category === 'nacional' ? 'Nacional' : 
                trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
             </div>
             
-            {/* Tags if available */}
+            {/* Tags if available - with new colors */}
             {trip.tags && trip.tags.length > 0 && (
               <div className="absolute top-12 left-4 flex flex-wrap gap-1 max-w-[70%]">
                 {trip.tags.map((tag, i) => (
                   <span 
                     key={i} 
-                    className="bg-primary-500/80 text-white text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm"
+                    className={`${getTagColor(tag)} text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm`}
                   >
                     {tag}
                   </span>

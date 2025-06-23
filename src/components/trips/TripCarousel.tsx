@@ -85,6 +85,48 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
     (currentPage + 1) * itemsPerPage
   );
 
+  // Update trip tags to use the new tag system
+  const updatedTrips = currentTrips.map(trip => {
+    // If trip already has tags, leave them as is
+    if (trip.tags && trip.tags.length > 0) {
+      return trip;
+    }
+    
+    // Otherwise, assign some default tags based on category
+    let defaultTags: string[] = [];
+    
+    if (trip.category === 'nacional') {
+      defaultTags.push('terrestre');
+      
+      // Add seasonal tag based on departure date
+      const departureMonth = new Date(trip.departure_date).getMonth();
+      if (departureMonth >= 11 || departureMonth <= 2) { // Dec-Mar
+        defaultTags.push('verano');
+      } else {
+        defaultTags.push('baja temporada');
+      }
+    } else if (trip.category === 'internacional') {
+      defaultTags.push('vuelos');
+      
+      // Add duration-based tag
+      const duration = Math.ceil(
+        (new Date(trip.return_date).getTime() - new Date(trip.departure_date).getTime()) / 
+        (1000 * 60 * 60 * 24)
+      );
+      
+      if (duration <= 5) {
+        defaultTags.push('exprés');
+      }
+    } else if (trip.category === 'grupal') {
+      defaultTags.push('eventos');
+    }
+    
+    return {
+      ...trip,
+      tags: defaultTags
+    };
+  });
+
   return (
     <div className="py-6">
       <div className="container mx-auto px-4">
@@ -138,7 +180,7 @@ export function TripCarousel({ trips, title, subtitle }: TripCarouselProps) {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
                 style={{ touchAction: 'auto' }} 
               >
-                {currentTrips.map((trip) => (
+                {updatedTrips.map((trip) => (
                   <div key={trip.id} style={{ touchAction: 'auto' }}>
                     <TripCard trip={trip} />
                   </div>

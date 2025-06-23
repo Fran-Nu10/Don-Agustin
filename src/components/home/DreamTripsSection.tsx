@@ -62,6 +62,40 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
     }
   };
 
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-500 text-white';
+      case 'vuelos':
+        return 'bg-blue-500 text-white';
+      case 'baja temporada':
+        return 'bg-purple-500 text-white';
+      case 'verano':
+        return 'bg-yellow-500 text-black';
+      case 'eventos':
+        return 'bg-red-500 text-white';
+      case 'exprés':
+        return 'bg-orange-500 text-white';
+      default:
+        return 'bg-primary-500/80 text-white';
+    }
+  };
+  
+  // Get destination color based on category
+  const getDestinationColor = (category: string) => {
+    switch (category) {
+      case 'nacional':
+        return 'bg-blue-600/90 text-white';
+      case 'internacional':
+        return 'bg-purple-600/90 text-white';
+      case 'grupal':
+        return 'bg-green-600/90 text-white';
+      default:
+        return 'bg-white/90 backdrop-blur-sm text-primary-950';
+    }
+  };
+
   return (
     <section className="py-8 bg-white">
       <div className="container mx-auto px-4">
@@ -105,9 +139,9 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
                     {/* Overlay gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                     
-                    {/* Price tag */}
-                    <div className="absolute top-4 right-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold">
-                      Desde US$ {priceUSD}
+                    {/* Price tag - Now in USD */}
+                    <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
+                      USD {priceUSD}
                     </div>
                     
                     {/* Optional "últimos lugares" tag */}
@@ -117,9 +151,31 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
                       </div>
                     )}
                     
-                    {/* Title and destination */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="font-heading font-bold text-xl md:text-2xl lg:text-3xl mb-1 drop-shadow-md">
+                    {/* Category badge with new colors */}
+                    {trip.available_spots > 5 && (
+                      <div className={`absolute top-4 left-4 ${getDestinationColor(trip.category)} text-xs px-3 py-1 rounded-full shadow-sm`}>
+                        {trip.category === 'nacional' ? 'Nacional' : 
+                         trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
+                      </div>
+                    )}
+                    
+                    {/* Tags if available - with new colors */}
+                    {trip.tags && trip.tags.length > 0 && (
+                      <div className="absolute top-14 left-4 flex flex-wrap gap-1 max-w-[70%]">
+                        {trip.tags.slice(0, 2).map((tag, i) => (
+                          <span 
+                            key={i} 
+                            className={`${getTagColor(tag)} text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Title and destination - Positioned at bottom of image */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                      <h3 className="font-heading font-bold text-xl md:text-2xl mb-1 drop-shadow-md">
                         {index === 0 || index === 1 || index === 2 
                           ? trip.destination.split(',')[0]
                           : trip.title.length > 15 ? trip.title.substring(0, 15) + '...' : trip.title

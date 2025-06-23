@@ -109,6 +109,40 @@ export function TripDetailPage() {
     }
   };
 
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-100 text-green-800';
+      case 'vuelos':
+        return 'bg-blue-100 text-blue-800';
+      case 'baja temporada':
+        return 'bg-purple-100 text-purple-800';
+      case 'verano':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'eventos':
+        return 'bg-red-100 text-red-800';
+      case 'exprés':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-primary-100 text-primary-800';
+    }
+  };
+
+  // Get destination color based on category
+  const getDestinationColor = (category: string) => {
+    switch (category) {
+      case 'nacional':
+        return 'bg-blue-100 text-blue-800';
+      case 'internacional':
+        return 'bg-purple-100 text-purple-800';
+      case 'grupal':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-primary-100 text-primary-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -154,6 +188,18 @@ export function TripDetailPage() {
   // Convert price from UYU to USD
   const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
 
+  // If trip doesn't have tags, assign default ones based on category
+  let displayTags = trip.tags || [];
+  if (displayTags.length === 0) {
+    if (trip.category === 'nacional') {
+      displayTags = ['terrestre'];
+    } else if (trip.category === 'internacional') {
+      displayTags = ['vuelos'];
+    } else if (trip.category === 'grupal') {
+      displayTags = ['eventos'];
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -187,6 +233,12 @@ export function TripDetailPage() {
                   <div className="absolute top-0 right-0 bg-primary-950 text-white py-2 px-4 font-bold rounded-bl-lg text-xl">
                     USD {priceUSD}
                   </div>
+                  
+                  {/* Category badge with new colors */}
+                  <div className={`absolute top-4 left-4 ${getDestinationColor(trip.category)} px-3 py-1 rounded-full text-sm font-medium`}>
+                    {trip.category === 'nacional' ? 'Nacional' : 
+                     trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
+                  </div>
                 </div>
                 
                 {/* Trip Info */}
@@ -194,6 +246,20 @@ export function TripDetailPage() {
                   <h1 className="font-heading font-bold text-3xl mb-4 text-secondary-900">
                     {trip.title}
                   </h1>
+                  
+                  {/* Tags Section */}
+                  {displayTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {displayTags.map((tag, index) => (
+                        <span 
+                          key={index} 
+                          className={`${getTagColor(tag)} px-3 py-1 rounded-full text-sm font-medium`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="flex items-center text-secondary-600">

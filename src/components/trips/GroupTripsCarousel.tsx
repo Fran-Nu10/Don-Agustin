@@ -73,6 +73,26 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
     (currentPage + 1) * itemsPerPage
   );
 
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-500 text-white';
+      case 'vuelos':
+        return 'bg-blue-500 text-white';
+      case 'baja temporada':
+        return 'bg-purple-500 text-white';
+      case 'verano':
+        return 'bg-yellow-500 text-black';
+      case 'eventos':
+        return 'bg-red-500 text-white';
+      case 'exprés':
+        return 'bg-orange-500 text-white';
+      default:
+        return 'bg-primary-500/80 text-white';
+    }
+  };
+
   return (
     <section className="py-6 bg-secondary-50">
       <div className="container mx-auto px-4">
@@ -143,9 +163,23 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         </div>
                         
                         {/* Category badge - Only on desktop */}
-                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-primary-950 text-xs px-3 py-1 rounded-full shadow-sm hidden md:block">
+                        <div className="absolute top-4 left-4 bg-green-600/90 text-white text-xs px-3 py-1 rounded-full shadow-sm hidden md:block">
                           Salida Grupal
                         </div>
+                        
+                        {/* Tags if available - with new colors */}
+                        {trip.tags && trip.tags.length > 0 && (
+                          <div className="absolute top-14 left-4 flex flex-wrap gap-1 max-w-[70%]">
+                            {trip.tags.slice(0, 2).map((tag, i) => (
+                              <span 
+                                key={i} 
+                                className={`${getTagColor(tag)} text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         
                         {/* Title and destination - Positioned at bottom of image */}
                         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
