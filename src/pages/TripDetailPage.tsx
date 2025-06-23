@@ -109,12 +109,46 @@ export function TripDetailPage() {
     }
   };
 
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-100 text-green-800';
+      case 'vuelos':
+        return 'bg-blue-100 text-blue-800';
+      case 'baja temporada':
+        return 'bg-purple-100 text-purple-800';
+      case 'verano':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'eventos':
+        return 'bg-red-100 text-red-800';
+      case 'exprés':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-primary-100 text-primary-800';
+    }
+  };
+
+  // Get destination color based on category
+  const getDestinationColor = (category: string) => {
+    switch (category) {
+      case 'nacional':
+        return 'bg-blue-100 text-blue-800';
+      case 'internacional':
+        return 'bg-purple-100 text-purple-800';
+      case 'grupal':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-primary-100 text-primary-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-grow flex items-center justify-center">
-          <p className="text-secondary-500">Cargando información del viaje...</p>
+          <p className="text-secondary-500">Cargando información del paquete...</p>
         </div>
         <Footer />
       </div>
@@ -128,13 +162,13 @@ export function TripDetailPage() {
         <main className="flex-grow flex flex-col items-center justify-center bg-secondary-50">
           <div className="text-center max-w-md mx-auto px-4">
             <h1 className="text-3xl font-bold text-secondary-900 mb-4">
-              Viaje no encontrado
+              Paquete no encontrado
             </h1>
             <p className="text-secondary-600 mb-6">
-              El viaje que buscas no existe o ha sido eliminado.
+              El paquete que buscas no existe o ha sido eliminado.
             </p>
             <Link to="/viajes">
-              <Button variant="primary">Ver todos los viajes</Button>
+              <Button variant="primary">Ver todos los paquetes</Button>
             </Link>
           </div>
         </main>
@@ -150,6 +184,21 @@ export function TripDetailPage() {
   const departureDate = new Date(trip.departure_date);
   const returnDate = new Date(trip.return_date);
   const tripDuration = Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Convert price from UYU to USD
+  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+
+  // If trip doesn't have tags, assign default ones based on category
+  let displayTags = trip.tags || [];
+  if (displayTags.length === 0) {
+    if (trip.category === 'nacional') {
+      displayTags = ['terrestre'];
+    } else if (trip.category === 'internacional') {
+      displayTags = ['vuelos'];
+    } else if (trip.category === 'grupal') {
+      displayTags = ['eventos'];
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -161,7 +210,7 @@ export function TripDetailPage() {
           <div className="mb-6 pt-8">
             <Link to="/viajes" className="inline-flex items-center text-primary-950 hover:underline">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver a viajes
+              Volver a paquetes
             </Link>
           </div>
           
@@ -182,7 +231,13 @@ export function TripDetailPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-0 right-0 bg-primary-950 text-white py-2 px-4 font-bold rounded-bl-lg text-xl">
-                    ${trip.price.toLocaleString('es-UY')}
+                    USD {priceUSD}
+                  </div>
+                  
+                  {/* Category badge with new colors */}
+                  <div className={`absolute top-4 left-4 ${getDestinationColor(trip.category)} px-3 py-1 rounded-full text-sm font-medium`}>
+                    {trip.category === 'nacional' ? 'Nacional' : 
+                     trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
                   </div>
                 </div>
                 
@@ -191,6 +246,20 @@ export function TripDetailPage() {
                   <h1 className="font-heading font-bold text-3xl mb-4 text-secondary-900">
                     {trip.title}
                   </h1>
+                  
+                  {/* Tags Section */}
+                  {displayTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {displayTags.map((tag, index) => (
+                        <span 
+                          key={index} 
+                          className={`${getTagColor(tag)} px-3 py-1 rounded-full text-sm font-medium`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="flex items-center text-secondary-600">
@@ -268,7 +337,7 @@ export function TripDetailPage() {
                   {/* Itinerary */}
                   <div className="mb-8">
                     <h2 className="font-heading font-bold text-2xl mb-4 text-secondary-900">
-                      Itinerario del viaje
+                      Itinerario del paquete
                     </h2>
                     <TripItinerary itinerary={trip.itinerary} />
                   </div>
@@ -329,7 +398,7 @@ export function TripDetailPage() {
           </div>
 
           {/* Related Trips */}
-          <div className="mt-12">
+          <div className="mt-8">
             <RelatedTrips currentTrip={trip} allTrips={allTrips} />
           </div>
         </div>

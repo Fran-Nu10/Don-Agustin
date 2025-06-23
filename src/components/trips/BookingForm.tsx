@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { createClient } from '../../lib/supabase/clients';
 import { createBooking } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
+import { convertToUSD } from '../../lib/supabase';
 
 interface BookingFormData {
   name: string;
@@ -30,7 +31,7 @@ export function BookingForm({ trip, onSuccess }: BookingFormProps) {
   } = useForm<BookingFormData>();
 
   // Convert price from UYU to USD
-  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+  const priceUSD = convertToUSD(trip.price);
 
   const onSubmit = async (data: BookingFormData) => {
     if (trip.available_spots <= 0) {
