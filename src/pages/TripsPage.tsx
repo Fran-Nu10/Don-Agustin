@@ -22,7 +22,6 @@ export function TripsPage() {
   const [priceRange, setPriceRange] = useState<{min: number, max: number}>({min: 0, max: 10000});
   const [dateRange, setDateRange] = useState<{start: string, end: string}>({start: '', end: ''});
   const [sortBy, setSortBy] = useState<string>('');
-  const [availableSpotsMin, setAvailableSpotsMin] = useState<number>(0);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -40,7 +39,6 @@ export function TripsPage() {
     const dateStart = searchParams.get('dateStart') || '';
     const dateEnd = searchParams.get('dateEnd') || '';
     const sort = searchParams.get('sort') || '';
-    const spots = searchParams.get('spots') ? Number(searchParams.get('spots')) : 0;
     
     setSearchTerm(keyword);
     setSelectedDestination(destination);
@@ -49,10 +47,9 @@ export function TripsPage() {
     setPriceRange({min: priceMin, max: priceMax});
     setDateRange({start: dateStart, end: dateEnd});
     setSortBy(sort);
-    setAvailableSpotsMin(spots);
     
     // Show filters if any advanced filter is set
-    if (category || tags.length > 0 || priceMin > 0 || priceMax < 10000 || dateStart || dateEnd || sort || spots > 0) {
+    if (category || tags.length > 0 || priceMin > 0 || priceMax < 10000 || dateStart || dateEnd || sort) {
       setShowFilters(true);
     }
   }, [searchParams]);
@@ -84,7 +81,6 @@ export function TripsPage() {
     if (dateRange.start) params.set('dateStart', dateRange.start);
     if (dateRange.end) params.set('dateEnd', dateRange.end);
     if (sortBy) params.set('sort', sortBy);
-    if (availableSpotsMin > 0) params.set('spots', availableSpotsMin.toString());
     
     setSearchParams(params);
   };
@@ -98,7 +94,6 @@ export function TripsPage() {
     setPriceRange({min: 0, max: 10000});
     setDateRange({start: '', end: ''});
     setSortBy('');
-    setAvailableSpotsMin(0);
     setSearchParams(new URLSearchParams());
   };
 
@@ -172,11 +167,6 @@ export function TripsPage() {
       );
     }
     
-    // Filter by available spots
-    if (availableSpotsMin > 0) {
-      filtered = filtered.filter((trip) => trip.available_spots >= availableSpotsMin);
-    }
-    
     // Apply sorting
     if (sortBy) {
       switch (sortBy) {
@@ -225,7 +215,7 @@ export function TripsPage() {
   // Check if we have search criteria
   const hasSearchCriteria = searchTerm.trim() || selectedDestination || selectedCategory || 
     selectedTags.length > 0 || priceRange.min > 0 || priceRange.max < 10000 || 
-    dateRange.start || dateRange.end || sortBy || availableSpotsMin > 0;
+    dateRange.start || dateRange.end || sortBy;
     
   const hasResults = filteredTrips.length > 0;
 
@@ -388,20 +378,6 @@ export function TripsPage() {
                         className="w-full"
                       />
                     </div>
-                  </div>
-                  
-                  {/* Available Spots Filter */}
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-secondary-700">
-                      Cupos Disponibles (mínimo)
-                    </label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={availableSpotsMin || ''}
-                      onChange={(e) => setAvailableSpotsMin(Number(e.target.value))}
-                      className="w-full"
-                    />
                   </div>
                   
                   {/* Sort By */}
