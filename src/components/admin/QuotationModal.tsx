@@ -379,6 +379,9 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                     })}
                     className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
+                  {errors.adults && (
+                    <p className="mt-1 text-sm text-red-600">{errors.adults.message}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -391,6 +394,9 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                     {...register('children', { valueAsNumber: true })}
                     className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
+                  {errors.children && (
+                    <p className="mt-1 text-sm text-red-600">{errors.children.message}</p>
+                  )}
                 </div>
               </div>
 

@@ -12,6 +12,8 @@ interface QuotationFormData {
   email: string;
   phone: string;
   observations?: string;
+  adults: number;
+  children: number;
 }
 
 interface QuotationRequestFormProps {
@@ -27,7 +29,12 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<QuotationFormData>();
+  } = useForm<QuotationFormData>({
+    defaultValues: {
+      adults: 2,
+      children: 0
+    }
+  });
 
   // Convert price from UYU to USD
   const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
@@ -41,7 +48,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
+        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}. Viajeros: ${data.adults} adultos, ${data.children} niños.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,
@@ -66,8 +73,8 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         departure_date: trip.departure_date.split('T')[0],
         return_date: trip.return_date.split('T')[0],
         flexible_dates: false,
-        adults: 2, // Default values
-        children: 0,
+        adults: data.adults,
+        children: data.children,
         observations: data.observations || '',
         status: 'pending' as const,
         trip_id: trip.id,
@@ -151,6 +158,47 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
           error={errors.phone?.message}
           {...register('phone', { required: 'El teléfono es obligatorio' })}
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium text-secondary-900">
+              Adultos
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              {...register('adults', { 
+                required: 'Número de adultos es obligatorio',
+                min: { value: 1, message: 'Mínimo 1 adulto' },
+                valueAsNumber: true,
+              })}
+              className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+            {errors.adults && (
+              <p className="mt-1 text-sm text-red-600">{errors.adults.message}</p>
+            )}
+          </div>
+          
+          <div>
+            <label className="block mb-1 text-sm font-medium text-secondary-900">
+              Menores
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              {...register('children', { 
+                min: { value: 0, message: 'No puede ser negativo' },
+                valueAsNumber: true,
+              })}
+              className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+            {errors.children && (
+              <p className="mt-1 text-sm text-red-600">{errors.children.message}</p>
+            )}
+          </div>
+        </div>
 
         <Input
           label="Observaciones o consultas (opcional)"
