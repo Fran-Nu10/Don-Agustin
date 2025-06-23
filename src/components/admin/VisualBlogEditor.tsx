@@ -1,5 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, X, Move, Maximize2, Type, Image as ImageIcon, Plus } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'react-hot-toast';
 
 interface VisualBlogEditorProps {
   content: string;
@@ -101,23 +103,32 @@ export function VisualBlogEditor({ content, onChange }: VisualBlogEditorProps) {
   }, [onChange]);
 
   // Process image file to URL
-  const processImageFile = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      // Demo images for placeholder
-      const demoImages = [
-        'https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg',
-        'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg',
-        'https://images.pexels.com/photos/753339/pexels-photo-753339.jpeg',
-        'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg',
-        'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
-        'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg',
-        'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg',
-        'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg'
-      ];
-      
-      const randomImage = demoImages[Math.floor(Math.random() * demoImages.length)];
-      resolve(randomImage);
-    });
+  const processImageFile = useCallback(async (file: File): Promise<string> => {
+    try {
+      // Upload to Supabase Storage
+      const fileName = `${Date.now()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('blog-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(data.path);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      throw error;
+    }
   }, []);
 
   // Handle file upload
