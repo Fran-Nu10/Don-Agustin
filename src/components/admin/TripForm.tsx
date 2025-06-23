@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye, Tag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
+import { supabase } from '../../lib/supabase';
 
 interface TripFormProps {
   initialData?: Trip;
@@ -115,6 +116,26 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     );
   };
 
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'vuelos':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'baja temporada':
+        return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'verano':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'eventos':
+        return 'bg-red-100 text-red-800 border-red-300';
+      case 'exprés':
+        return 'bg-orange-100 text-orange-800 border-orange-300';
+      default:
+        return 'bg-secondary-100 text-secondary-700 border-secondary-200';
+    }
+  };
+
   // Handle image file selection
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -140,8 +161,33 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImagePreview(previewUrl);
       setImageFile(file);
 
-      // For demo purposes, we'll use a placeholder service
-      // In a real app, you would upload to a service like Cloudinary, AWS S3, etc.
+      // Upload to Supabase Storage
+      const fileName = `trip-images/${Date.now()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('blog-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(data.path);
+
+      // Set the image URL in the form
+      setValue('image_url', publicUrlData.publicUrl);
+      toast.success('Imagen subida correctamente');
+      
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      
+      // Fallback to a placeholder image if upload fails
       const demoImageUrls = [
         'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
         'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg',
@@ -153,16 +199,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg',
       ];
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Use a random demo URL (in production, this would be the actual upload result)
       const randomUrl = demoImageUrls[Math.floor(Math.random() * demoImageUrls.length)];
       setValue('image_url', randomUrl);
-      
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
     } finally {
       setIsUploadingImage(false);
     }
@@ -289,26 +327,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Available tags - UPDATED with new tags
   const availableTags = ['terrestre', 'vuelos', 'baja temporada', 'verano', 'eventos', 'exprés'];
-
-  // Get tag color based on tag name
-  const getTagColor = (tag: string) => {
-    switch (tag) {
-      case 'terrestre':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'vuelos':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'baja temporada':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'verano':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'eventos':
-        return 'bg-red-100 text-red-800 border-red-300';
-      case 'exprés':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
-      default:
-        return 'bg-secondary-100 text-secondary-700 border-secondary-200';
-    }
-  };
 
   // Custom submit handler to convert USD to UYU
   const handleFormSubmit = (data: TripFormData) => {
@@ -441,7 +459,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           </label>
           
           <div className="flex flex-wrap gap-2">
-            {availableTags.map(tag => (
+            {availableTags.map((tag) => (
               <button
                 key={tag}
                 type="button"
