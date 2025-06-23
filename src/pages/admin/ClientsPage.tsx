@@ -6,7 +6,7 @@ import { AdvancedFilters } from '../../components/crm/AdvancedFilters';
 import { ClientStats } from '../../components/crm/ClientStats';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Download, BarChart3, FileText, Users, Filter, Calendar, Plus } from 'lucide-react';
+import { Download, BarChart3, FileText, Users, Filter, Calendar, Plus, Trash2, CheckSquare } from 'lucide-react';
 import { Client, ClientFilters, ClientFormData, ClientStatsType } from '../../types/client';
 import { getClients, updateClient, deleteClient } from '../../lib/supabase/clients';
 import { getTrips } from '../../lib/supabase';
@@ -37,6 +37,8 @@ export function ClientsPage() {
     destination: '',
     tags: [],
   });
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -129,6 +131,9 @@ export function ClientsPage() {
 
     setFilteredClients(filtered);
     setCurrentPage(1);
+    
+    // Reset selected clients when filters change
+    setSelectedClients([]);
   }
 
   function calculateStats() {
@@ -219,8 +224,12 @@ export function ClientsPage() {
   }
 
   const handleViewClient = (client: Client) => {
-    setSelectedClient(client);
-    setIsModalOpen(true);
+    if (isMultiSelectMode) {
+      toggleClientSelection(client.id);
+    } else {
+      setSelectedClient(client);
+      setIsModalOpen(true);
+    }
   };
 
   const handleUpdateClient = async (id: string, data: Partial<ClientFormData>) => {
@@ -250,6 +259,54 @@ export function ClientsPage() {
     }
   };
 
+  const handleDeleteSelectedClients = async () => {
+    if (selectedClients.length === 0) {
+      toast.error('No hay clientes seleccionados para eliminar');
+      return;
+    }
+
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedClients.length} clientes? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Delete clients one by one
+      for (const clientId of selectedClients) {
+        try {
+          await deleteClient(clientId);
+          successCount++;
+        } catch (error) {
+          console.error(`Error deleting client ${clientId}:`, error);
+          errorCount++;
+        }
+      }
+
+      // Reload data and show results
+      await loadData();
+      
+      if (successCount > 0) {
+        toast.success(`${successCount} clientes eliminados con éxito`);
+      }
+      
+      if (errorCount > 0) {
+        toast.error(`No se pudieron eliminar ${errorCount} clientes`);
+      }
+
+      // Reset selection
+      setSelectedClients([]);
+      setIsMultiSelectMode(false);
+    } catch (error) {
+      console.error('Error in bulk delete operation:', error);
+      toast.error('Error al eliminar los clientes seleccionados');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleFilterChange = (field: keyof ClientFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -268,6 +325,32 @@ export function ClientsPage() {
       destination: '',
       tags: [],
     });
+  };
+
+  // Toggle multi-select mode
+  const toggleMultiSelectMode = () => {
+    setIsMultiSelectMode(!isMultiSelectMode);
+    if (isMultiSelectMode) {
+      setSelectedClients([]);
+    }
+  };
+
+  // Toggle client selection
+  const toggleClientSelection = (clientId: string) => {
+    setSelectedClients(prev => 
+      prev.includes(clientId)
+        ? prev.filter(id => id !== clientId)
+        : [...prev, clientId]
+    );
+  };
+
+  // Select/deselect all clients on current page
+  const toggleSelectAllClients = () => {
+    if (selectedClients.length === currentClients.length) {
+      setSelectedClients([]);
+    } else {
+      setSelectedClients(currentClients.map(client => client.id));
+    }
   };
 
   // Get unique tags for filters
@@ -310,6 +393,14 @@ export function ClientsPage() {
         </div>
         
         <div className="flex items-center space-x-3">
+          <Button
+            variant={isMultiSelectMode ? "primary" : "outline"}
+            onClick={toggleMultiSelectMode}
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            {isMultiSelectMode ? 'Cancelar selección' : 'Selección múltiple'}
+          </Button>
+          
           <Button
             variant="outline"
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -410,11 +501,43 @@ export function ClientsPage() {
                     </span>
                   )}
                 </div>
+                
+                {/* Multi-select controls */}
+                {isMultiSelectMode && (
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="select-all"
+                        checked={selectedClients.length === currentClients.length && currentClients.length > 0}
+                        onChange={toggleSelectAllClients}
+                        className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                      />
+                      <label htmlFor="select-all" className="ml-2 text-sm text-secondary-700">
+                        Seleccionar todos ({currentClients.length})
+                      </label>
+                    </div>
+                    
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={handleDeleteSelectedClients}
+                      disabled={selectedClients.length === 0 || isSubmitting}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar seleccionados ({selectedClients.length})
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <ClientsTable
                 clients={currentClients}
                 onViewClient={handleViewClient}
+                isMultiSelectMode={isMultiSelectMode}
+                selectedClients={selectedClients}
+                onToggleSelection={toggleClientSelection}
               />
 
               {/* Pagination */}

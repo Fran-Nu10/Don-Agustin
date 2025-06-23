@@ -9,12 +9,21 @@ import { generateClientPDF } from '../../utils/pdfGenerator';
 interface ClientsTableProps {
   clients: Client[];
   onViewClient: (client: Client) => void;
+  isMultiSelectMode?: boolean;
+  selectedClients?: string[];
+  onToggleSelection?: (clientId: string) => void;
 }
 
 type SortField = 'name' | 'email' | 'scheduled_date' | 'created_at' | 'status' | 'priority' | 'last_contact_date' | 'trip_value';
 type SortDirection = 'asc' | 'desc';
 
-export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
+export function ClientsTable({ 
+  clients, 
+  onViewClient, 
+  isMultiSelectMode = false, 
+  selectedClients = [], 
+  onToggleSelection 
+}: ClientsTableProps) {
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -197,6 +206,11 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
         <table className="min-w-full divide-y divide-secondary-200">
           <thead className="bg-secondary-50">
             <tr>
+              {isMultiSelectMode && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                  <span className="sr-only">Seleccionar</span>
+                </th>
+              )}
               <SortableHeader
                 label="Cliente"
                 field="name"
@@ -260,7 +274,7 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
           <tbody className="divide-y divide-secondary-200">
             {sortedClients.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-secondary-500">
+                <td colSpan={isMultiSelectMode ? 11 : 10} className="px-6 py-4 text-center text-secondary-500">
                   No hay clientes para mostrar
                 </td>
               </tr>
@@ -269,9 +283,27 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                 const formattedScheduledDate = formatScheduledDate(client.scheduled_date);
                 const isFollowUpOverdue = isOverdue(client.next_follow_up);
                 const tripValueUSD = getTripValueUSD(client.trip_value);
+                const isSelected = selectedClients.includes(client.id);
                 
                 return (
-                  <tr key={client.id} className={`hover:bg-secondary-50 ${isFollowUpOverdue ? 'bg-red-50' : ''}`}>
+                  <tr 
+                    key={client.id} 
+                    className={`hover:bg-secondary-50 ${isFollowUpOverdue ? 'bg-red-50' : ''} ${isSelected ? 'bg-blue-50' : ''}`}
+                    onClick={() => onViewClient(client)}
+                  >
+                    {isMultiSelectMode && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            onToggleSelection?.(client.id);
+                          }}
+                          className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -383,7 +415,10 @@ export function ClientsTable({ clients, onViewClient }: ClientsTableProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onViewClient(client)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewClient(client);
+                          }}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           Ver
