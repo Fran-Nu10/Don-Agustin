@@ -118,14 +118,14 @@ export function QuotationPage() {
       <Navbar />
       
       <main className="flex-grow relative py-12 main-content">
-        {/* Background Image - Más sutil */}
+        {/* Nuevo banner con imagen de fondo más profesional */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg"
+            src="https://images.pexels.com/photos/3769138/pexels-photo-3769138.jpeg"
             alt="Quotation Background"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/85 to-secondary-50/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-950/80 via-primary-900/75 to-secondary-900/80"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -136,10 +136,10 @@ export function QuotationPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-12 pt-8"
           >
-            <h1 className="font-heading font-bold text-4xl md:text-5xl text-secondary-900 mb-6">
+            <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-6">
               Solicitar Cotización
             </h1>
-            <p className="text-xl text-secondary-700 max-w-3xl mx-auto">
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
               Cuéntanos sobre tu viaje soñado y te enviaremos una propuesta personalizada 
               con los mejores precios y servicios.
             </p>
@@ -152,7 +152,7 @@ export function QuotationPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-gradient-to-br from-white/95 via-white/90 to-secondary-50/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
               {/* Form Header */}
               <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-8 text-white">
                 <h2 className="font-heading font-bold text-2xl mb-2">
