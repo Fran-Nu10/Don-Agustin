@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Instagram } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -24,7 +24,7 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/donagustinviajes"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -32,20 +32,12 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/donagustin.uy/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
               >
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-secondary-300 hover:text-primary-600 transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>
