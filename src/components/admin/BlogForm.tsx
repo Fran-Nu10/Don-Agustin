@@ -5,7 +5,9 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
 import { VisualBlogEditor } from './VisualBlogEditor';
-import { Image as ImageIcon, Type, Eye } from 'lucide-react';
+import { Image as ImageIcon, Type, Eye, Upload, X } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'react-hot-toast';
 
 interface BlogFormProps {
   initialData?: BlogFormData;
@@ -24,6 +26,10 @@ const BLOG_CATEGORIES = [
 
 export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps) {
   const [editorMode, setEditorMode] = useState<'visual' | 'text'>('visual');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -41,6 +47,71 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     setValue('content', content);
   };
 
+  // Handle image file selection
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('El archivo es demasiado grande. Por favor selecciona una imagen menor a 5MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setImageFile(file);
+    
+    try {
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      // Upload to Supabase Storage
+      const fileName = `${Date.now()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('blog-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(data.path);
+
+      setValue('image_url', publicUrlData.publicUrl);
+      toast.success('Imagen subida correctamente');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Remove image
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setValue('image_url', '');
+    
+    // Clear the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Input
@@ -52,14 +123,85 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         {...register('title', { required: 'El título es obligatorio' })}
       />
 
-      <Input
-        label="URL de la imagen principal"
-        id="image_url"
-        type="text"
-        fullWidth
-        error={errors.image_url?.message}
-        {...register('image_url', { required: 'La URL de la imagen es obligatoria' })}
-      />
+      {/* Image Upload Section */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-secondary-900">
+          Imagen principal
+        </label>
+        
+        {imagePreview ? (
+          <div className="relative inline-block">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-full max-w-md h-48 object-cover rounded-lg border border-secondary-300"
+            />
+            <button
+              type="button"
+              onClick={removeImage}
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors cursor-pointer"
+          >
+            <Upload className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
+            <p className="text-secondary-600 mb-2">
+              Haz clic para subir una imagen o arrastra y suelta aquí
+            </p>
+            <p className="text-xs text-secondary-500 mb-4">
+              PNG, JPG, GIF hasta 5MB
+            </p>
+          </div>
+        )}
+        
+        <input
+          ref={fileInputRef}
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+        />
+        
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {isUploadingImage ? 'Subiendo...' : 'Seleccionar imagen'}
+          </Button>
+          
+          {imagePreview && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={removeImage}
+              className="text-red-600 hover:text-red-700"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Eliminar imagen
+            </Button>
+          )}
+        </div>
+        
+        {errors.image_url && (
+          <p className="mt-1 text-sm text-red-600">{errors.image_url.message}</p>
+        )}
+        
+        {/* Hidden input for the actual URL */}
+        <input
+          type="hidden"
+          {...register('image_url', { required: 'La imagen es obligatoria' })}
+        />
+      </div>
 
       <Textarea
         label="Resumen"
