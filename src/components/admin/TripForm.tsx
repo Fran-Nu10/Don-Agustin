@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { TripFormData, Trip, ItineraryDay, IncludedService } from '../../types';
+import { Trip, TripFormData, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
@@ -287,8 +287,28 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     'Shield', 'Heart', 'Star', 'Coffee', 'Wifi'
   ];
 
-  // Available tags
-  const availableTags = ['dream', 'featured', 'popular', 'new', 'sale'];
+  // Available tags - UPDATED with new tags
+  const availableTags = ['terrestre', 'vuelos', 'baja temporada', 'verano', 'eventos', 'exprés'];
+
+  // Get tag color based on tag name
+  const getTagColor = (tag: string) => {
+    switch (tag) {
+      case 'terrestre':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'vuelos':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'baja temporada':
+        return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'verano':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'eventos':
+        return 'bg-red-100 text-red-800 border-red-300';
+      case 'exprés':
+        return 'bg-orange-100 text-orange-800 border-orange-300';
+      default:
+        return 'bg-secondary-100 text-secondary-700 border-secondary-200';
+    }
+  };
 
   // Custom submit handler to convert USD to UYU
   const handleFormSubmit = (data: TripFormData) => {
@@ -413,7 +433,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           />
         </div>
 
-        {/* Tags Section */}
+        {/* Tags Section - UPDATED with new tags */}
         <div className="mt-6">
           <label className="block mb-2 text-sm font-medium text-secondary-900 flex items-center">
             <Tag className="h-5 w-5 mr-2 text-primary-600" />
@@ -428,7 +448,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                 onClick={() => toggleTag(tag)}
                 className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedTags.includes(tag)
-                    ? 'bg-primary-100 text-primary-800 border border-primary-300'
+                    ? getTagColor(tag)
                     : 'bg-secondary-100 text-secondary-700 border border-secondary-200 hover:bg-secondary-200'
                 }`}
               >
@@ -439,7 +459,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           </div>
           
           <p className="mt-2 text-xs text-secondary-500">
-            La etiqueta "dream" muestra el paquete en la sección de ofertas especiales en la página principal.
+            Selecciona las etiquetas que mejor describan este viaje. Estas etiquetas se mostrarán en la página del viaje.
           </p>
           
           {/* Hidden input for tags */}
