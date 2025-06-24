@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, X, Move, Maximize2, Type, Image as ImageIcon, Plus } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase/client';
 import { toast } from 'react-hot-toast';
 
 interface VisualBlogEditorProps {

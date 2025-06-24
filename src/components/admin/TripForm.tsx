@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye, Tag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase/client';
 
 interface TripFormProps {
   initialData?: Trip;

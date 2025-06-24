@@ -6,7 +6,7 @@ import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
 import { VisualBlogEditor } from './VisualBlogEditor';
 import { Image as ImageIcon, Type, Eye, Upload, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase/client';
 import { toast } from 'react-hot-toast';
 
 interface BlogFormProps {
