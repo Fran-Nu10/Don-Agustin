@@ -3,6 +3,7 @@ import { getCurrentUser, signIn, signOut } from '../lib/supabase';
 import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -36,29 +37,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Check for current user on mount
-    async function loadUser() {
-      try {
-        const user = await getCurrentUser();
-        setUser(user);
-      } catch (error) {
-        console.error('Error loading user:', error);
-        // If session is invalid, clear local session data
-        await logout();
-      } finally {
-        setLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          if (session?.user) {
+            // User is authenticated, get their profile
+            const user = await getCurrentUser();
+            setUser(user);
+          } else {
+            // No session, user is not authenticated
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
+    );
 
-    loadUser();
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
       await signIn(data.email, data.password);
-      const user = await getCurrentUser();
-      setUser(user);
+      // The auth state listener will handle setting the user
       
       toast.success('¡Sesión iniciada correctamente!');
       navigate('/admin/dashboard');
