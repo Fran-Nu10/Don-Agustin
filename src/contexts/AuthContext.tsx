@@ -3,7 +3,7 @@ import { getCurrentUser, signIn, signOut } from '../lib/supabase';
 import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
+          console.log('Auth state changed:', event, session?.user?.id);
           if (session?.user) {
             // User is authenticated, get their profile
             const user = await getCurrentUser();
@@ -61,7 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initial check for current user
     const checkUser = async () => {
       try {
+        console.log('Checking current user...');
         const user = await getCurrentUser();
+        console.log('Current user:', user);
         setUser(user);
       } catch (error) {
         console.error('Error checking current user:', error);

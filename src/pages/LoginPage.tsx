@@ -31,6 +31,7 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      console.log('Attempting login with:', data.email);
       await login(data);
     } catch (error) {
       console.error('Login error:', error);
