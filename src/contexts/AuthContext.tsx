@@ -58,6 +58,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Initial check for current user
+    const checkUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Error checking current user:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkUser();
+
     // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();

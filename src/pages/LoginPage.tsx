@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { LoginFormData } from '../types';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 export function LoginPage() {
   const { user, login, loading } = useAuth();
@@ -27,6 +28,15 @@ export function LoginPage() {
   if (user) {
     return <Navigate to="/admin/dashboard" replace />;
   }
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Error al iniciar sesión. Verifica tus credenciales.');
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,7 +60,7 @@ export function LoginPage() {
                 </p>
               </div>
               
-              <form onSubmit={handleSubmit(login)}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <Input
                   label="Correo electrónico"
                   id="email"
