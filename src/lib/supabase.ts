@@ -349,7 +349,31 @@ export async function deleteTrip(id: string): Promise<void> {
       throw new Error('No tienes permisos para eliminar viajes');
     }
 
-    // Delete related data first (due to foreign key constraints)
+    // Delete related quotations first (due to foreign key constraints)
+    console.log('Deleting related quotations...');
+    const { error: quotationsError } = await supabase
+      .from('quotations')
+      .delete()
+      .eq('trip_id', id);
+
+    if (quotationsError) {
+      console.error('Error deleting quotations:', quotationsError);
+      throw new Error('Error eliminando cotizaciones del viaje');
+    }
+
+    // Delete related bookings (due to foreign key constraints)
+    console.log('Deleting related bookings...');
+    const { error: bookingsError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('trip_id', id);
+
+    if (bookingsError) {
+      console.error('Error deleting bookings:', bookingsError);
+      throw new Error('Error eliminando reservas del viaje');
+    }
+
+    // Delete itinerary days
     console.log('Deleting itinerary days...');
     const { error: itineraryError } = await supabase
       .from('itinerary_days')
@@ -361,6 +385,7 @@ export async function deleteTrip(id: string): Promise<void> {
       throw new Error('Error eliminando itinerario del viaje');
     }
 
+    // Delete included services
     console.log('Deleting included services...');
     const { error: servicesError } = await supabase
       .from('included_services')
