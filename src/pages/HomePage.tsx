@@ -38,7 +38,7 @@ export function HomePage() {
             <div 
               className="hidden lg:block absolute inset-0"
               style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg)',
+                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center center',
                 backgroundAttachment: 'fixed',
@@ -50,7 +50,7 @@ export function HomePage() {
             <div 
               className="hidden md:block lg:hidden absolute inset-0"
               style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg)',
+                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center 30%',
                 backgroundAttachment: 'scroll',
@@ -62,7 +62,7 @@ export function HomePage() {
             <div 
               className="block md:hidden absolute inset-0"
               style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg)',
+                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center 40%',
                 backgroundAttachment: 'scroll',
