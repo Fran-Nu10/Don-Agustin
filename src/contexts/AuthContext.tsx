@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getCurrentUser, signIn, signOut } from '../lib/supabase';
 import { User, LoginFormData } from '../types';
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signOut();
       setUser(null);
+      localStorage.clear();
       toast.success('Sesión cerrada correctamente');
       navigate('/');
     } catch (error) {
@@ -37,29 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        try {
-          console.log('Auth state changed:', event, session?.user?.id);
-          if (session?.user) {
-            // User is authenticated, get their profile
-            const user = await getCurrentUser();
-            setUser(user);
-          } else {
-            // No session, user is not authenticated
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error handling auth state change:', error);
-          setUser(null);
-        } finally {
-          setLoading(false);
-        }
-      }
-    );
-
-    // Initial check for current user
     const checkUser = async () => {
       try {
         console.log('Checking current user...');
@@ -68,15 +47,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(user);
       } catch (error) {
         console.error('Error checking current user:', error);
+        await supabase.auth.signOut();
+        localStorage.clear();
         setUser(null);
+        toast.error('Tu sesión expiró o es inválida. Por favor, inicia sesión nuevamente.');
       } finally {
         setLoading(false);
       }
     };
-    
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          console.log('Auth state changed:', event, session?.user?.id);
+          if (session?.user) {
+            const user = await getCurrentUser();
+            setUser(user);
+          } else {
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          await supabase.auth.signOut();
+          localStorage.clear();
+          setUser(null);
+          toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+
     checkUser();
 
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -86,8 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       await signIn(data.email, data.password);
-      // The auth state listener will handle setting the user
-      
       toast.success('¡Sesión iniciada correctamente!');
       navigate('/admin/dashboard');
     } catch (error) {
