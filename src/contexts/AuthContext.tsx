@@ -40,11 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     try {
       setLoading(true);
-      await signOut();
       setUser(null);
+      await signOut();
       localStorage.clear();
       toast.success('Sesión cerrada correctamente');
-      navigate('/');
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Error al cerrar sesión');
@@ -54,11 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function isOwner() {
-    return user?.role === 'owner';
+    return user?.role === 'owner' || user?.role === 'admin';
   }
 
   function isEmployee() {
-    return user?.role === 'employee';
+    return user?.role === 'employee' || isOwner();
   }
 
   useEffect(() => {
