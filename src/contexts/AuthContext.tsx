@@ -22,124 +22,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let authSubscription: any;
-
-    const initializeAuth = async () => {
+  async function logout() {
+    try {
       setLoading(true);
+      await signOut();
+      setUser(null);
+      localStorage.clear(); // Ensure localStorage is cleared on explicit logout
+      toast.success('Sesión cerrada correctamente');
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error al cerrar sesión');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      const { data: { session }, error } = await supabase.auth.getSession();
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        console.log('Checking current user...');
+        const currentUser = await getCurrentUser(); // This calls the wrapped getCurrentUser
+        console.log('Current user:', currentUser);
+        setUser(currentUser);
 
-      if (error) {
-        console.error("Error al obtener la sesión inicial:", error);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      if (session?.user) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (userError) {
-          console.warn("Usuario no sincronizado con tabla users. Cerrando sesión...");
+        // --- NUEVA LÓGICA DE VALIDACIÓN DE SESIÓN ---
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!currentUser && session) {
+          console.warn('Corrupt or desynchronized session detected. Forcing logout and clearing localStorage.');
           await supabase.auth.signOut();
           localStorage.clear();
           setUser(null);
-        } else {
-          setUser(userData);
-          console.log("✅ Usuario cargado desde sesión persistida:", userData);
+          toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
         }
-      } else {
-        console.log("ℹ️ No hay sesión activa.");
-        setUser(null);
-      }
-
-      setLoading(false);
-    };
-
-    initializeAuth();
-
-    authSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("📡 Evento de cambio de auth:", event);
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (session?.user) {
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
-
-          if (userError) {
-            console.warn("⚠️ Error al sincronizar usuario tras cambio de estado");
-            await supabase.auth.signOut();
-            localStorage.clear();
-            setUser(null);
-          } else {
-            setUser(userData);
-            console.log("✅ Usuario sincronizado desde evento de sesión:", userData);
-          }
-        }
-      }
-
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
+      } catch (error) {
+        console.error('Error checking current user:', error);
+        await supabase.auth.signOut();
         localStorage.clear();
+        setUser(null);
+        toast.error('Tu sesión expiró o es inválida. Por favor, inicia sesión nuevamente.');
+      } finally {
         setLoading(false);
       }
-    });
+    };
 
-    // Listener entre pestañas
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          console.log('Auth state changed:', event, session?.user?.id);
+          if (session?.user) {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (!currentUser && currentSession) {
+              console.warn('Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
+              await supabase.auth.signOut();
+              localStorage.clear();
+              setUser(null);
+              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+            }
+          } else {
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          await supabase.auth.signOut();
+          localStorage.clear();
+          setUser(null);
+          toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+
+    // ✅ Llamada inicial
+    checkUser();
+
+    // ✅ Listener entre pestañas (sincroniza sesiones)
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'supabase.auth.token') {
         console.log("🔄 Cambio detectado en supabase.auth.token desde otra pestaña");
-        initializeAuth(); // Rehidrata el contexto
+        checkUser();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      if (authSubscription?.data?.subscription) {
-        authSubscription.data.subscription.unsubscribe();
-      }
+      subscription.unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  // 👉 Agrega estas funciones + el return que faltaban
   const value = {
     user,
     loading,
     login: async (data: LoginFormData) => {
       try {
+        setLoading(true);
         await signIn(data.email, data.password);
         toast.success('¡Sesión iniciada correctamente!');
       } catch (error) {
         console.error('Login error:', error);
-        toast.error('Credenciales incorrectas. Intenta nuevamente.');
+        toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
         throw error;
-      }
-    },
-    logout: async () => {
-      try {
-        setLoading(true);
-        await signOut();
-        setUser(null);
-        localStorage.clear();
-        toast.success('Sesión cerrada correctamente');
-        navigate('/');
-      } catch (error) {
-        console.error('Logout error:', error);
-        toast.error('Error al cerrar sesión');
       } finally {
         setLoading(false);
       }
     },
+    logout,
     isOwner: () => user?.role === 'owner',
     isEmployee: () => user?.role === 'employee',
   };
@@ -149,7 +141,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
 }
 
   async function login(data: LoginFormData) {
