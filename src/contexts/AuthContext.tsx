@@ -41,61 +41,93 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }
+useEffect(() => {
+  const checkUser = async () => {
+    console.log('AuthContext: --- START checkUser ---');
 
-  useEffect(() => {
-   const checkUser = async () => {
-  console.log('AuthContext: --- START checkUser ---');
-
-  try {
-    // 🔁 Intentar obtener sesión hasta 5 veces por si tarda en hidratarse desde localStorage
-    let session = null;
-    for (let i = 0; i < 5; i++) {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        session = data.session;
-        break;
+    try {
+      // 🔁 Intentar obtener sesión hasta 5 veces por si tarda en hidratarse desde localStorage
+      let session = null;
+      for (let i = 0; i < 5; i++) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          session = data.session;
+          break;
+        }
+        console.log(`AuthContext: Esperando sesión... intento ${i + 1}`);
+        await new Promise((r) => setTimeout(r, 250)); // esperar 250ms
       }
-      console.log(`AuthContext: Esperando sesión... intento ${i + 1}`);
-      await new Promise((r) => setTimeout(r, 250)); // esperar 250ms
-    }
 
-    if (!session) {
-      console.warn('AuthContext: No se pudo obtener sesión de Supabase.');
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+      if (!session) {
+        console.warn('AuthContext: No se pudo obtener sesión de Supabase.');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
-    console.log('AuthContext: Sesión detectada:', session.user.id);
+      console.log('AuthContext: Sesión detectada:', session.user.id);
 
-    // 👤 Intentar obtener el usuario de la tabla `users`
-    const currentUser = await getCurrentUser();
-    console.log('AuthContext: Usuario desde DB:', currentUser);
+      // 👤 Intentar obtener el usuario de la tabla `users`
+      const currentUser = await getCurrentUser();
+      console.log('AuthContext: Usuario desde DB:', currentUser);
 
-    // Si hay sesión pero no usuario en la tabla `users`, la sesión está corrupta o incompleta
-    if (!currentUser) {
-      console.warn('AuthContext: Sesión válida pero sin usuario en tabla "users". Cerrando sesión...');
+      // Si hay sesión pero no usuario en la tabla `users`, la sesión está corrupta o incompleta
+      if (!currentUser) {
+        console.warn('AuthContext: Sesión válida pero sin usuario en tabla "users". Cerrando sesión...');
+        await supabase.auth.signOut();
+        localStorage.clear();
+        setUser(null);
+        toast.error('Tu sesión es inválida. Por favor, inicia sesión nuevamente.');
+      } else {
+        setUser(currentUser);
+      }
+
+    } catch (error) {
+      console.error('AuthContext: Error inesperado al verificar usuario:', error);
       await supabase.auth.signOut();
       localStorage.clear();
       setUser(null);
-      toast.error('Tu sesión es inválida. Por favor, inicia sesión nuevamente.');
-    } else {
-      setUser(currentUser);
+      toast.error('Tu sesión expiró. Por favor, inicia sesión de nuevo.');
+    } finally {
+      setLoading(false);
+      console.log('AuthContext: --- END checkUser ---');
     }
+  };
 
-  } catch (error) {
-    console.error('AuthContext: Error inesperado al verificar usuario:', error);
-    await supabase.auth.signOut();
-    localStorage.clear();
-    setUser(null);
-    toast.error('Tu sesión expiró. Por favor, inicia sesión de nuevo.');
-  } finally {
-    setLoading(false);
-    console.log('AuthContext: --- END checkUser ---');
-  }
-};
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      try {
+        console.log('AuthContext: Auth state changed:', event, session?.user?.id);
+        if (session?.user) {
+          const currentUser = await getCurrentUser();
+          setUser(currentUser);
 
-    checkUser();
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (!currentUser && currentSession) {
+            console.warn('AuthContext: Sesión corrupta detectada en cambio de estado. Cerrando...');
+            await supabase.auth.signOut();
+            localStorage.clear();
+            setUser(null);
+            toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('AuthContext: Error en cambio de estado:', error);
+        await supabase.auth.signOut();
+        localStorage.clear();
+        setUser(null);
+        toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  );
+
+  checkUser();
+
+ 
 
     return () => {
       subscription.unsubscribe();
