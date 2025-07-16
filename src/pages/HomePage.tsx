@@ -9,13 +9,13 @@ import { GroupTripsCarousel } from '../components/trips/GroupTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
 import { DreamTripsSection } from '../components/home/DreamTripsSection';
-import { MapPin, Plane, Clock, Shield } from 'lucide-react';
+import { MapPin, Plane, Clock, Shield, AlertCircle } from 'lucide-react'; // Importar AlertCircle
 import { motion } from 'framer-motion';
 import { useTrips } from '../hooks/useTrips';
 import { FeatureCard } from '../components/home/FeatureCard';
 
 export function HomePage() {
-  const { trips, loading } = useTrips();
+  const { trips, loading, error } = useTrips(); // Obtener el estado de error
 
   // Get unique destinations for search
   const destinations = [...new Set(trips.map((trip) => trip.destination))].sort();
@@ -95,6 +95,19 @@ export function HomePage() {
         {loading ? (
           <div className="text-center py-8">
             <p className="text-secondary-500">Cargando paquetes...</p>
+          </div>
+        ) : error ? ( // Mostrar mensaje de error si existe
+          <div className="text-center py-8 bg-red-50 border border-red-200 rounded-lg shadow-sm mx-auto max-w-3xl mt-8">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="font-heading font-bold text-xl text-red-800 mb-2">
+              Error al cargar los paquetes
+            </h3>
+            <p className="text-red-700 mb-4">
+              {error.message || 'Ha ocurrido un error inesperado. Por favor, intenta recargar la página.'}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Recargar página
+            </Button>
           </div>
         ) : (
           <>

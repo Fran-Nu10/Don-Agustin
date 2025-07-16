@@ -10,7 +10,7 @@ import { useTrips } from '../hooks/useTrips';
 import { Trip } from '../types';
 
 export function TripsPage() {
-  const { trips, loading } = useTrips();
+  const { trips, loading, error } = useTrips(); // Obtener el estado de error
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDestination, setSelectedDestination] = useState<string>('');
@@ -486,6 +486,19 @@ export function TripsPage() {
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
               <p className="text-secondary-500">Cargando paquetes...</p>
+            </div>
+          ) : error ? ( // Mostrar mensaje de error si existe
+            <div className="text-center py-12 bg-red-50 border border-red-200 rounded-lg shadow-sm">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="font-heading font-bold text-xl text-red-800 mb-2">
+                Error al cargar los paquetes
+              </h3>
+              <p className="text-red-700 mb-4">
+                {error.message || 'Ha ocurrido un error inesperado. Por favor, intenta recargar la página.'}
+              </p>
+              <Button onClick={() => window.location.reload()}>
+                Recargar página
+              </Button>
             </div>
           ) : (
             <>
