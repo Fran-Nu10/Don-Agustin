@@ -13,6 +13,12 @@ import { toast } from 'react-hot-toast';
 export function LoginPage() {
   const { user, login, loading } = useAuth();
 
+  // Log user and loading state for debugging
+  useEffect(() => {
+    console.log('LoginPage: user state:', user);
+    console.log('LoginPage: loading state:', loading);
+  }, [user, loading]);
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -24,8 +30,10 @@ export function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormData>();
 
-  // Redirect if already logged in
-  if (user) {
+  // Redirige si ya ha iniciado sesión Y no está cargando
+  // Esto asegura que el estado del usuario sea estable antes de intentar la redirección
+  if (!loading && user) {
+    console.log('LoginPage: Redirecting to /admin/dashboard');
     return <Navigate to="/admin/dashboard" replace />;
   }
 
