@@ -10,6 +10,11 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, isOwner, isEmployee, logout, loading } = useAuth();
+  
+  console.log('AdminLayout rendering with user:', user);
+  console.log('isOwner():', isOwner());
+  console.log('isEmployee():', isEmployee());
+  
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

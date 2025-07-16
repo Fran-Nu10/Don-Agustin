@@ -25,8 +25,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
-      const currentUser = await signIn(data.email, data.password);
-      setUser(currentUser);
+      console.log('Login attempt with email:', data.email);
+      const userData = await signIn(data.email, data.password);
+      console.log('Login response:', userData);
+      setUser(userData);
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
       console.error('Login error:', error);
@@ -59,17 +61,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   function isOwner() {
-    return user?.role === 'owner' || user?.role === 'admin';
+    console.log('isOwner check, user:', user);
+    const result = user?.role === 'owner' || user?.role === 'admin';
+    console.log('isOwner result:', result);
+    return result;
   }
 
   function isEmployee() {
-    return user?.role === 'employee' 
+    console.log('isEmployee check, user:', user);
+    const result = user?.role === 'employee' || isOwner();
+    console.log('isEmployee result:', result);
+    return result;
   }
 
   useEffect(() => {
     async function checkUser() {
       try {
+        console.log('Checking current user...');
         const currentUser = await getCurrentUser();
+        console.log('Current user from getCurrentUser:', currentUser);
         setUser(currentUser);
       } catch (error) {
         console.error('Error checking user:', error);
@@ -82,9 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          console.log('Auth state changed:', event);
+          console.log('Auth state changed:', event, 'Session:', session?.user?.id);
           if (session?.user) {
             const currentUser = await getCurrentUser();
+            console.log('User from getCurrentUser after auth change:', currentUser);
             setUser(currentUser);
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentUser && currentSession) {

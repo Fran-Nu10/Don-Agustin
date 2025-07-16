@@ -70,10 +70,10 @@ export async function signIn(email: string, password: string) {
         .single();
 
       if (createError) throw createError;
-      return { user: newUser };
+      return newUser;
     }
 
-    return { user: userData };
+    return userData;
   }, 'Sign in');
 }
 
