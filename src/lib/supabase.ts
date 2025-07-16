@@ -83,60 +83,81 @@ export async function signOut() {
   }, 'Sign out');
 }
 
+import { supabase } from './client';
+import { handleSupabaseError } from './handleSupabaseError'; // Asumiendo que usás este wrapper
+import { User } from '../../types'; // Asegurate que esté correctamente tipado
+
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
     console.log('getCurrentUser: Fetching user from auth...');
     const authResult = await supabase.auth.getUser();
     console.log('getCurrentUser: Raw auth.getUser() result:', authResult);
+
     const { data: { user }, error: authUserError } = authResult;
 
     if (authUserError) {
       console.error('getCurrentUser: Error fetching user from auth:', authUserError);
       return null;
     }
+
     if (!user) {
       console.log('getCurrentUser: No user found in auth.');
       return null;
     }
 
     console.log('getCurrentUser: User found in auth:', user.id, user.email);
-    console.log('getCurrentUser: Fetching user from public.users table...');
 
+    // Buscar al usuario en la tabla 'users'
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', user.id) // <-- FIX AQUÍ
-      .single();
+      .eq('id', user.id)
+      .maybeSingle();
 
     if (error) {
-      console.warn('getCurrentUser: Error fetching user from public.users table:', error);
-      if (error.code === 'PGRST116') {
-        console.log('getCurrentUser: User not found in public.users, attempting to create...');
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert([{
-            id: user.id,
-            email: user.email,
-            role: 'employee',
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('getCurrentUser: Error creating new user in public.users:', createError);
-          throw createError;
-        }
-
-        console.log('getCurrentUser: New user created in public.users:', newUser);
-        return newUser;
-      } else {
-        console.error('getCurrentUser: Unexpected error from public.users select:', error);
-        throw error;
-      }
+      console.warn('getCurrentUser: Error fetching from public.users:', error);
+      throw error;
     }
 
-    console.log('getCurrentUser: User found in public.users:', data);
+    if (!data) {
+      // Verificar si hay otro usuario con el mismo email (para evitar duplicados)
+      const { data: emailCheck, error: emailCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', user.email);
+
+      if (emailCheckError) {
+        console.warn('getCurrentUser: Email check failed:', emailCheckError);
+      }
+
+      if (emailCheck && emailCheck.length > 0) {
+        console.warn('getCurrentUser: Email already exists in another user. Returning null.');
+        return null;
+      }
+
+      // Insertar nuevo usuario si no hay conflictos
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{
+          id: user.id,
+          user_id: user.id, // Si tenés esta columna en la tabla
+          email: user.email,
+          role: 'employee',
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('getCurrentUser: Error creating user:', insertError);
+        throw insertError;
+      }
+
+      console.log('getCurrentUser: New user created:', newUser);
+      return newUser;
+    }
+
+    console.log('getCurrentUser: User found in users table:', data);
     return data;
   }, 'Get current user');
 }
