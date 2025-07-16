@@ -149,7 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-
+}
+}
 
   async function login(data: LoginFormData) {
     try {
