@@ -1,3 +1,4 @@
+// src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService } from '../types';
 import { supabase } from './supabase/client';
@@ -90,14 +91,25 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     console.log('🔍 getCurrentUser: Iniciando...');
 
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    // First, try to get the session. This is more robust for rehydrating.
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (authError || !authUser) {
-      console.warn('⚠️ No se encontró usuario autenticado o hubo error:', authError);
+    if (sessionError) {
+      console.error('⚠️ Error al obtener la sesión de Supabase:', sessionError);
+      // If there's a session error, it's likely a problem, so clear and return null.
+      await supabase.auth.signOut(); // Ensure any corrupted session is cleared
+      localStorage.clear();
       return null;
     }
 
-    console.log('✅ Usuario autenticado encontrado:', authUser.id, authUser.email);
+    if (!session) {
+      console.log('⚠️ No hay sesión activa de Supabase.');
+      return null; // No active session, so no user.
+    }
+
+    // If session exists, then get the user from our users table
+    const authUser = session.user;
+    console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
 
     const { data: existingUser, error: fetchError } = await supabase
       .from('users')
@@ -108,7 +120,6 @@ export async function getCurrentUser(): Promise<User | null> {
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         console.log('👤 Usuario no existe en public.users, creando nuevo...');
-
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert([{
@@ -123,22 +134,22 @@ export async function getCurrentUser(): Promise<User | null> {
 
         if (insertError) {
           console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
-          throw insertError;
+          throw insertError; // Re-throw to be caught by handleSupabaseError
         }
-
         console.log('✅ Nuevo usuario creado:', newUser);
         return newUser;
       }
-
-      console.error('❌ Error inesperado al buscar usuario:', fetchError);
-      throw fetchError;
+      console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
+      throw fetchError; // Re-throw to be caught by handleSupabaseError
     }
-
     console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
 
   } catch (error) {
     console.error('🔥 Error fatal en getCurrentUser:', error);
+    // If any other error occurs, ensure session is cleared to prevent stale state
+    await supabase.auth.signOut();
+    localStorage.clear();
     return null;
   }
 }
