@@ -39,63 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 
-export async function getCurrentUser(): Promise<User | null> {
-  try {
-    console.log('🔍 getCurrentUser: Iniciando...');
-
-    const authResult = await supabase.auth.getUser();
-    const { data: { user: authUser }, error: authError } = authResult;
-
-    if (authError || !authUser) {
-      console.warn('⚠️ No se encontró usuario autenticado o hubo error:', authError);
-      return null;
-    }
-
-    console.log('✅ Usuario autenticado encontrado:', authUser.id, authAuth?.email);
-
-    const { data: existingUser, error: fetchError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .single();
-
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        console.log('👤 Usuario no existe en public.users, creando nuevo...');
-
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert([{
-            id: authUser.id,
-            user_id: authUser.id,
-            email: authUser.email,
-            role: 'employee',
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
-
-        if (insertError) {
-          console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
-          throw insertError;
-        }
-
-        console.log('✅ Nuevo usuario creado:', newUser);
-        return newUser;
-      }
-
-      console.error('❌ Error inesperado al buscar usuario:', fetchError);
-      throw fetchError;
-    }
-
-    console.log('✅ Usuario encontrado en public.users:', existingUser);
-    return existingUser;
-
-  } catch (error) {
-    console.error('🔥 Error fatal en getCurrentUser:', error);
-    return null;
-  }
-}
 
   async function login(data: LoginFormData) {
     try {
