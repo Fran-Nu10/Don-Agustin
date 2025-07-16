@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('storage', handleStorageChange);
+        authSubscription.data.subscription.unsubscribe();
     };
   }, []);
 
