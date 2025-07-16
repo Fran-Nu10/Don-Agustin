@@ -86,13 +86,16 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
     console.log('getCurrentUser: Fetching user from auth...');
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authUserError } = await supabase.auth.getUser();
+    if (authUserError) {
+      console.error('getCurrentUser: Error fetching user from auth:', authUserError);
+      return null;
+    }
     if (!user) {
       console.log('getCurrentUser: No user found in auth.');
       return null;
     }
     console.log('getCurrentUser: User found in auth:', user.id, user.email);
-    if (!user) return null;
 
     console.log('getCurrentUser: Fetching user from public.users table...');
     const { data, error } = await supabase
@@ -120,14 +123,14 @@ export async function getCurrentUser(): Promise<User | null> {
 
         if (createError) {
           console.error('getCurrentUser: Error creating new user in public.users:', createError);
-          throw createError; // Re-throw to be caught by handleSupabaseError
+          throw createError;
         }
         console.log('getCurrentUser: New user created in public.users:', newUser);
         return newUser;
       } else {
         // Other database errors
         console.error('getCurrentUser: Unexpected error from public.users select:', error);
-        throw error; // Re-throw to be caught by handleSupabaseError
+        throw error;
       }
     }
     console.log('getCurrentUser: User found in public.users:', data);
