@@ -5,9 +5,11 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
@@ -19,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -27,7 +30,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signOut();
       setUser(null);
-      localStorage.clear(); // Ensure localStorage is cleared on explicit logout
+      setSession(null);
+      localStorage.clear();
       toast.success('Sesión cerrada correctamente');
       navigate('/');
     } catch (error) {
@@ -40,38 +44,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkUser = async () => {
-      console.log('AuthContext: --- START checkUser ---'); // <--- NUEVO LOG
       try {
         console.log('AuthContext: Checking current user...');
-        const currentUser = await getCurrentUser(); // This calls the wrapped getCurrentUser
-        console.log('AuthContext: Current user after initial getCurrentUser():', currentUser);
+        const currentUser = await getCurrentUser();
+        console.log('AuthContext: Current user:', currentUser);
         setUser(currentUser);
 
-        // --- NUEVA LÓGICA DE VALIDACIÓN DE SESIÓN ---
-        // Si getCurrentUser devuelve null (indicando que no hay un usuario válido en nuestra tabla 'users')
-        // pero Supabase Auth todavía tiene una sesión activa (lo que podría indicar una sesión corrupta o desincronizada)
-        // entonces forzamos un logout completo.
-        console.log('AuthContext: Getting Supabase session...');
         const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
         console.log('AuthContext: Supabase session:', session);
+
         if (!currentUser && session) {
-          console.warn('AuthContext: Corrupt or desynchronized session detected. Forcing logout and clearing localStorage.');
+          console.warn('AuthContext: Session desincronizada. Cerrando sesión.');
           await supabase.auth.signOut();
           localStorage.clear();
           setUser(null);
-          toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+          setSession(null);
+          toast.error('Tu sesión es inválida o está desincronizada. Iniciá sesión nuevamente.');
         }
-        console.log('AuthContext: --- END checkUser try block ---'); // <--- NUEVO LOG
-        // --- FIN NUEVA LÓGICA ---
-
       } catch (error) {
         console.error('Error checking current user:', error);
-        // The handleSupabaseError in src/lib/supabase.ts should already handle clearing localStorage
-        // for auth-related errors. This catch block is for other unexpected errors.
-        await supabase.auth.signOut(); // Ensure logout on any error during checkUser
+        await supabase.auth.signOut();
         localStorage.clear();
         setUser(null);
-        toast.error('Tu sesión expiró o es inválida. Por favor, inicia sesión nuevamente.');
+        setSession(null);
+        toast.error('Tu sesión expiró o es inválida. Iniciá sesión nuevamente.');
       } finally {
         setLoading(false);
       }
@@ -81,26 +78,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         try {
           console.log('AuthContext: Auth state changed:', event, session?.user?.id);
+          setSession(session);
+
           if (session?.user) {
             const currentUser = await getCurrentUser();
             setUser(currentUser);
-            // También aplicar la validación de sesión aquí para cambios de estado
+
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentUser && currentSession) {
-              console.warn('AuthContext: Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
+              console.warn('AuthContext: Sesión corrupta detectada. Cerrando sesión.');
               await supabase.auth.signOut();
               localStorage.clear();
               setUser(null);
-              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+              setSession(null);
+              toast.error('Tu sesión es inválida o está desincronizada. Iniciá sesión nuevamente.');
             }
           } else {
             setUser(null);
+            setSession(null);
           }
         } catch (error) {
-          console.error('AuthContext: Error handling auth state change:', error);
+          console.error('AuthContext: Error durante el cambio de estado de sesión:', error);
           await supabase.auth.signOut();
           localStorage.clear();
           setUser(null);
+          setSession(null);
           toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
         } finally {
           setLoading(false);
@@ -140,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    session,
     loading,
     login,
     logout,
