@@ -41,18 +41,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        console.log('Checking current user...');
+        console.log('AuthContext: Checking current user...');
         const currentUser = await getCurrentUser(); // This calls the wrapped getCurrentUser
-        console.log('Current user:', currentUser);
+        console.log('AuthContext: Current user after getCurrentUser():', currentUser);
         setUser(currentUser);
 
         // --- NUEVA LÓGICA DE VALIDACIÓN DE SESIÓN ---
         // Si getCurrentUser devuelve null (indicando que no hay un usuario válido en nuestra tabla 'users')
         // pero Supabase Auth todavía tiene una sesión activa (lo que podría indicar una sesión corrupta o desincronizada)
         // entonces forzamos un logout completo.
+        console.log('AuthContext: Getting Supabase session...');
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('AuthContext: Supabase session:', session);
         if (!currentUser && session) {
-          console.warn('Corrupt or desynchronized session detected. Forcing logout and clearing localStorage.');
+          console.warn('AuthContext: Corrupt or desynchronized session detected. Forcing logout and clearing localStorage.');
           await supabase.auth.signOut();
           localStorage.clear();
           setUser(null);
@@ -76,14 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          console.log('Auth state changed:', event, session?.user?.id);
+          console.log('AuthContext: Auth state changed:', event, session?.user?.id);
           if (session?.user) {
             const currentUser = await getCurrentUser();
             setUser(currentUser);
             // También aplicar la validación de sesión aquí para cambios de estado
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentUser && currentSession) {
-              console.warn('Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
+              console.warn('AuthContext: Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
               await supabase.auth.signOut();
               localStorage.clear();
               setUser(null);
@@ -93,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
           }
         } catch (error) {
-          console.error('Error handling auth state change:', error);
+          console.error('AuthContext: Error handling auth state change:', error);
           await supabase.auth.signOut();
           localStorage.clear();
           setUser(null);
