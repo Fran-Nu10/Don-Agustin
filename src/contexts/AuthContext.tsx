@@ -38,9 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-// src/lib/supabase/getCurrentUser.ts
-import { supabase } from './client';
-import { User } from '../../types';
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
