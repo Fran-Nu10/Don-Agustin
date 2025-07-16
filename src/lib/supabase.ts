@@ -86,40 +86,38 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
     console.log('getCurrentUser: Fetching user from auth...');
-    const authResult = await supabase.auth.getUser(); // <--- Aquí se realiza la llamada
-    console.log('getCurrentUser: Raw auth.getUser() result:', authResult); // <--- NUEVO LOG
+    const authResult = await supabase.auth.getUser();
+    console.log('getCurrentUser: Raw auth.getUser() result:', authResult);
     const { data: { user }, error: authUserError } = authResult;
 
     if (authUserError) {
       console.error('getCurrentUser: Error fetching user from auth:', authUserError);
-      // Return null for auth errors instead of throwing
       return null;
     }
     if (!user) {
       console.log('getCurrentUser: No user found in auth.');
       return null;
     }
-    console.log('getCurrentUser: User found in auth:', user.id, user.email);
 
+    console.log('getCurrentUser: User found in auth:', user.id, user.email);
     console.log('getCurrentUser: Fetching user from public.users table...');
+
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('id', user.id) // <-- FIX AQUÍ
       .single();
 
     if (error) {
       console.warn('getCurrentUser: Error fetching user from public.users table:', error);
-      // If user doesn't exist in the users table (PGRST116), create them
-      if (error.code === 'PGRST116') { // No rows found
+      if (error.code === 'PGRST116') {
         console.log('getCurrentUser: User not found in public.users, attempting to create...');
         const { data: newUser, error: createError } = await supabase
           .from('users')
           .insert([{
             id: user.id,
-            user_id: user.id,
             email: user.email,
-            role: 'employee', // Default role
+            role: 'employee',
             created_at: new Date().toISOString()
           }])
           .select()
@@ -129,18 +127,20 @@ export async function getCurrentUser(): Promise<User | null> {
           console.error('getCurrentUser: Error creating new user in public.users:', createError);
           throw createError;
         }
+
         console.log('getCurrentUser: New user created in public.users:', newUser);
         return newUser;
       } else {
-        // Other database errors
         console.error('getCurrentUser: Unexpected error from public.users select:', error);
         throw error;
       }
     }
+
     console.log('getCurrentUser: User found in public.users:', data);
     return data;
   }, 'Get current user');
 }
+
 
 // Trip functions
 export async function getTrips(): Promise<Trip[]> {
