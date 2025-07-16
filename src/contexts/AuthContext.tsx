@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const currentUser = await signIn(data.email, data.password);
       setUser(currentUser);
+      console.log('AuthContext: User set after login:', currentUser); // ADDED LOG
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
       console.error('Login error:', error);
@@ -54,11 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function isOwner() {
-    return user?.role === 'owner' || user?.role === 'admin';
+    console.log('AuthContext: isOwner called. Current user:', user); // ADDED LOG
+    return user?.role === 'owner';
   }
 
   function isEmployee() {
-    return user?.role === 'employee' || isOwner();
+    console.log('AuthContext: isEmployee called. Current user:', user); // ADDED LOG
+    return user?.role === 'employee' || isOwner(); // isOwner() already handles 'owner'
   }
 
   useEffect(() => {
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
+        console.log('AuthContext: User set after initial checkUser:', currentUser); // ADDED LOG
       } catch (error) {
         console.error('Error checking user:', error);
         setUser(null);
@@ -81,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (session?.user) {
             const currentUser = await getCurrentUser();
             setUser(currentUser);
+            console.log('AuthContext: User set after onAuthStateChange:', currentUser); // ADDED LOG
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentUser && currentSession) {
               console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
