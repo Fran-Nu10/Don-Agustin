@@ -42,11 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     try {
       setLoading(true);
-      setUser(null);
-      await signOut();
+      // Primero limpiar localStorage y luego hacer signOut
       localStorage.clear();
+      await signOut();
+      setUser(null);
       toast.success('Sesión cerrada correctamente');
-      navigate('/login');
+      // Asegurar que la redirección ocurra después de limpiar el estado
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Error al cerrar sesión');
