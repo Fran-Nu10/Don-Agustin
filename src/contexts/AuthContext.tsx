@@ -5,6 +5,7 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
+import React from 'react';
 
 interface AuthContextType {
   user: User | null;
@@ -20,17 +21,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
+      setAuthError(null);
       const currentUser = await signIn(data.email, data.password);
+      
+      // Log the user data received from signIn
+      console.log('AuthContext: Login successful, user data:', currentUser);
+      
+      if (!currentUser) {
+        throw new Error('No se pudo obtener la información del usuario');
+      }
+      
+      // Set the user state directly here
       setUser(currentUser);
-      console.log('AuthContext: User set after login:', currentUser); // ADDED LOG
+      
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
       console.error('Login error:', error);
+      setAuthError(error instanceof Error ? error.message : 'Error desconocido');
       toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
       throw error;
     } finally {
@@ -41,8 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     try {
       setLoading(true);
-      setUser(null);
       await signOut();
+      setUser(null);
       localStorage.clear();
       toast.success('Sesión cerrada correctamente');
       navigate('/login');
@@ -54,14 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  function isOwner() {
-    console.log('AuthContext: isOwner called. Current user:', user); // ADDED LOG
-    return user?.role === 'owner';
+  // Simplified role check functions
+  function isOwner(): boolean {
+    const result = user?.role === 'owner';
+    console.log(`AuthContext: isOwner() called - user role: ${user?.role}, result: ${result}`);
+    return result;
   }
 
-  function isEmployee() {
-    console.log('AuthContext: isEmployee called. Current user:', user); // ADDED LOG
-    return user?.role === 'employee' || isOwner(); // isOwner() already handles 'owner'
+  function isEmployee(): boolean {
+    const result = user?.role === 'employee' || user?.role === 'owner';
+    console.log(`AuthContext: isEmployee() called - user role: ${user?.role}, result: ${result}`);
+    return result;
   }
 
   useEffect(() => {
@@ -69,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
-        console.log('AuthContext: User set after initial checkUser:', currentUser); // ADDED LOG
+        console.log('AuthContext: Initial user check complete:', currentUser);
       } catch (error) {
         console.error('Error checking user:', error);
         setUser(null);
@@ -81,20 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
-          console.log('Auth state changed:', event);
+          console.log('Auth state changed:', event, 'Session exists:', !!session);
           if (session?.user) {
             const currentUser = await getCurrentUser();
             setUser(currentUser);
-            console.log('AuthContext: User set after onAuthStateChange:', currentUser); // ADDED LOG
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            if (!currentUser && currentSession) {
-              console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
-              await supabase.auth.signOut();
-              localStorage.clear();
-              setUser(null);
-              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
-            }
+            console.log('AuthContext: User updated after auth state change:', currentUser);
           } else {
+            console.log('AuthContext: No session, setting user to null');
             setUser(null);
           }
         } catch (error) {
@@ -129,10 +138,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     login,
+    authError,
     logout,
     isOwner,
     isEmployee,
   };
+
+  // Debug output for the current auth state
+  console.log('AuthContext render - Current state:', { 
+    userExists: !!user, 
+    userRole: user?.role, 
+    loading, 
+    authError 
+  });
 
   return (
     <AuthContext.Provider value={value}>
@@ -146,5 +164,9 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  
+  // Debug the context when it's accessed
+  console.log('useAuth hook called - user role:', context.user?.role);
+  
   return context;
 }

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3, ChevronLeft, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,6 +11,14 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, isOwner, isEmployee, logout, loading } = useAuth();
   const location = useLocation();
+  
+  // Debug log to check user role
+  useEffect(() => {
+    console.log('AdminLayout - Current user role:', user?.role);
+    console.log('AdminLayout - isOwner():', isOwner());
+    console.log('AdminLayout - isEmployee():', isEmployee());
+  }, [user, isOwner, isEmployee]);
+  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -81,7 +89,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             Paquetes
           </SidebarLink>
           
-          {(isOwner() || isEmployee()) && (
+          {user && (
             <>
               <SidebarLink
                 to="/admin/clientes"
@@ -101,7 +109,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 Cotizaciones
               </SidebarLink>
 
-              {isOwner() && (
+              {user.role === 'owner' && (
                 <>
                   <SidebarLink
                     to="/admin/reportes"
@@ -180,7 +188,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 Paquetes
               </MobileNavLink>
               
-              {(isOwner() || isEmployee()) && (
+              {user && (
                 <>
                   <MobileNavLink
                     to="/admin/clientes"
@@ -200,7 +208,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     Cotizaciones
                   </MobileNavLink>
                   
-                  {isOwner() && (
+                  {user.role === 'owner' && (
                     <>
                       <MobileNavLink
                         to="/admin/reportes"
