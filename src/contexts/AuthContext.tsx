@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
-      const currentUser = await signIn(data);
+      const currentUser = await signIn(data.email, data.password);
       setUser(currentUser);
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
