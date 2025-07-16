@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signIn(data.email, data.password);
       toast.success('¡Sesión iniciada correctamente!');
-      navigate('/admin/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
