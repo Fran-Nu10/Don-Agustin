@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function isOwner() {
-    return user?.role === 'owner' || user?.role === 'admin';
+    return user?.role === 'owner'
   }
 
   function isEmployee() {
