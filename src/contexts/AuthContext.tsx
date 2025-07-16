@@ -38,55 +38,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-useEffect(() => {
-  const init = async () => {
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("🔁 Sesión al iniciar:", session);
+// src/lib/supabase/getCurrentUser.ts
+import { supabase } from './client';
+import { User } from '../../types';
 
-      if (session?.user) {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-        } else {
-          console.warn("⚠️ Usuario no encontrado en tabla 'users'. Forzando logout.");
-          await supabase.auth.signOut();
-          localStorage.clear();
-          setUser(null);
-          toast.error("Tu sesión está desincronizada. Iniciá sesión de nuevo.");
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    console.log('🔍 getCurrentUser: Iniciando...');
+
+    const authResult = await supabase.auth.getUser();
+    const { data: { user: authUser }, error: authError } = authResult;
+
+    if (authError || !authUser) {
+      console.warn('⚠️ No se encontró usuario autenticado o hubo error:', authError);
+      return null;
+    }
+
+    console.log('✅ Usuario autenticado encontrado:', authUser.id, authAuth?.email);
+
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        console.log('👤 Usuario no existe en public.users, creando nuevo...');
+
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: authUser.id,
+            user_id: authUser.id,
+            email: authUser.email,
+            role: 'employee',
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
+          throw insertError;
         }
-      } else {
-        console.log("📭 No hay sesión activa.");
-        setUser(null);
+
+        console.log('✅ Nuevo usuario creado:', newUser);
+        return newUser;
       }
-    } catch (err) {
-      console.error("Error en init AuthContext:", err);
-      await supabase.auth.signOut();
-      localStorage.clear();
-      setUser(null);
-    } finally {
-      setLoading(false);
+
+      console.error('❌ Error inesperado al buscar usuario:', fetchError);
+      throw fetchError;
     }
-  };
 
-  init();
+    console.log('✅ Usuario encontrado en public.users:', existingUser);
+    return existingUser;
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log("🌀 Cambio de estado auth:", event);
-    if (session?.user) {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    } else {
-      setUser(null);
-    }
-  });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
-
+  } catch (error) {
+    console.error('🔥 Error fatal en getCurrentUser:', error);
+    return null;
+  }
+}
 
   async function login(data: LoginFormData) {
     try {
