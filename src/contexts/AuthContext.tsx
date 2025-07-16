@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signOut();
       setUser(null);
-      localStorage.clear();
+      localStorage.clear(); // Ensure localStorage is cleared on explicit logout
       toast.success('Sesión cerrada correctamente');
       navigate('/');
     } catch (error) {
@@ -42,12 +42,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkUser = async () => {
       try {
         console.log('Checking current user...');
-        const user = await getCurrentUser();
-        console.log('Current user:', user);
-        setUser(user);
+        const currentUser = await getCurrentUser(); // This calls the wrapped getCurrentUser
+        console.log('Current user:', currentUser);
+        setUser(currentUser);
+
+        // --- NUEVA LÓGICA DE VALIDACIÓN DE SESIÓN ---
+        // Si getCurrentUser devuelve null (indicando que no hay un usuario válido en nuestra tabla 'users')
+        // pero Supabase Auth todavía tiene una sesión activa (lo que podría indicar una sesión corrupta o desincronizada)
+        // entonces forzamos un logout completo.
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!currentUser && session) {
+          console.warn('Corrupt or desynchronized session detected. Forcing logout and clearing localStorage.');
+          await supabase.auth.signOut();
+          localStorage.clear();
+          setUser(null);
+          toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+        }
+        // --- FIN NUEVA LÓGICA ---
+
       } catch (error) {
         console.error('Error checking current user:', error);
-        await supabase.auth.signOut();
+        // The handleSupabaseError in src/lib/supabase.ts should already handle clearing localStorage
+        // for auth-related errors. This catch block is for other unexpected errors.
+        await supabase.auth.signOut(); // Ensure logout on any error during checkUser
         localStorage.clear();
         setUser(null);
         toast.error('Tu sesión expiró o es inválida. Por favor, inicia sesión nuevamente.');
@@ -61,8 +78,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           console.log('Auth state changed:', event, session?.user?.id);
           if (session?.user) {
-            const user = await getCurrentUser();
-            setUser(user);
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+            // También aplicar la validación de sesión aquí para cambios de estado
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (!currentUser && currentSession) {
+              console.warn('Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
+              await supabase.auth.signOut();
+              localStorage.clear();
+              setUser(null);
+              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+            }
           } else {
             setUser(null);
           }
