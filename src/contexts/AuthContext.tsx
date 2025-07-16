@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
 
-
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -24,42 +23,98 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // This function will be called once on mount and by the auth state change listener
-    const fetchAndSetUser = async () => {
-      setLoading(true); // Set loading to true when fetching user
+    let authSubscription: any;
+
+    const initializeAuth = async () => {
+      console.log('AuthContext: --- START initializeAuth ---');
+      setLoading(true); // Asegura que loading sea true al inicio
       try {
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
+        // Espera a que la sesión inicial sea cargada por Supabase.
+        // Esto es crucial para asegurar que localStorage sea leído antes de continuar.
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('AuthContext: Error al obtener la sesión inicial:', sessionError);
+          localStorage.clear(); // Limpia por si hay una sesión corrupta
+          setUser(null);
+          toast.error('Error al cargar la sesión inicial. Por favor, inicia sesión nuevamente.');
+          return;
+        }
+
+        if (session) {
+          console.log('AuthContext: Sesión inicial encontrada, obteniendo datos de usuario...');
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (userError) {
+            console.error('AuthContext: Error al obtener usuario de la BD después de la sesión inicial:', userError);
+            await supabase.auth.signOut(); // Desloguea si hay desincronización
+            localStorage.clear();
+            setUser(null);
+            toast.error('Error de sincronización de usuario. Por favor, inicia sesión nuevamente.');
+          } else {
+            setUser(userData);
+            console.log('AuthContext: Usuario establecido desde la sesión inicial:', userData);
+          }
+        } else {
+          console.log('AuthContext: No se encontró sesión inicial.');
+          setUser(null);
+        }
       } catch (error) {
-        console.error('AuthContext: Error fetching user:', error);
-        setUser(null); // Ensure user is null on error
-        toast.error('Error al cargar la información del usuario.');
+        console.error('AuthContext: Error inesperado durante la configuración inicial de autenticación:', error);
+        await supabase.auth.signOut();
+        localStorage.clear();
+        setUser(null);
+        toast.error('Ocurrió un error inesperado al inicializar la autenticación. Por favor, inicia sesión nuevamente.');
       } finally {
-        setLoading(false); // Set loading to false after fetch attempt
+        setLoading(false); // Establece loading a false una vez que la inicialización ha terminado
+        console.log('AuthContext: --- END initializeAuth. Loading:', false);
       }
     };
 
-    // Initial fetch
-    fetchAndSetUser();
+    // Llama a initializeAuth directamente al montar el componente
+    initializeAuth();
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Configura el listener de cambio de estado de autenticación para cambios posteriores
+    authSubscription = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthContext: Auth state changed:', event);
-        // For SIGNED_IN and INITIAL_SESSION, refetch user data
-        // For SIGNED_OUT, user will be null, so set it directly
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          await fetchAndSetUser(); // Re-fetch user on sign-in or initial session
+        console.log('AuthContext: Cambio de estado de autenticación (listener de eventos):', event);
+        // Solo actualiza el estado del usuario basándose en los eventos, no vuelvas a ejecutar la inicialización completa
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session) {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .single();
+            if (userError) {
+              console.error('AuthContext: Error al obtener usuario de la BD durante el cambio de estado:', userError);
+              await supabase.auth.signOut();
+              localStorage.clear();
+              setUser(null);
+              toast.error('Error de sincronización de usuario. Por favor, inicia sesión nuevamente.');
+            } else {
+              setUser(userData);
+              console.log('AuthContext: Usuario establecido desde el cambio de estado de autenticación:', userData);
+            }
+          } else {
+            setUser(null);
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
-          setLoading(false); // Ensure loading is false after sign out
+          setLoading(false); // Asegura que loading sea false después de cerrar sesión
+          console.log('AuthContext: Usuario cerró sesión. Loading:', false);
         }
-        // For other events (e.g., USER_UPDATED, PASSWORD_RECOVERY), fetchAndSetUser can be called if needed
       }
-    );
+    ).data.subscription; // Obtiene la suscripción para poder desuscribirse al desmontar
 
     return () => {
-      subscription.unsubscribe();
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
     };
   }, []); // Empty dependency array means this runs once on mount
 
