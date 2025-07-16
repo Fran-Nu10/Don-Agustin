@@ -92,6 +92,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
     if (authUserError) {
       console.error('getCurrentUser: Error fetching user from auth:', authUserError);
+      // Return null for auth errors instead of throwing
       return null;
     }
     if (!user) {

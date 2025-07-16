@@ -15,6 +15,13 @@ import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
+// Helper function to safely create valid dates
+function createValidDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return !isNaN(date.getTime()) ? date : null;
+}
+
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [trip, setTrip] = useState<Trip | null>(null);
@@ -177,13 +184,16 @@ export function TripDetailPage() {
     );
   }
 
-  const formattedDepartureDate = format(new Date(trip.departure_date), 'dd MMMM yyyy', { locale: es });
-  const formattedReturnDate = format(new Date(trip.return_date), 'dd MMMM yyyy', { locale: es });
+  const departureDate = createValidDate(trip.departure_date);
+  const returnDate = createValidDate(trip.return_date);
+  
+  const formattedDepartureDate = departureDate ? format(departureDate, 'dd MMMM yyyy', { locale: es }) : 'Fecha no disponible';
+  const formattedReturnDate = returnDate ? format(returnDate, 'dd MMMM yyyy', { locale: es }) : 'Fecha no disponible';
   
   // Calculate trip duration
-  const departureDate = new Date(trip.departure_date);
-  const returnDate = new Date(trip.return_date);
-  const tripDuration = Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24));
+  const tripDuration = (departureDate && returnDate) 
+    ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
   
   // Convert price from UYU to USD
   const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD

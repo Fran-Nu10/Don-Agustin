@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
 
+// Helper function to safely create valid dates
+function createValidDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return !isNaN(date.getTime()) ? date : null;
+}
+
 interface DreamTripsSectionProps {
   trips: Trip[];
 }
@@ -185,7 +192,12 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
                         <p className="text-white/90 text-sm md:text-base font-medium">
                           {trip.title.includes('Vacaciones') 
                             ? trip.title 
-                            : `Vacaciones de ${new Date(trip.departure_date).toLocaleString('es-ES', { month: 'long' })}`
+                            : (() => {
+                                const departureDate = createValidDate(trip.departure_date);
+                                return departureDate 
+                                  ? `Vacaciones de ${departureDate.toLocaleString('es-ES', { month: 'long' })}`
+                                  : 'Vacaciones';
+                              })()
                           }
                         </p>
                       )}
