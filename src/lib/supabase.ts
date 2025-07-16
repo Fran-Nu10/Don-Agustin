@@ -27,7 +27,6 @@ async function handleSupabaseError<T>(operation: () => Promise<T>, operationName
       console.warn(`🔑 Error de autenticación detectado durante ${operationName}. Limpiando sesión.`);
       // Realizar cierre de sesión y limpiar el almacenamiento local para asegurar un estado limpio
       await supabase.auth.signOut();
-      localStorage.clear();
       
       // Lanzar un mensaje de error específico para la interfaz de usuario
       throw new Error(`🔑 Sesión inválida o expirada. Por favor, inicia sesión nuevamente.`);
@@ -98,7 +97,6 @@ export async function getCurrentUser(): Promise<User | null> {
       console.error('⚠️ Error al obtener la sesión de Supabase:', sessionError);
       // If there's a session error, it's likely a problem, so clear and return null.
       await supabase.auth.signOut(); // Ensure any corrupted session is cleared
-      localStorage.clear();
       return null;
     }
 
@@ -149,7 +147,6 @@ export async function getCurrentUser(): Promise<User | null> {
     console.error('🔥 Error fatal en getCurrentUser:', error);
     // If any other error occurs, ensure session is cleared to prevent stale state
     await supabase.auth.signOut();
-    localStorage.clear();
     return null;
   }
 }
