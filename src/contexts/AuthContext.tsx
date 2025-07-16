@@ -24,68 +24,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      console.log('AuthContext: --- START initializeAuth ---');
-      setLoading(true); // Asegura que loading sea true al inicio del efecto
+    // This function will be called once on mount and by the auth state change listener
+    const fetchAndSetUser = async () => {
+      setLoading(true); // Set loading to true when fetching user
       try {
-        console.log('AuthContext: Checking initial user...');
         const currentUser = await getCurrentUser();
-        console.log('AuthContext: Initial user:', currentUser);
         setUser(currentUser);
-
-        // Verificación adicional para sesión desincronizada en la carga inicial
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!currentUser && session) {
-          console.warn('AuthContext: Corrupt or desynchronized session detected on initial load. Forcing logout and clearing localStorage.');
-          await supabase.auth.signOut();
-          localStorage.clear();
-          setUser(null);
-          toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
-        }
       } catch (error) {
-        console.error('AuthContext: Error during initial auth check:', error);
-        await supabase.auth.signOut();
-        localStorage.clear();
-        setUser(null);
-        toast.error('Error al cargar la sesión. Por favor, inicia sesión nuevamente.');
+        console.error('AuthContext: Error fetching user:', error);
+        setUser(null); // Ensure user is null on error
+        toast.error('Error al cargar la información del usuario.');
       } finally {
-        setLoading(false); // Establece loading a false después de la verificación inicial
-        console.log('AuthContext: --- END initializeAuth ---');
+        setLoading(false); // Set loading to false after fetch attempt
       }
     };
 
-    // Ejecuta la verificación inicial
-    initializeAuth();
+    // Initial fetch
+    fetchAndSetUser();
 
-    // Configura el listener de cambio de estado de autenticación
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthContext: Auth state changed:', event, session?.user?.id);
-        // Solo actualiza el estado del usuario, no manipules 'loading' aquí a menos que sea una reinicialización completa
+        console.log('AuthContext: Auth state changed:', event);
+        // For SIGNED_IN and INITIAL_SESSION, refetch user data
+        // For SIGNED_OUT, user will be null, so set it directly
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          const currentUser = await getCurrentUser();
-          setUser(currentUser);
-          // Vuelve a verificar la desincronización después de iniciar sesión/sesión inicial
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (!currentUser && currentSession) {
-            console.warn('AuthContext: Corrupt or desynchronized session detected during auth state change. Forcing logout and clearing localStorage.');
-            await supabase.auth.signOut();
-            localStorage.clear();
-            setUser(null);
-            toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
-          }
+          await fetchAndSetUser(); // Re-fetch user on sign-in or initial session
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
-          // No es necesario establecer 'loading' aquí, ya que la función logout lo maneja
+          setLoading(false); // Ensure loading is false after sign out
         }
-        // Para otros eventos como 'USER_UPDATED', 'PASSWORD_RECOVERY', etc., se podría llamar a getCurrentUser si es necesario
+        // For other events (e.g., USER_UPDATED, PASSWORD_RECOVERY), fetchAndSetUser can be called if needed
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []); // El array de dependencias vacío significa que esto se ejecuta una vez al montar
+  }, []); // Empty dependency array means this runs once on mount
 
   async function logout() {
     try {
@@ -142,4 +118,3 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
