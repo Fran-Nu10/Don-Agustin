@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function isEmployee() {
-    return user?.role === 'employee' || isOwner();
+    return user?.role === 'employee' 
   }
 
   useEffect(() => {
