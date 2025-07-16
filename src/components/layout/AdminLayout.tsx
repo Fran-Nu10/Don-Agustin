@@ -135,7 +135,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <Button
             onClick={() => logout()}
             variant="ghost"
-            className={`${sidebarCollapsed ? 'justify-center' : 'justify-start w-full'} text-secondary-300 hover:text-white hover:bg-secondary-700`}
+            className={`${sidebarCollapsed ? 'justify-center' : 'justify-start w-full'} text-white hover:text-white hover:bg-secondary-700`}
           >
             <LogOut className="h-5 w-5 mr-2" />
             {!sidebarCollapsed && <span>Cerrar Sesión</span>}
@@ -236,7 +236,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center w-full px-4 py-3 text-white hover:bg-secondary-700 rounded-lg transition-colors"
+                className="flex items-center w-full px-4 py-3 text-white bg-primary-700 hover:bg-primary-800 rounded-lg transition-colors"
               >
                 <LogOut className="h-5 w-5 mr-3" />
                 Cerrar Sesión
