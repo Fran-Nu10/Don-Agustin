@@ -69,9 +69,6 @@ export async function signIn(email: string, password: string) {
 
     console.log('signIn: User found in database with role:', userData.role);
     return { user: userData };
-  } catch (error) {
-    console.error('signIn: Error during sign in process:', error);
-    throw error;
   }, 'Sign in');
 }
 
