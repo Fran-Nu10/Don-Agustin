@@ -145,6 +145,23 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 }
 
+// Trip functions
+export async function getTrips(): Promise<Trip[]> {
+  return handleSupabaseError(async () => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select(`
+        *,
+        itinerary:itinerary_days(*),
+        included_services(*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }, 'Get trips');
+}
+
 export async function getTrip(id: string): Promise<Trip | null> {
   return handleSupabaseError(async () => {
     const { data, error } = await supabase
