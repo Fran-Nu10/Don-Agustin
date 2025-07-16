@@ -7,7 +7,7 @@ import { Stats } from '../../types';
 import { toast } from 'react-hot-toast';
 
 export function DashboardPage() {
-  const { isOwner } = useAuth();
+  const { user, isOwner } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
