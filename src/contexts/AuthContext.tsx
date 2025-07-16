@@ -21,6 +21,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  useEffect(() => {
+  async function loadUser() {
+    setLoading(true);
+    const currentUser = await getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
+  }
+
+  loadUser();
+}, []);
+
 
   async function logout() {
     try {
