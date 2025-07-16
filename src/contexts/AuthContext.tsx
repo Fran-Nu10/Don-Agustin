@@ -53,8 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const { user, loading, isEmployee } = useAuth();
+
+if (loading) return <LoadingSpinner />;
+if (!user) return <Navigate to="/login" />;
+
+
   function isOwner() {
-    return user?.role === 'owner'
+    return user?.role === 'owner' || user?.role === 'admin';
   }
 
   function isEmployee() {
