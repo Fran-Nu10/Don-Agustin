@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       setLoading(true);
 
-      // 1. Espera que Supabase rehidrate la sesión desde localStorage
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -39,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (session?.user) {
-        // 2. Obtenemos al usuario desde la tabla users
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -63,10 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     };
 
-    // 3. Llamada inicial
     initializeAuth();
 
-    // 4. Listener para cambios futuros (login/logout/refresh)
     authSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("📡 Evento de cambio de auth:", event);
 
@@ -97,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // 5. Listener para sincronizar entre pestañas
+    // Listener entre pestañas
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'supabase.auth.token') {
         console.log("🔄 Cambio detectado en supabase.auth.token desde otra pestaña");
@@ -115,7 +111,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // ...
+  // 👉 Agrega estas funciones + el return que faltaban
+  const value = {
+    user,
+    loading,
+    login: async (data: LoginFormData) => {
+      try {
+        await signIn(data.email, data.password);
+        toast.success('¡Sesión iniciada correctamente!');
+      } catch (error) {
+        console.error('Login error:', error);
+        toast.error('Credenciales incorrectas. Intenta nuevamente.');
+        throw error;
+      }
+    },
+    logout: async () => {
+      try {
+        setLoading(true);
+        await signOut();
+        setUser(null);
+        localStorage.clear();
+        toast.success('Sesión cerrada correctamente');
+        navigate('/');
+      } catch (error) {
+        console.error('Logout error:', error);
+        toast.error('Error al cerrar sesión');
+      } finally {
+        setLoading(false);
+      }
+    },
+    isOwner: () => user?.role === 'owner',
+    isEmployee: () => user?.role === 'employee',
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 
