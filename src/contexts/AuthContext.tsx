@@ -151,27 +151,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-
   async function login(data: LoginFormData) {
     try {
-      await signIn(data.email, data.password);
-      toast.success("Sesión iniciada correctamente");
-    } catch (error) {
-      toast.error("Credenciales incorrectas");
-      throw error;
-    }
-  }
-
-  async function logout() {
-    try {
       setLoading(true);
-      await signOut();
-      setUser(null);
-      toast.success("Sesión cerrada");
-      navigate('/');
+      await signIn(data.email, data.password);
+      toast.success('¡Sesión iniciada correctamente!');
+      navigate('/admin/dashboard');
     } catch (error) {
-      toast.error("Error al cerrar sesión");
-      console.error(error);
+      console.error('Login error:', error);
+      toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -185,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user?.role === 'employee';
   }
 
-  const value: AuthContextType = {
+  const value = {
     user,
     loading,
     login,
@@ -199,6 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 }
