@@ -55,8 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-if (loading) return <LoadingSpinner />;
-if (!user) return <Navigate to="/login" />;
+
 
 
   function isOwner() {
