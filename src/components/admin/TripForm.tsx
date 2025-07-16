@@ -164,7 +164,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       // Upload to Supabase Storage
       const fileName = `trip-images/${Date.now()}-${file.name}`;
       const { data, error } = await supabase.storage
-        .from('blog-images')
+        .from('blog-images') // Mantener 'blog-images' para compatibilidad
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: true
@@ -182,25 +182,14 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       // Set the image URL in the form
       setValue('image_url', publicUrlData.publicUrl);
       toast.success('Imagen subida correctamente');
-      
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       
-      // Fallback to a placeholder image if upload fails
-      const demoImageUrls = [
-        'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg',
-        'https://images.pexels.com/photos/699466/pexels-photo-699466.jpeg',
-        'https://images.pexels.com/photos/753339/pexels-photo-753339.jpeg',
-        'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg',
-        'https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg',
-        'https://images.pexels.com/photos/1835718/pexels-photo-1835718.jpeg',
-        'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg',
-        'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg',
-      ];
-      
-      const randomUrl = demoImageUrls[Math.floor(Math.random() * demoImageUrls.length)];
-      setValue('image_url', randomUrl);
+      // No establecer una imagen de fallback automáticamente
+      // Permitir al usuario intentar de nuevo o elegir otra imagen
+      setIsUploadingImage(false);
+      return; // Salir de la función sin establecer la URL de la imagen
     } finally {
       setIsUploadingImage(false);
     }
@@ -380,7 +369,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             <input
               type="number"
               min="0"
-              step="10"
+              step="1"
               className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               defaultValue={getUSDPrice(initialData?.price)}
               {...register('price', { 
@@ -529,7 +518,10 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             <Button
               type="button"
               variant="outline"
-              onClick={() => document.getElementById('image-upload')?.click()}
+             onClick={() => {
+               setIsUploadingImage(false); // Resetear el estado de carga si hubo un error previo
+               document.getElementById('image-upload')?.click();
+             }}
               disabled={isUploadingImage}
             >
               <Upload className="h-4 w-4 mr-2" />
