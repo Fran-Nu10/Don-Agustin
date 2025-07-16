@@ -49,13 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userError) {
           console.warn("Usuario no sincronizado con tabla users. Cerrando sesión...");
           await supabase.auth.signOut();
+          localStorage.clear();
           setUser(null);
         } else {
           setUser(userData);
-          console.log("Usuario cargado desde sesión persistida:", userData);
+          console.log("✅ Usuario cargado desde sesión persistida:", userData);
         }
       } else {
-        console.log("No hay sesión activa.");
+        console.log("ℹ️ No hay sesión activa.");
         setUser(null);
       }
 
@@ -65,9 +66,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 3. Llamada inicial
     initializeAuth();
 
-    // 4. Listener para cambios futuros
+    // 4. Listener para cambios futuros (login/logout/refresh)
     authSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Evento de cambio de auth:", event);
+      console.log("📡 Evento de cambio de auth:", event);
+
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
           const { data: userData, error: userError } = await supabase
@@ -77,28 +79,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .single();
 
           if (userError) {
-            console.warn("Error al sincronizar usuario tras cambio de estado");
+            console.warn("⚠️ Error al sincronizar usuario tras cambio de estado");
             await supabase.auth.signOut();
+            localStorage.clear();
             setUser(null);
           } else {
             setUser(userData);
-            console.log("Usuario sincronizado después del evento de sesión:", userData);
+            console.log("✅ Usuario sincronizado desde evento de sesión:", userData);
           }
         }
       }
 
       if (event === 'SIGNED_OUT') {
         setUser(null);
+        localStorage.clear();
         setLoading(false);
       }
     });
+
+    // 5. Listener para sincronizar entre pestañas
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'supabase.auth.token') {
+        console.log("🔄 Cambio detectado en supabase.auth.token desde otra pestaña");
+        initializeAuth(); // Rehidrata el contexto
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       if (authSubscription?.data?.subscription) {
         authSubscription.data.subscription.unsubscribe();
       }
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  // ...
+}
+
 
   async function login(data: LoginFormData) {
     try {
