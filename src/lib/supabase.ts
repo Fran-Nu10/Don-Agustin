@@ -86,7 +86,10 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
     console.log('getCurrentUser: Fetching user from auth...');
-    const { data: { user }, error: authUserError } = await supabase.auth.getUser();
+    const authResult = await supabase.auth.getUser(); // <--- Aquí se realiza la llamada
+    console.log('getCurrentUser: Raw auth.getUser() result:', authResult); // <--- NUEVO LOG
+    const { data: { user }, error: authUserError } = authResult;
+
     if (authUserError) {
       console.error('getCurrentUser: Error fetching user from auth:', authUserError);
       return null;

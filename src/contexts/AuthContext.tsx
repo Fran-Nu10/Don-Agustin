@@ -40,10 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkUser = async () => {
+      console.log('AuthContext: --- START checkUser ---'); // <--- NUEVO LOG
       try {
         console.log('AuthContext: Checking current user...');
         const currentUser = await getCurrentUser(); // This calls the wrapped getCurrentUser
-        console.log('AuthContext: Current user after getCurrentUser():', currentUser);
+        console.log('AuthContext: Current user after initial getCurrentUser():', currentUser);
         setUser(currentUser);
 
         // --- NUEVA LÓGICA DE VALIDACIÓN DE SESIÓN ---
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
           toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
         }
+        console.log('AuthContext: --- END checkUser try block ---'); // <--- NUEVO LOG
         // --- FIN NUEVA LÓGICA ---
 
       } catch (error) {
