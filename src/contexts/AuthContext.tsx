@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const { user, loading, isEmployee } = useAuth();
+
 
 if (loading) return <LoadingSpinner />;
 if (!user) return <Navigate to="/login" />;
