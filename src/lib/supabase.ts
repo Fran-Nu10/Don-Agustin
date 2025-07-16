@@ -83,96 +83,66 @@ export async function signOut() {
   }, 'Sign out');
 }
 
+// src/lib/supabase/getCurrentUser.ts
+import { supabase } from './client';
+import { User } from '../../types';
+
 export async function getCurrentUser(): Promise<User | null> {
-  return handleSupabaseError(async () => {
-    console.log('getCurrentUser: Fetching user from auth...');
+  try {
+    console.log('🔍 getCurrentUser: Iniciando...');
+
     const authResult = await supabase.auth.getUser();
-    console.log('getCurrentUser: Raw auth.getUser() result:', authResult);
+    const { data: { user: authUser }, error: authError } = authResult;
 
-    const { data: { user }, error: authUserError } = authResult;
-
-    if (authUserError) {
-      console.error('getCurrentUser: Error fetching user from auth:', authUserError);
+    if (authError || !authUser) {
+      console.warn('⚠️ No se encontró usuario autenticado o hubo error:', authError);
       return null;
     }
 
-    if (!user) {
-      console.log('getCurrentUser: No user found in auth.');
-      return null;
-    }
+    console.log('✅ Usuario autenticado encontrado:', authUser.id, authAuth?.email);
 
-    console.log('getCurrentUser: User found in auth:', user.id, user.email);
-
-    // Buscar al usuario en la tabla 'users'
-    const { data, error } = await supabase
+    const { data: existingUser, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+      .eq('user_id', authUser.id)
+      .single();
 
-    if (error) {
-      console.warn('getCurrentUser: Error fetching from public.users:', error);
-      throw error;
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        console.log('👤 Usuario no existe en public.users, creando nuevo...');
+
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: authUser.id,
+            user_id: authUser.id,
+            email: authUser.email,
+            role: 'employee',
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
+          throw insertError;
+        }
+
+        console.log('✅ Nuevo usuario creado:', newUser);
+        return newUser;
+      }
+
+      console.error('❌ Error inesperado al buscar usuario:', fetchError);
+      throw fetchError;
     }
 
-    if (!data) {
-      // Verificar si hay otro usuario con el mismo email (para evitar duplicados)
-      const { data: emailCheck, error: emailCheckError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', user.email);
+    console.log('✅ Usuario encontrado en public.users:', existingUser);
+    return existingUser;
 
-      if (emailCheckError) {
-        console.warn('getCurrentUser: Email check failed:', emailCheckError);
-      }
-
-      if (emailCheck && emailCheck.length > 0) {
-        console.warn('getCurrentUser: Email already exists in another user. Returning null.');
-        return null;
-      }
-
-      // Insertar nuevo usuario si no hay conflictos
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .insert([{
-          id: user.id,
-          user_id: user.id, // Si tenés esta columna en la tabla
-          email: user.email,
-          role: 'employee',
-          created_at: new Date().toISOString()
-        }])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('getCurrentUser: Error creating user:', insertError);
-        throw insertError;
-      }
-
-      console.log('getCurrentUser: New user created:', newUser);
-      return newUser;
-    }
-
-    console.log('getCurrentUser: User found in users table:', data);
-    return data;
-  }, 'Get current user');
-}
-
-// Trip functions
-export async function getTrips(): Promise<Trip[]> {
-  return handleSupabaseError(async () => {
-    const { data, error } = await supabase
-      .from('trips')
-      .select(`
-        *,
-        itinerary:itinerary_days(*),
-        included_services(*)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  }, 'Get trips');
+  } catch (error) {
+    console.error('🔥 Error fatal en getCurrentUser:', error);
+    return null;
+  }
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {
