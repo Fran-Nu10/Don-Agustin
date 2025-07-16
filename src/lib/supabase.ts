@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService } from '../types';
 import { supabase } from './supabase/client';
 
+
 // Enhanced error handling wrapper
 async function handleSupabaseError<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
   try {
@@ -83,9 +84,7 @@ export async function signOut() {
   }, 'Sign out');
 }
 
-// src/lib/supabase/getCurrentUser.ts
-import { supabase } from './client';
-import { User } from '../../types';
+
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
