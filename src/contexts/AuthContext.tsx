@@ -22,6 +22,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  async function login(data: LoginFormData) {
+    try {
+      setLoading(true);
+      const currentUser = await signIn(data);
+      setUser(currentUser);
+      toast.success('¡Sesión iniciada correctamente!');
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function logout() {
     try {
       setLoading(true);
@@ -34,20 +49,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
       toast.error('Error al cerrar sesión');
     } finally {
-      toast.success('¡Sesión iniciada correctamente!');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
-      throw error;
-    } finally {
+      setLoading(false);
     }
   }
+
+  function isOwner() {
     return user?.role === 'owner';
   }
 
   function isEmployee() {
+    return user?.role === 'employee';
+  }
+
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error checking user:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const subscription = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
           console.log('Auth state changed:', event);
           if (session?.user) {
+            const currentUser = await getCurrentUser();
             setUser(currentUser);
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentUser && currentSession) {
@@ -56,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.clear();
               setUser(null);
               toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+            }
           } else {
             setUser(null);
           }
