@@ -40,20 +40,13 @@ async function handleSupabaseError<T>(operation: () => Promise<T>, operationName
 // Authentication functions
 export async function signIn(email: string, password: string) {
   return handleSupabaseError(async () => {
-    console.log('signIn: Attempting to sign in with email:', email);
-    
     // First authenticate with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     
-    if (authError) {
-      console.error('signIn: Authentication error:', authError);
-      throw authError;
-    }
-    
-    console.log('signIn: Authentication successful, user ID:', authData.user.id);
+    if (authError) throw authError;
 
     // Then get the user data from our users table
     const { data: userData, error: userError } = await supabase
@@ -63,11 +56,23 @@ export async function signIn(email: string, password: string) {
       .single();
 
     if (userError) {
-      console.error('signIn: User not found in users table:', userError);
-      throw new Error('Usuario autenticado pero no encontrado en la base de datos. Contacte al administrador.');
+      // If user doesn't exist in the users table, create them
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert([{
+          id: authData.user.id,
+          user_id: authData.user.id,
+          email: authData.user.email,
+          role: 'employee', // Default role
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      return { user: newUser };
     }
 
-    console.log('signIn: User found in database with role:', userData.role);
     return { user: userData };
   }, 'Sign in');
 }
@@ -84,13 +89,6 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   try {
     console.log('🔍 getCurrentUser: Iniciando...');
-    
-    // Clear any stale data from localStorage that might be causing issues
-    // This is a defensive measure against corrupted local storage
-    if (localStorage.getItem('supabase.auth.token') && localStorage.getItem('supabase.auth.token') === 'undefined') {
-      console.warn('🧹 Cleaning up corrupted localStorage token');
-      localStorage.removeItem('supabase.auth.token');
-    }
 
     // First, try to get the session. This is more robust for rehydrating.
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -107,8 +105,6 @@ export async function getCurrentUser(): Promise<User | null> {
       return null; // No active session, so no user.
     }
 
-    console.log('✅ Sesión activa encontrada');
-    
     // If session exists, then get the user from our users table
     const authUser = session.user;
     console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
@@ -116,25 +112,41 @@ export async function getCurrentUser(): Promise<User | null> {
     const { data: existingUser, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('user_id', authUser.id) 
+      .eq('user_id', authUser.id)
       .single();
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        console.warn('👤 Usuario no existe en public.users. No se creará automáticamente.');
-        console.warn('👤 El administrador debe crear manualmente el usuario en la tabla users con el rol correcto.');
-        return null;
+        console.log('👤 Usuario no existe en public.users, creando nuevo...');
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: authUser.id,
+            user_id: authUser.id,
+            email: authUser.email,
+            role: 'employee',
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
+          throw insertError; // Re-throw to be caught by handleSupabaseError
+        }
+        console.log('✅ Nuevo usuario creado:', newUser);
+        return newUser;
       }
       console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
-      return null;
+      throw fetchError; // Re-throw to be caught by handleSupabaseError
     }
-    
-    console.log('✅ Usuario encontrado en public.users con rol:', existingUser.role);
+    console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
 
   } catch (error) {
     console.error('🔥 Error fatal en getCurrentUser:', error);
     // If any other error occurs, ensure session is cleared to prevent stale state
+    await supabase.auth.signOut();
     return null;
   }
 }

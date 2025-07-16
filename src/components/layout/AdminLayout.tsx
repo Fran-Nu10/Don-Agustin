@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3, ChevronLeft, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,23 +9,8 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { user, logout, loading } = useAuth();
+  const { user, isOwner, isEmployee, logout, loading } = useAuth();
   const location = useLocation();
-  
-  // Estado local para controlar la visibilidad de elementos del menú
-  const [showOwnerItems, setShowOwnerItems] = useState(false);
-  
-  // Verificar el rol directamente
-  useEffect(() => {
-    if (user && user.role === 'owner') {
-      console.log('AdminLayout - User is owner, showing owner items');
-      setShowOwnerItems(true);
-    } else {
-      console.log('AdminLayout - User is not owner, hiding owner items');
-      setShowOwnerItems(false);
-    }
-  }, [user]);
-  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -96,7 +81,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             Paquetes
           </SidebarLink>
           
-          {user && (
+          {(isOwner() || isEmployee()) && (
             <>
               <SidebarLink
                 to="/admin/clientes"
@@ -116,7 +101,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 Cotizaciones
               </SidebarLink>
 
-              {showOwnerItems && (
+              {isOwner() && (
                 <>
                   <SidebarLink
                     to="/admin/reportes"
@@ -195,7 +180,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 Paquetes
               </MobileNavLink>
               
-              {user && (
+              {(isOwner() || isEmployee()) && (
                 <>
                   <MobileNavLink
                     to="/admin/clientes"
@@ -215,7 +200,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     Cotizaciones
                   </MobileNavLink>
                   
-                  {showOwnerItems && (
+                  {isOwner() && (
                     <>
                       <MobileNavLink
                         to="/admin/reportes"

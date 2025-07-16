@@ -7,15 +7,10 @@ import { Stats } from '../../types';
 import { toast } from 'react-hot-toast';
 
 export function DashboardPage() {
-  const { user, isOwner } = useAuth();
+  const { isOwner } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Debug log to check user role
-  useEffect(() => {
-    console.log('DashboardPage - Current user role:', user?.role);
-  }, [user]);
 
   useEffect(() => {
     async function loadStats() {
@@ -35,9 +30,9 @@ export function DashboardPage() {
       }
     }
 
-    // Always load stats regardless of role
-    // This ensures stats are loaded even if role check has issues
-    loadStats();
+    if (isOwner()) {
+      loadStats();
+    }
     
     // Removed the interval that refreshed stats every 30 seconds
     
@@ -54,7 +49,7 @@ export function DashboardPage() {
         </p>
       </div>
       
-      {user ? (
+      {isOwner() ? (
         loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-950 mx-auto mb-4"></div>
@@ -79,8 +74,10 @@ export function DashboardPage() {
           </div>
         )
       ) : (
-        <div className="text-center py-12">
-          <p className="text-secondary-500">Cargando información de usuario...</p>
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <p className="text-secondary-600">
+            Como empleado, tienes acceso limitado al sistema. Puedes gestionar los viajes desde el menú lateral.
+          </p>
         </div>
       )}
     </AdminLayout>
