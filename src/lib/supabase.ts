@@ -83,10 +83,6 @@ export async function signOut() {
   }, 'Sign out');
 }
 
-import { supabase } from './client';
-import { handleSupabaseError } from './handleSupabaseError'; // Asumiendo que usás este wrapper
-import { User } from '../../types'; // Asegurate que esté correctamente tipado
-
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
     console.log('getCurrentUser: Fetching user from auth...');
@@ -161,7 +157,6 @@ export async function getCurrentUser(): Promise<User | null> {
     return data;
   }, 'Get current user');
 }
-
 
 // Trip functions
 export async function getTrips(): Promise<Trip[]> {
