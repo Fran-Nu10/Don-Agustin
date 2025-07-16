@@ -5,11 +5,9 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
-import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
@@ -21,7 +19,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -30,8 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await signOut();
       setUser(null);
-      setSession(null);
-      localStorage.clear();
+      localStorage.clear(); // Ensure localStorage is cleared on explicit logout
       toast.success('Sesión cerrada correctamente');
       navigate('/');
     } catch (error) {
@@ -41,60 +37,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }
+
 useEffect(() => {
-  const waitForSession = async (maxTries = 10) => {
-    for (let i = 0; i < maxTries; i++) {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) return data.session;
-      await new Promise((res) => setTimeout(res, 300)); // esperar 300ms
-    }
-    return null;
-  };
-
-  const checkUser = async () => {
+  const init = async () => {
+    setLoading(true);
     try {
-      const session = await waitForSession();
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("🔁 Sesión al iniciar:", session);
 
-      if (!session) {
-        console.warn('No hay sesión activa después de reintentos');
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        console.warn('Sesión válida pero sin usuario en tabla users');
-        await supabase.auth.signOut();
-        localStorage.clear();
-        setUser(null);
-        toast.error('Tu sesión no es válida. Iniciá sesión nuevamente.');
+      if (session?.user) {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+        } else {
+          console.warn("⚠️ Usuario no encontrado en tabla 'users'. Forzando logout.");
+          await supabase.auth.signOut();
+          localStorage.clear();
+          setUser(null);
+          toast.error("Tu sesión está desincronizada. Iniciá sesión de nuevo.");
+        }
       } else {
-        setUser(currentUser);
+        console.log("📭 No hay sesión activa.");
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Error en checkUser:', error);
+    } catch (err) {
+      console.error("Error en init AuthContext:", err);
       await supabase.auth.signOut();
       localStorage.clear();
       setUser(null);
-      toast.error('Error de sesión. Iniciá sesión de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      if (session?.user) {
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
-      } else {
-        setUser(null);
-      }
-    }
-  );
+  init();
 
-  checkUser();
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log("🌀 Cambio de estado auth:", event);
+    if (session?.user) {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } else {
+      setUser(null);
+    }
+  });
 
   return () => {
     subscription.unsubscribe();
@@ -127,7 +113,6 @@ useEffect(() => {
 
   const value = {
     user,
-    session,
     loading,
     login,
     logout,
