@@ -90,15 +90,14 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     console.log('🔍 getCurrentUser: Iniciando...');
 
-    const authResult = await supabase.auth.getUser();
-    const { data: { user: authUser }, error: authError } = authResult;
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authUser) {
       console.warn('⚠️ No se encontró usuario autenticado o hubo error:', authError);
       return null;
     }
 
-    console.log('✅ Usuario autenticado encontrado:', authUser.id, authAuth?.email);
+    console.log('✅ Usuario autenticado encontrado:', authUser.id, authUser.email);
 
     const { data: existingUser, error: fetchError } = await supabase
       .from('users')
