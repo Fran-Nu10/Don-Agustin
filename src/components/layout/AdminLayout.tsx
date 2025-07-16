@@ -2,7 +2,6 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Map, Users, LogOut, ChevronRight, FileText, UserCheck, Calculator, BarChart3, ChevronLeft, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '../ui/Button';
 
 interface AdminLayoutProps {
