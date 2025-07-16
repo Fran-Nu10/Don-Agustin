@@ -14,9 +14,23 @@ async function handleSupabaseError<T>(operation: () => Promise<T>, operationName
       throw new Error(`🌐 Connection failed. Please check your internet connection and Supabase configuration. Original error: ${error.message}`);
     }
     
-    if (error.message?.includes('Invalid API key') || error.message?.includes('unauthorized')) {
-      throw new Error(`🔑 Authentication failed. Please check your Supabase credentials in the .env file.`);
+    // --- NUEVA LÓGICA PARA ERRORES DE AUTENTICACIÓN ---
+    // Si el error indica un fallo de autenticación (ej. JWT expirado, token inválido, no autorizado),
+    // debemos limpiar la sesión para forzar un nuevo inicio de sesión.
+    if (error.message?.includes('Invalid API key') || 
+        error.message?.includes('unauthorized') || 
+        error.message?.includes('JWT expired') ||
+        error.message?.includes('invalid JWT')) {
+      
+      console.warn(`🔑 Error de autenticación detectado durante ${operationName}. Limpiando sesión.`);
+      // Realizar cierre de sesión y limpiar el almacenamiento local para asegurar un estado limpio
+      await supabase.auth.signOut();
+      localStorage.clear();
+      
+      // Lanzar un mensaje de error específico para la interfaz de usuario
+      throw new Error(`🔑 Sesión inválida o expirada. Por favor, inicia sesión nuevamente.`);
     }
+    // --- FIN NUEVA LÓGICA ---
     
     throw error;
   }
