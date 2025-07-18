@@ -6,7 +6,7 @@ import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
 import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye, Tag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
+import { uploadPDF, deletePDF, sanitizeFilename } from '../../lib/supabase/storage';
 import { supabase } from '../../lib/supabase/client';
 
 interface TripFormProps {
@@ -162,7 +162,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImageFile(file);
 
       // Upload to Supabase Storage
-      const fileName = `trip-images/${Date.now()}-${file.name}`;
+      const sanitizedName = sanitizeFilename(file.name);
+      const fileName = `trip-images/${Date.now()}-${sanitizedName}`;
       const { data, error } = await supabase.storage
         .from('blog-images') // Mantener 'blog-images' para compatibilidad
         .upload(fileName, file, {

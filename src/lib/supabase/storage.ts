@@ -1,5 +1,22 @@
 import { supabase } from './client';
 import { toast } from 'react-hot-toast';
+// Utility function to sanitize filenames for Supabase Storage
+export function sanitizeFilename(filename: string): string {
+  return filename
+    // Remove emojis and special Unicode characters
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    // Replace spaces with hyphens
+    .replace(/\s+/g, '-')
+    // Remove any remaining special characters except dots, hyphens, and underscores
+    .replace(/[^a-zA-Z0-9.\-_]/g, '')
+    // Remove multiple consecutive hyphens
+    .replace(/-+/g, '-')
+    // Remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, '')
+    // Ensure it's not empty
+    || 'image';
+}
+
 
 // Define bucket name for PDFs
 const PDF_BUCKET = 'trip-pdfs';
