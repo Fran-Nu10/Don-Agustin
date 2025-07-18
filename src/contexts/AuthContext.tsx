@@ -42,8 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     try {
       setLoading(true);
-      // Primero limpiar localStorage y luego hacer signOut
-      localStorage.clear();
       await signOut();
       setUser(null);
       toast.success('Sesión cerrada correctamente');
@@ -105,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!currentUser && currentSession) {
               console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
               await supabase.auth.signOut();
-              localStorage.clear();
               setUser(null);
               toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
             }
@@ -115,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           console.error('Error handling auth state change:', error);
           await supabase.auth.signOut();
-          localStorage.clear();
           setUser(null);
           toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
         } finally {
@@ -126,14 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkUser();
 
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'supabase.auth.token') {
-        console.log("🔄 Cambio detectado en supabase.auth.token desde otra pestaña");
-        checkUser();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
+    // Removed storage event listener since we're using sessionStorage now
+    // Each tab will have its own isolated session
 
     return () => {
       subscription?.unsubscribe();

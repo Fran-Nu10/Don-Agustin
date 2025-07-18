@@ -46,7 +46,7 @@ if (!supabase) {
       autoRefreshToken: false,
       persistSession: false,
       detectSessionInUrl: true,
-      storage: localStorage,
+      storage: sessionStorage,
     },
     global: {
       headers: {

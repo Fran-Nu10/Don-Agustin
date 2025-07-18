@@ -145,7 +145,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
   } catch (error) {
     console.error('🔥 Error fatal en getCurrentUser:', error);
-    // If any other error occurs, ensure session is cleared to prevent stale state
+    // If any other error occurs, ensure session is cleared for this tab only
     await supabase.auth.signOut();
     return null;
   }
