@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Trip, TripFormData, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
@@ -19,6 +19,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   
   // PDF states
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -26,6 +28,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
+  const pdfUploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Convert price from UYU to USD for display
   const getUSDPrice = (uyuPrice?: number) => {
@@ -154,6 +157,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
 
     setIsUploadingImage(true);
+    // Set timeout for upload
+    uploadTimeoutRef.current = setTimeout(() => {
+      setIsUploadingImage(false);
+      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
+      event.target.value = ''; // Clear input to allow re-selection
+    }, 30000); // 30 seconds
     
     try {
       // Create preview URL
@@ -190,9 +199,34 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       // No establecer una imagen de fallback automáticamente
       // Permitir al usuario intentar de nuevo o elegir otra imagen
       setIsUploadingImage(false);
-      return; // Salir de la función sin establecer la URL de la imagen
+      return;
     } finally {
+      if (uploadTimeoutRef.current) {
+        clearTimeout(uploadTimeoutRef.current);
+        uploadTimeoutRef.current = null;
+      }
       setIsUploadingImage(false);
+    }
+  };
+
+  // Remove image
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setValue('image_url', '');
+    
+    // Clear the file input
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    // Explicitly reset upload state if it was stuck
+    if (isUploadingImage) {
+      setIsUploadingImage(false);
+      if (uploadTimeoutRef.current) {
+        clearTimeout(uploadTimeoutRef.current);
+        uploadTimeoutRef.current = null;
+      }
     }
   };
 
@@ -215,6 +249,11 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
     setIsUploadingPdf(true);
     setPdfFile(file);
+    pdfUploadTimeoutRef.current = setTimeout(() => {
+      setIsUploadingPdf(false);
+      toast.error('La carga del PDF tardó demasiado. Por favor, inténtalo de nuevo.');
+      event.target.value = ''; // Clear input to allow re-selection
+    }, 30000); // 30 seconds
     
     try {
       // Generate a temporary ID if we don't have a trip ID yet
@@ -232,20 +271,11 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       console.error('Error uploading PDF:', error);
       toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
     } finally {
+      if (pdfUploadTimeoutRef.current) {
+        clearTimeout(pdfUploadTimeoutRef.current);
+        pdfUploadTimeoutRef.current = null;
+      }
       setIsUploadingPdf(false);
-    }
-  };
-
-  // Remove image
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview('');
-    setValue('image_url', '');
-    
-    // Clear the file input
-    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
     }
   };
 
@@ -275,6 +305,13 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
+    }
+    if (isUploadingPdf) {
+      setIsUploadingPdf(false);
+      if (pdfUploadTimeoutRef.current) {
+        clearTimeout(pdfUploadTimeoutRef.current);
+        pdfUploadTimeoutRef.current = null;
+      }
     }
   };
 
