@@ -196,8 +196,13 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       console.error('Error uploading image:', error);
       toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       
-      // No establecer una imagen de fallback automáticamente
-      // Permitir al usuario intentar de nuevo o elegir otra imagen
+      // Limpiar la previsualización y el archivo si la carga falla
+      setImageFile(null);
+      setImagePreview('');
+      setValue('image_url', '');
+      
+      // Limpiar el input de archivo para permitir reselección
+      event.target.value = '';
       setIsUploadingImage(false);
       return;
     } finally {
@@ -220,13 +225,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     if (fileInput) {
       fileInput.value = '';
     }
-    // Explicitly reset upload state if it was stuck
-    if (isUploadingImage) {
-      setIsUploadingImage(false);
-      if (uploadTimeoutRef.current) {
-        clearTimeout(uploadTimeoutRef.current);
-        uploadTimeoutRef.current = null;
-      }
+    
+    // Siempre reiniciar el estado de carga y limpiar el timeout
+    setIsUploadingImage(false);
+    if (uploadTimeoutRef.current) {
+      clearTimeout(uploadTimeoutRef.current);
+      uploadTimeoutRef.current = null;
     }
   };
 
@@ -270,6 +274,14 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     } catch (error) {
       console.error('Error uploading PDF:', error);
       toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
+      
+      // Limpiar el archivo PDF y sus datos si la carga falla
+      setPdfFile(null);
+      setValue('info_pdf_url', '');
+      setValue('info_pdf_name', '');
+      
+      // Limpiar el input de archivo para permitir reselección
+      event.target.value = '';
     } finally {
       if (pdfUploadTimeoutRef.current) {
         clearTimeout(pdfUploadTimeoutRef.current);
@@ -306,12 +318,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     if (fileInput) {
       fileInput.value = '';
     }
-    if (isUploadingPdf) {
-      setIsUploadingPdf(false);
-      if (pdfUploadTimeoutRef.current) {
-        clearTimeout(pdfUploadTimeoutRef.current);
-        pdfUploadTimeoutRef.current = null;
-      }
+    
+    // Siempre reiniciar el estado de carga y limpiar el timeout
+    setIsUploadingPdf(false);
+    if (pdfUploadTimeoutRef.current) {
+      clearTimeout(pdfUploadTimeoutRef.current);
+      pdfUploadTimeoutRef.current = null;
     }
   };
 
@@ -559,10 +571,15 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             <Button
               type="button"
               variant="outline"
-             onClick={() => {
-               setIsUploadingImage(false); // Resetear el estado de carga si hubo un error previo
-               document.getElementById('image-upload')?.click();
-             }}
+              onClick={() => {
+                // Resetear el estado de carga antes de abrir el selector
+                setIsUploadingImage(false);
+                if (uploadTimeoutRef.current) {
+                  clearTimeout(uploadTimeoutRef.current);
+                  uploadTimeoutRef.current = null;
+                }
+                document.getElementById('image-upload')?.click();
+              }}
               disabled={isUploadingImage}
             >
               <Upload className="h-4 w-4 mr-2" />
@@ -600,7 +617,15 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowPdfUpload(true)}
+                onClick={() => {
+                  // Resetear el estado de carga antes de abrir el selector
+                  setIsUploadingPdf(false);
+                  if (pdfUploadTimeoutRef.current) {
+                    clearTimeout(pdfUploadTimeoutRef.current);
+                    pdfUploadTimeoutRef.current = null;
+                  }
+                  document.getElementById('pdf-upload')?.click();
+                }}
                 className="text-primary-600 border-primary-300 hover:bg-primary-50"
               >
                 <FileText className="h-4 w-4 mr-2" />
