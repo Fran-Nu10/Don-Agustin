@@ -30,6 +30,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     register,
@@ -126,6 +127,14 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     if (uploadTimeoutRef.current) {
       clearTimeout(uploadTimeoutRef.current);
       uploadTimeoutRef.current = null;
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <Input
+        label="Título"
+        id="title"
         type="text"
         fullWidth
         error={errors.title?.message}
