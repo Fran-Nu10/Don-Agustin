@@ -95,6 +95,16 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      
+      // Limpiar la previsualización y el archivo si la carga falla
+      setImageFile(null);
+      setImagePreview('');
+      setValue('image_url', '');
+      
+      // Limpiar el input de archivo para permitir reselección
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } finally {
       setIsUploadingImage(false);
     }
@@ -110,13 +120,12 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Input
-        label="Título"
-        id="title"
+    
+    // Siempre reiniciar el estado de carga y limpiar el timeout
+    setIsUploadingImage(false);
+    if (uploadTimeoutRef.current) {
+      clearTimeout(uploadTimeoutRef.current);
+      uploadTimeoutRef.current = null;
         type="text"
         fullWidth
         error={errors.title?.message}
@@ -183,7 +192,15 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
             <Button
               type="button"
               variant="ghost"
-              onClick={removeImage}
+              onClick={() => {
+                // Resetear el estado de carga antes de abrir el selector
+                setIsUploadingImage(false);
+                if (uploadTimeoutRef.current) {
+                  clearTimeout(uploadTimeoutRef.current);
+                  uploadTimeoutRef.current = null;
+                }
+                fileInputRef.current?.click();
+              }}
               className="text-red-600 hover:text-red-700"
             >
               <X className="h-4 w-4 mr-2" />
