@@ -157,11 +157,16 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
 
     setIsUploadingImage(true);
-    // Set timeout for upload
+    
+    // Set timeout for upload with complete cleanup
     uploadTimeoutRef.current = setTimeout(() => {
+      console.warn('Image upload timeout - cleaning up all state');
       setIsUploadingImage(false);
-      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
+      setImageFile(null);
+      setImagePreview('');
+      setValue('image_url', '');
       event.target.value = ''; // Clear input to allow re-selection
+      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
     }, 30000); // 30 seconds
     
     try {
@@ -170,41 +175,76 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImagePreview(previewUrl);
       setImageFile(file);
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with retry logic
       const sanitizedName = sanitizeFilename(file.name);
       const fileName = `trip-images/${Date.now()}-${sanitizedName}`;
-      const { data, error } = await supabase.storage
-        .from('blog-images') // Mantener 'blog-images' para compatibilidad
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (error) {
-        throw error;
+      
+      let uploadResult;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`Attempting image upload (attempt ${retryCount + 1}/${maxRetries})`);
+          uploadResult = await supabase.storage
+            .from('blog-images') // Mantener 'blog-images' para compatibilidad
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+          
+          if (uploadResult.error) {
+            throw uploadResult.error;
+          }
+          
+          // Success - break out of retry loop
+          break;
+        } catch (retryError) {
+          retryCount++;
+          console.error(`Upload attempt ${retryCount} failed:`, retryError);
+          
+          if (retryCount >= maxRetries) {
+            throw retryError; // Final attempt failed
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        }
       }
 
       // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('blog-images')
-        .getPublicUrl(data.path);
+        .getPublicUrl(uploadResult.data.path);
 
       // Set the image URL in the form
       setValue('image_url', publicUrlData.publicUrl);
       toast.success('Imagen subida correctamente');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       
-      // Limpiar la previsualización y el archivo si la carga falla
+      // Complete cleanup on error
+      console.log('Image upload failed - cleaning up all state');
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
       
       // Limpiar el input de archivo para permitir reselección
       event.target.value = '';
-      setIsUploadingImage(false);
-      return;
+      
+      // Show appropriate error message
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as any).message;
+        if (errorMessage.includes('413') || errorMessage.includes('too large')) {
+          toast.error('El archivo es demasiado grande. Por favor selecciona una imagen menor a 5MB.');
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        } else {
+          toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+        }
+      } else {
+        toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      }
     } finally {
       if (uploadTimeoutRef.current) {
         clearTimeout(uploadTimeoutRef.current);
@@ -216,6 +256,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Remove image
   const removeImage = () => {
+    console.log('Removing image - cleaning up all state');
     setImageFile(null);
     setImagePreview('');
     setValue('image_url', '');
@@ -226,7 +267,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       fileInput.value = '';
     }
     
-    // Siempre reiniciar el estado de carga y limpiar el timeout
+    // Always reset upload state and clear timeout
     setIsUploadingImage(false);
     if (uploadTimeoutRef.current) {
       clearTimeout(uploadTimeoutRef.current);
@@ -253,35 +294,57 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
     setIsUploadingPdf(true);
     setPdfFile(file);
+    
+    // Set timeout for PDF upload with complete cleanup
     pdfUploadTimeoutRef.current = setTimeout(() => {
+      console.warn('PDF upload timeout - cleaning up all state');
       setIsUploadingPdf(false);
-      toast.error('La carga del PDF tardó demasiado. Por favor, inténtalo de nuevo.');
+      setPdfFile(null);
+      setValue('info_pdf_url', '');
+      setValue('info_pdf_name', '');
       event.target.value = ''; // Clear input to allow re-selection
+      toast.error('La carga del PDF tardó demasiado. Por favor, inténtalo de nuevo.');
     }, 30000); // 30 seconds
     
     try {
       // Generate a temporary ID if we don't have a trip ID yet
       const tempId = initialData?.id || `temp-${Date.now()}`;
       
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with retry logic
       const result = await uploadPDF(file, tempId);
       
       if (result) {
         setValue('info_pdf_url', result.url);
         setValue('info_pdf_name', result.name);
         toast.success('PDF subido correctamente');
+      } else {
+        throw new Error('PDF upload failed - no result returned');
       }
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
       
-      // Limpiar el archivo PDF y sus datos si la carga falla
+      // Complete cleanup on error
+      console.log('PDF upload failed - cleaning up all state');
       setPdfFile(null);
       setValue('info_pdf_url', '');
       setValue('info_pdf_name', '');
       
       // Limpiar el input de archivo para permitir reselección
       event.target.value = '';
+      
+      // Show appropriate error message
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as any).message;
+        if (errorMessage.includes('413') || errorMessage.includes('too large')) {
+          toast.error('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB.');
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        } else {
+          toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
+        }
+      } else {
+        toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
+      }
     } finally {
       if (pdfUploadTimeoutRef.current) {
         clearTimeout(pdfUploadTimeoutRef.current);
@@ -293,6 +356,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Remove PDF - UPDATED TO DELETE FROM SUPABASE STORAGE
   const removePdf = async () => {
+    console.log('Removing PDF - cleaning up all state');
     const currentPdfUrl = watchPdfUrl;
     
     if (currentPdfUrl) {
@@ -319,7 +383,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       fileInput.value = '';
     }
     
-    // Siempre reiniciar el estado de carga y limpiar el timeout
+    // Always reset upload state and clear timeout
     setIsUploadingPdf(false);
     if (pdfUploadTimeoutRef.current) {
       clearTimeout(pdfUploadTimeoutRef.current);
