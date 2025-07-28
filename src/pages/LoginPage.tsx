@@ -32,7 +32,7 @@ export function LoginPage() {
 
   // Redirige si ya ha iniciado sesión Y no está cargando
   // Esto asegura que el estado del usuario sea estable antes de intentar la redirección
-  if (!loading && user) {
+  if (user && !loading) {
     console.log('LoginPage: Redirecting to /admin/dashboard');
     return <Navigate to="/admin/dashboard" replace />;
   }

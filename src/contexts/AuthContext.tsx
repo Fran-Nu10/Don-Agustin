@@ -41,19 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
-      setLoading(true);
       await signOut();
       setUser(null);
       toast.success('Sesión cerrada correctamente');
-      // Asegurar que la redirección ocurra después de limpiar el estado
-      setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 100);
+      // Redirección inmediata sin timeout
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Error al cerrar sesión');
-    } finally {
-      setLoading(false);
     }
   }
 
