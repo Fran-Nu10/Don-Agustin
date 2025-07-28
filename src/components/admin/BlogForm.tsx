@@ -68,36 +68,72 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     setIsUploadingImage(true);
     setImageFile(file);
     
+    // Set timeout for upload with complete cleanup
+    uploadTimeoutRef.current = setTimeout(() => {
+      console.warn('Image upload timeout - cleaning up all state');
+      setIsUploadingImage(false);
+      setImageFile(null);
+      setImagePreview('');
+      setValue('image_url', '');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
+    }, 30000); // 30 seconds
+    
     try {
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with retry logic
       const fileName = `${Date.now()}-${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('blog-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        throw error;
+      
+      let uploadResult;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`Attempting image upload (attempt ${retryCount + 1}/${maxRetries})`);
+          uploadResult = await supabase.storage
+            .from('blog-images')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+          
+          if (uploadResult.error) {
+            throw uploadResult.error;
+          }
+          
+          // Success - break out of retry loop
+          break;
+        } catch (retryError) {
+          retryCount++;
+          console.error(`Upload attempt ${retryCount} failed:`, retryError);
+          
+          if (retryCount >= maxRetries) {
+            throw retryError; // Final attempt failed
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        }
       }
 
       // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('blog-images')
-        .getPublicUrl(data.path);
+        .getPublicUrl(uploadResult.data.path);
 
       setValue('image_url', publicUrlData.publicUrl);
       toast.success('Imagen subida correctamente');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       
-      // Limpiar la previsualización y el archivo si la carga falla
+      // Complete cleanup on error
+      console.log('Image upload failed - cleaning up all state');
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
@@ -106,13 +142,30 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } finally {
-      setIsUploadingImage(false);
+      
+      // Show appropriate error message
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as any).message;
+        if (errorMessage.includes('413') || errorMessage.includes('too large')) {
+          toast.error('El archivo es demasiado grande. Por favor selecciona una imagen menor a 5MB.');
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        } else {
+          toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+        }
+      } else {
+        toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      if (uploadTimeoutRef.current) {
+        clearTimeout(uploadTimeoutRef.current);
+        uploadTimeoutRef.current = null;
+      }
+      }
     }
   };
 
   // Remove image
   const removeImage = () => {
+    console.log('Removing image - cleaning up all state');
     setImageFile(null);
     setImagePreview('');
     setValue('image_url', '');
@@ -122,7 +175,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       fileInputRef.current.value = '';
     }
     
-    // Siempre reiniciar el estado de carga y limpiar el timeout
+    // Always reset upload state and clear timeout
     setIsUploadingImage(false);
     if (uploadTimeoutRef.current) {
       clearTimeout(uploadTimeoutRef.current);
