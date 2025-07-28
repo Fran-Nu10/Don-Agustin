@@ -161,7 +161,7 @@ export function Navbar() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => logout().catch(console.error)} 
+                      onClick={() => logout()} 
                       className="text-white hover:bg-white/10"
                     >
                       Cerrar Sesión

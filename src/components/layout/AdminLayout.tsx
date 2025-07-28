@@ -233,7 +233,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               
               <button
                 onClick={() => {
-                  logout().catch(console.error);
+                  logout();
                   setMobileMenuOpen(false);
                 }}
                 className="flex items-center w-full px-4 py-3 text-white bg-primary-700 hover:bg-primary-800 rounded-lg transition-colors"
