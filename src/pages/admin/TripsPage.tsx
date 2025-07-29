@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 import { Button } from '../../components/ui/Button';
-import { TripCard } from '../../components/trips/TripCard';
 import { TripForm } from '../../components/admin/TripForm';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Plus, Search, Edit, Trash2, FileText, Download, Eye } from 'lucide-react';
@@ -16,6 +15,8 @@ export function AdminTripsPage() {
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Paginación para mejorar rendimiento
 
   const handleCreateTrip = async (data: TripFormData) => {
     console.log('🚀 Iniciando creación de viaje...');
@@ -143,6 +144,17 @@ export function AdminTripsPage() {
       trip.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTrips.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentTrips = filteredTrips.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <AdminLayout>
