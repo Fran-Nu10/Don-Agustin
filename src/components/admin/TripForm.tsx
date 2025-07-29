@@ -4,9 +4,8 @@ import { Trip, TripFormData, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, FileText, Download, Eye, Tag } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, Tag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { uploadPDF, deletePDF, sanitizeFilename } from '../../lib/supabase/storage';
 import { supabase } from '../../lib/supabase/client';
 
 interface TripFormProps {
@@ -19,16 +18,11 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageInputKey, setImageInputKey] = useState(0);
   const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  
-  // PDF states
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
 
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
-  const pdfUploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Convert price from UYU to USD for display
   const getUSDPrice = (uyuPrice?: number) => {
@@ -55,8 +49,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           available_spots: initialData.available_spots,
           image_url: initialData.image_url,
           category: initialData.category,
-          info_pdf_url: initialData.info_pdf_url,
-          info_pdf_name: initialData.info_pdf_name,
           itinerary: initialData.itinerary || [],
           included_services: initialData.included_services || [],
           tags: initialData.tags || [],
@@ -67,9 +59,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           tags: [],
         },
   });
-
-  const watchPdfUrl = watch('info_pdf_url');
-  const watchPdfName = watch('info_pdf_name');
 
   const {
     fields: itineraryFields,
@@ -165,7 +154,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
-      event.target.value = ''; // Clear input to allow re-selection
+      setImageInputKey(prev => prev + 1); // Force input re-mount
       toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
     }, 30000); // 30 seconds
     
@@ -228,9 +217,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
-      
-      // Limpiar el input de archivo para permitir reselección
-      event.target.value = '';
+      setImageInputKey(prev => prev + 1); // Force input re-mount
       
       // Show appropriate error message
       if (error && typeof error === 'object' && 'message' in error) {
@@ -260,165 +247,13 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     setImageFile(null);
     setImagePreview('');
     setValue('image_url', '');
-    
-    // Clear the file input
-    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
+    setImageInputKey(prev => prev + 1); // Force input re-mount
     
     // Always reset upload state and clear timeout
     setIsUploadingImage(false);
     if (uploadTimeoutRef.current) {
       clearTimeout(uploadTimeoutRef.current);
       uploadTimeoutRef.current = null;
-    }
-  };
-
-  // Handle PDF file selection - UPDATED TO USE SUPABASE STORAGE
-  const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (file.type !== 'application/pdf') {
-      toast.error('Por favor selecciona un archivo PDF válido');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB');
-      return;
-    }
-
-    setIsUploadingPdf(true);
-    setPdfFile(file);
-    
-    // Set timeout for PDF upload with complete cleanup
-    pdfUploadTimeoutRef.current = setTimeout(() => {
-      console.warn('PDF upload timeout - cleaning up all state');
-      setIsUploadingPdf(false);
-      setPdfFile(null);
-      setValue('info_pdf_url', '');
-      setValue('info_pdf_name', '');
-      event.target.value = ''; // Clear input to allow re-selection
-      toast.error('La carga del PDF tardó demasiado. Por favor, inténtalo de nuevo.');
-    }, 30000); // 30 seconds
-    
-    try {
-      // Generate a temporary ID if we don't have a trip ID yet
-      const tempId = initialData?.id || `temp-${Date.now()}`;
-      
-      // Upload to Supabase Storage with retry logic
-      const result = await uploadPDF(file, tempId);
-      
-      if (result) {
-        setValue('info_pdf_url', result.url);
-        setValue('info_pdf_name', result.name);
-        toast.success('PDF subido correctamente');
-      } else {
-        throw new Error('PDF upload failed - no result returned');
-      }
-    } catch (error) {
-      console.error('Error uploading PDF:', error);
-      
-      // Complete cleanup on error
-      console.log('PDF upload failed - cleaning up all state');
-      setPdfFile(null);
-      setValue('info_pdf_url', '');
-      setValue('info_pdf_name', '');
-      
-      // Limpiar el input de archivo para permitir reselección
-      event.target.value = '';
-      
-      // Show appropriate error message
-      if (error && typeof error === 'object' && 'message' in error) {
-        const errorMessage = (error as any).message;
-        if (errorMessage.includes('413') || errorMessage.includes('too large')) {
-          toast.error('El archivo PDF es demasiado grande. Por favor selecciona un archivo menor a 10MB.');
-        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-          toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
-        } else {
-          toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
-        }
-      } else {
-        toast.error('Error al procesar el PDF. Por favor intenta nuevamente.');
-      }
-    } finally {
-      if (pdfUploadTimeoutRef.current) {
-        clearTimeout(pdfUploadTimeoutRef.current);
-        pdfUploadTimeoutRef.current = null;
-      }
-      setIsUploadingPdf(false);
-    }
-  };
-
-  // Remove PDF - UPDATED TO DELETE FROM SUPABASE STORAGE
-  const removePdf = async () => {
-    console.log('Removing PDF - cleaning up all state');
-    const currentPdfUrl = watchPdfUrl;
-    
-    if (currentPdfUrl) {
-      // If it's a Supabase Storage URL, delete it
-      if (currentPdfUrl.includes('storage.googleapis.com') || currentPdfUrl.includes('supabase.co')) {
-        try {
-          const deleted = await deletePDF(currentPdfUrl);
-          if (deleted) {
-            toast.success('PDF eliminado correctamente');
-          }
-        } catch (error) {
-          console.error('Error deleting PDF from storage:', error);
-        }
-      }
-    }
-    
-    setPdfFile(null);
-    setValue('info_pdf_url', '');
-    setValue('info_pdf_name', '');
-    
-    // Clear the file input
-    const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-    
-    // Always reset upload state and clear timeout
-    setIsUploadingPdf(false);
-    if (pdfUploadTimeoutRef.current) {
-      clearTimeout(pdfUploadTimeoutRef.current);
-      pdfUploadTimeoutRef.current = null;
-    }
-  };
-
-  // View PDF - UPDATED FOR BETTER BROWSER COMPATIBILITY
-  const handleViewPdf = (pdfUrl: string, pdfName: string) => {
-    if (!pdfUrl) {
-      toast.error('No hay URL de PDF disponible');
-      return;
-    }
-
-    try {
-      // Open in a new tab with proper handling
-      const newWindow = window.open(pdfUrl, '_blank');
-      
-      if (!newWindow) {
-        toast.error('El navegador ha bloqueado la apertura del PDF. Por favor, permite las ventanas emergentes para este sitio.');
-        
-        // Fallback: create a temporary link and click it
-        const link = document.createElement('a');
-        link.href = pdfUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        toast.success('PDF abierto en nueva pestaña');
-      }
-    } catch (error) {
-      console.error('Error al abrir el PDF:', error);
-      toast.error('No se pudo abrir el PDF. Verifica que la URL sea válida.');
     }
   };
 
@@ -430,9 +265,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
   // Available tags - UPDATED with new tags
   const availableTags = ['terrestre', 'vuelos', 'baja temporada', 'verano', 'eventos', 'exprés'];
-
-  // State for showing PDF upload section
-  const [showPdfUpload, setShowPdfUpload] = useState(false);
 
   // Custom submit handler to convert USD to UYU
   const handleFormSubmit = (data: TripFormData) => {
@@ -625,6 +457,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           
           <input
             id="image-upload"
+            key={imageInputKey}
             type="file"
             accept="image/*"
             onChange={handleImageChange}
@@ -672,142 +505,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             type="hidden"
             {...register('image_url', { required: 'La imagen es obligatoria' })}
           />
-        </div>
-
-        {/* PDF Upload Section - UPDATED FOR SUPABASE STORAGE */}
-        <div className="mt-6">
-          {!showPdfUpload ? (
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  // Resetear el estado de carga antes de abrir el selector
-                  setIsUploadingPdf(false);
-                  if (pdfUploadTimeoutRef.current) {
-                    clearTimeout(pdfUploadTimeoutRef.current);
-                    pdfUploadTimeoutRef.current = null;
-                  }
-                  document.getElementById('pdf-upload')?.click();
-                }}
-                className="text-primary-600 border-primary-300 hover:bg-primary-50"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Agregar PDF Informativo (Opcional)
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-secondary-900 flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-primary-600" />
-                  PDF Informativo (Opcional)
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowPdfUpload(false);
-                    if (watchPdfUrl) {
-                      removePdf();
-                    }
-                  }}
-                  className="text-secondary-500 hover:text-secondary-700"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Ocultar
-                </Button>
-              </div>
-              
-              {watchPdfUrl && watchPdfName ? (
-                <div className="bg-white border border-green-200 rounded-lg p-4 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-green-100 p-2 rounded-lg mr-3">
-                      <FileText className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-secondary-900">{watchPdfName}</p>
-                      <p className="text-sm text-green-600">PDF cargado correctamente</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewPdf(watchPdfUrl, watchPdfName)}
-                      className="text-green-600 border-green-300 hover:bg-green-50"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={removePdf}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div 
-                  onClick={() => document.getElementById('pdf-upload')?.click()}
-                  className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors cursor-pointer"
-                >
-                  <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
-                  <p className="text-secondary-600 mb-2">
-                    Haz clic para subir un PDF informativo
-                  </p>
-                  {isUploadingPdf && (
-                    <div className="mt-2 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
-                      <span className="ml-2 text-xs text-primary-600">Subiendo...</span>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <input
-                id="pdf-upload"
-                type="file"
-                accept=".pdf,application/pdf"
-                onChange={handlePdfChange}
-                className="hidden"
-              />
-              
-              <div className="mt-3 flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('pdf-upload')?.click()}
-                  disabled={isUploadingPdf}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  {isUploadingPdf ? 'Procesando PDF...' : 'Seleccionar PDF'}
-                </Button>
-                
-                {watchPdfUrl && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={removePdf}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Eliminar PDF
-                  </Button>
-                )}
-              </div>
-              
-              {/* Hidden inputs for PDF data */}
-              <input type="hidden" {...register('info_pdf_url')} />
-              <input type="hidden" {...register('info_pdf_name')} />
-            </div>
-          )}
         </div>
       </div>
 

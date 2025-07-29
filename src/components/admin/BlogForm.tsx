@@ -29,6 +29,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageInputKey, setImageInputKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -75,9 +76,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setImageInputKey(prev => prev + 1); // Force input re-mount
       toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
     }, 30000); // 30 seconds
     
@@ -137,11 +136,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       setImageFile(null);
       setImagePreview('');
       setValue('image_url', '');
-      
-      // Limpiar el input de archivo para permitir reselección
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setImageInputKey(prev => prev + 1); // Force input re-mount
       
       // Show appropriate error message
       if (error && typeof error === 'object' && 'message' in error) {
@@ -169,11 +164,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     setImageFile(null);
     setImagePreview('');
     setValue('image_url', '');
-    
-    // Clear the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setImageInputKey(prev => prev + 1); // Force input re-mount
     
     // Always reset upload state and clear timeout
     setIsUploadingImage(false);
@@ -232,6 +223,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         
         <input
           ref={fileInputRef}
+         key={imageInputKey}
           id="image-upload"
           type="file"
           accept="image/*"
