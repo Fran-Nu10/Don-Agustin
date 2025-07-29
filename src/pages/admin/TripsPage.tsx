@@ -18,34 +18,86 @@ export function AdminTripsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleCreateTrip = async (data: TripFormData) => {
+    console.log('🚀 Iniciando creación de viaje...');
     try {
       setIsSubmitting(true);
+      console.log('📝 Estado isSubmitting establecido a true');
       await createTrip(data);
       await refetch(); // Refresh the trips list
       setShowForm(false);
+      console.log('✅ Viaje creado exitosamente');
       toast.success('Paquete creado con éxito');
     } catch (error) {
       console.error('Error creating trip:', error);
-      toast.error('Error al crear el paquete');
+      
+      // Manejo robusto de errores para mostrar mensaje legible
+      let errorMessage = 'Error al crear el paquete';
+      if (error && typeof error === 'object' && 'message' in error) {
+        const originalMessage = (error as any).message;
+        if (originalMessage.includes('401') || originalMessage.includes('unauthorized')) {
+          errorMessage = 'No tienes permisos para crear paquetes. Contacta al administrador.';
+        } else if (originalMessage.includes('network') || originalMessage.includes('fetch')) {
+          errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+        } else if (originalMessage.includes('JWT') || originalMessage.includes('token')) {
+          errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+        } else if (originalMessage) {
+          errorMessage = `Error: ${originalMessage}`;
+        }
+      }
+      
+      console.log('❌ Error al crear viaje:', errorMessage);
+      toast.error(errorMessage);
     } finally {
+      console.log('🔄 Reseteando estado isSubmitting a false');
       setIsSubmitting(false);
+      // Verificación adicional para asegurar que el estado se resetee
+      setTimeout(() => {
+        console.log('🔍 Verificación final: isSubmitting debería ser false');
+        setIsSubmitting(false);
+      }, 100);
     }
   };
 
   const handleUpdateTrip = async (data: TripFormData) => {
     if (!editingTrip) return;
     
+    console.log('🚀 Iniciando actualización de viaje...');
     try {
       setIsSubmitting(true);
+      console.log('📝 Estado isSubmitting establecido a true');
       await updateTrip(editingTrip.id, data);
       await refetch(); // Refresh the trips list
       setEditingTrip(null);
+      console.log('✅ Viaje actualizado exitosamente');
       toast.success('Paquete actualizado con éxito');
     } catch (error) {
       console.error('Error updating trip:', error);
-      toast.error('Error al actualizar el paquete');
+      
+      // Manejo robusto de errores para mostrar mensaje legible
+      let errorMessage = 'Error al actualizar el paquete';
+      if (error && typeof error === 'object' && 'message' in error) {
+        const originalMessage = (error as any).message;
+        if (originalMessage.includes('401') || originalMessage.includes('unauthorized')) {
+          errorMessage = 'No tienes permisos para actualizar paquetes. Contacta al administrador.';
+        } else if (originalMessage.includes('network') || originalMessage.includes('fetch')) {
+          errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+        } else if (originalMessage.includes('JWT') || originalMessage.includes('token')) {
+          errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+        } else if (originalMessage) {
+          errorMessage = `Error: ${originalMessage}`;
+        }
+      }
+      
+      console.log('❌ Error al actualizar viaje:', errorMessage);
+      toast.error(errorMessage);
     } finally {
+      console.log('🔄 Reseteando estado isSubmitting a false');
       setIsSubmitting(false);
+      // Verificación adicional para asegurar que el estado se resetee
+      setTimeout(() => {
+        console.log('🔍 Verificación final: isSubmitting debería ser false');
+        setIsSubmitting(false);
+      }, 100);
     }
   };
 
