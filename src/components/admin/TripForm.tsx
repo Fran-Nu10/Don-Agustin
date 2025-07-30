@@ -165,53 +165,32 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       setImagePreview(previewUrl);
       setImageFile(file);
 
-      // Upload to Supabase Storage with retry logic
+      // Upload to Supabase Storage with enhanced retry logic
       const sanitizedName = sanitizeFilename(file.name);
       const fileName = `trip-images/${Date.now()}-${sanitizedName}`;
       
-      let uploadResult;
-      let retryCount = 0;
-      const maxRetries = 3;
+      console.log('🚀 [IMAGE UPLOAD] Iniciando subida de imagen:', fileName);
+      console.log('📁 [IMAGE UPLOAD] Tamaño del archivo:', (file.size / 1024 / 1024).toFixed(2), 'MB');
       
-      while (retryCount < maxRetries) {
-        try {
-          console.log(`Attempting image upload (attempt ${retryCount + 1}/${maxRetries})`);
-          uploadResult = await supabase.storage
-            .from('blog-images') // Mantener 'blog-images' para compatibilidad
-            .upload(fileName, file, {
-              cacheControl: '3600',
-              upsert: true
-            });
-          
-          if (uploadResult.error) {
-            throw uploadResult.error;
-          }
-          
-          // Success - break out of retry loop
-          break;
-        } catch (retryError) {
-          retryCount++;
-          console.error(`Upload attempt ${retryCount} failed:`, retryError);
-          
-          if (retryCount >= maxRetries) {
-            throw retryError; // Final attempt failed
-          }
-          
-          // Wait before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-        }
-      }
+      // Enhanced retry logic with better error handling
+      const uploadResult = await uploadImageWithRetry(file, fileName);
+      
+      console.log('✅ [IMAGE UPLOAD] Subida exitosa:', uploadResult.data.path);
 
       // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('blog-images')
         .getPublicUrl(uploadResult.data.path);
 
+      console.log('🔗 [IMAGE UPLOAD] URL pública generada:', publicUrlData.publicUrl);
+
       // Set the image URL in the form
       setValue('image_url', publicUrlData.publicUrl);
+      
+      console.log('✅ [IMAGE UPLOAD] PROCESO COMPLETADO EXITOSAMENTE');
       toast.success('Imagen subida correctamente');
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('❌ [IMAGE UPLOAD] Error en la subida:', error);
       
       // Complete cleanup on error
       console.log('Image upload failed - cleaning up all state');
@@ -228,18 +207,109 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
           toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
         } else {
-          toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
-        }
-      } else {
-        toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       }
     } finally {
       if (uploadTimeoutRef.current) {
         clearTimeout(uploadTimeoutRef.current);
         uploadTimeoutRef.current = null;
       }
+      if (uploadTimeoutRef.current) {
+        clearTimeout(uploadTimeoutRef.current);
+        uploadTimeoutRef.current = null;
+      }
       setIsUploadingImage(false);
     }
+  };
+
+  // Enhanced image upload function with retry logic
+  const uploadImageWithRetry = async (file: File, fileName: string, maxRetries: number = 5) => {
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 [IMAGE UPLOAD] Intento ${attempt}/${maxRetries}`);
+        const startTime = Date.now();
+        
+        const result = await supabase.storage
+          .from('blog-images')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        const endTime = Date.now();
+        console.log(`✅ [IMAGE UPLOAD] Éxito en intento ${attempt} (${endTime - startTime}ms)`);
+        
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ [IMAGE UPLOAD] Error en intento ${attempt}:`, error);
+        
+        // Check if this is a retryable error
+        const isRetryable = isImageUploadRetryable(error);
+        console.log(`🔍 [IMAGE UPLOAD] ¿Error reintentable?`, isRetryable);
+        
+        if (!isRetryable || attempt === maxRetries) {
+          console.error(`🚫 [IMAGE UPLOAD] No se reintentará. Retryable: ${isRetryable}, Intento final: ${attempt === maxRetries}`);
+          break;
+        }
+        
+        // Calculate delay with exponential backoff (max 8 seconds for images)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+        console.log(`⏳ [IMAGE UPLOAD] Esperando ${delay}ms antes del siguiente intento...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    console.error(`💥 [IMAGE UPLOAD] Todos los intentos fallaron. Error final:`, lastError);
+    throw lastError;
+  };
+
+  // Helper function to determine if an image upload error is retryable
+  const isImageUploadRetryable = (error: any): boolean => {
+    if (!error) return false;
+    
+    const message = error.message?.toLowerCase() || '';
+    const status = error.status || error.code;
+    
+    // Network errors - always retryable
+    if (message.includes('failed to fetch') || 
+        message.includes('network error') || 
+        message.includes('timeout') ||
+        message.includes('connection') ||
+        message.includes('fetch')) {
+      return true;
+    }
+    
+    // Retryable status codes for file uploads
+    const retryableStatusCodes = [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524];
+    if (retryableStatusCodes.includes(status)) {
+      return true;
+    }
+    
+    // Non-retryable errors
+    const nonRetryableStatusCodes = [400, 401, 403, 404, 409, 413, 422];
+    if (nonRetryableStatusCodes.includes(status)) {
+      return false;
+    }
+    
+    // File size errors - not retryable
+    if (message.includes('too large') || message.includes('413') || message.includes('payload')) {
+      return false;
+    }
+    
+    // Auth errors - not retryable
+    if (message.includes('unauthorized') || message.includes('forbidden')) {
+      return false;
+    }
+    
+    // Default to retryable for unknown errors
+    return true;
   };
 
   // Remove image

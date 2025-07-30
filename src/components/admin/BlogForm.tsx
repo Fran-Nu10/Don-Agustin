@@ -85,51 +85,27 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
 
-      // Upload to Supabase Storage with retry logic
+      // Upload to Supabase Storage with enhanced retry logic
       const fileName = `${Date.now()}-${file.name}`;
       
-      let uploadResult;
-      let retryCount = 0;
-      const maxRetries = 3;
+      console.log('🚀 [BLOG IMAGE UPLOAD] Iniciando subida de imagen:', fileName);
+      console.log('📁 [BLOG IMAGE UPLOAD] Tamaño del archivo:', (file.size / 1024 / 1024).toFixed(2), 'MB');
       
-      while (retryCount < maxRetries) {
-        try {
-          console.log(`Attempting image upload (attempt ${retryCount + 1}/${maxRetries})`);
-          uploadResult = await supabase.storage
-            .from('blog-images')
-            .upload(fileName, file, {
-              cacheControl: '3600',
-              upsert: false
-            });
-          
-          if (uploadResult.error) {
-            throw uploadResult.error;
-          }
-          
-          // Success - break out of retry loop
-          break;
-        } catch (retryError) {
-          retryCount++;
-          console.error(`Upload attempt ${retryCount} failed:`, retryError);
-          
-          if (retryCount >= maxRetries) {
-            throw retryError; // Final attempt failed
-          }
-          
-          // Wait before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-        }
-      }
+      // Enhanced retry logic
+      const uploadResult = await uploadBlogImageWithRetry(file, fileName);
+      
+      console.log('✅ [BLOG IMAGE UPLOAD] Subida exitosa:', uploadResult.data.path);
 
       // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('blog-images')
         .getPublicUrl(uploadResult.data.path);
 
-      setValue('image_url', publicUrlData.publicUrl);
+      console.log('🔗 [BLOG IMAGE UPLOAD] URL pública generada:', publicUrlData.publicUrl);
+      console.log('✅ [BLOG IMAGE UPLOAD] PROCESO COMPLETADO EXITOSAMENTE');
       toast.success('Imagen subida correctamente');
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('❌ [BLOG IMAGE UPLOAD] Error en la subida:', error);
       
       // Complete cleanup on error
       console.log('Image upload failed - cleaning up all state');
@@ -150,12 +126,12 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         }
       } else {
         toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
+      }
+    }
       if (uploadTimeoutRef.current) {
         clearTimeout(uploadTimeoutRef.current);
         uploadTimeoutRef.current = null;
       }
-      }
-    }
   };
 
   // Remove image
@@ -172,6 +148,97 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       clearTimeout(uploadTimeoutRef.current);
       uploadTimeoutRef.current = null;
     }
+  };
+
+  // Enhanced blog image upload function with retry logic
+  const uploadBlogImageWithRetry = async (file: File, fileName: string, maxRetries: number = 5) => {
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 [BLOG IMAGE UPLOAD] Intento ${attempt}/${maxRetries}`);
+        const startTime = Date.now();
+        
+        const result = await supabase.storage
+          .from('blog-images')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        const endTime = Date.now();
+        console.log(`✅ [BLOG IMAGE UPLOAD] Éxito en intento ${attempt} (${endTime - startTime}ms)`);
+        
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ [BLOG IMAGE UPLOAD] Error en intento ${attempt}:`, error);
+        
+        // Check if this is a retryable error
+        const isRetryable = isBlogImageUploadRetryable(error);
+        console.log(`🔍 [BLOG IMAGE UPLOAD] ¿Error reintentable?`, isRetryable);
+        
+        if (!isRetryable || attempt === maxRetries) {
+          console.error(`🚫 [BLOG IMAGE UPLOAD] No se reintentará. Retryable: ${isRetryable}, Intento final: ${attempt === maxRetries}`);
+          break;
+        }
+        
+        // Calculate delay with exponential backoff (max 8 seconds for images)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+        console.log(`⏳ [BLOG IMAGE UPLOAD] Esperando ${delay}ms antes del siguiente intento...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    console.error(`💥 [BLOG IMAGE UPLOAD] Todos los intentos fallaron. Error final:`, lastError);
+    throw lastError;
+  };
+
+  // Helper function to determine if a blog image upload error is retryable
+  const isBlogImageUploadRetryable = (error: any): boolean => {
+    if (!error) return false;
+    
+    const message = error.message?.toLowerCase() || '';
+    const status = error.status || error.code;
+    
+    // Network errors - always retryable
+    if (message.includes('failed to fetch') || 
+        message.includes('network error') || 
+        message.includes('timeout') ||
+        message.includes('connection') ||
+        message.includes('fetch')) {
+      return true;
+    }
+    
+    // Retryable status codes for file uploads
+    const retryableStatusCodes = [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524];
+    if (retryableStatusCodes.includes(status)) {
+      return true;
+    }
+    
+    // Non-retryable errors
+    const nonRetryableStatusCodes = [400, 401, 403, 404, 409, 413, 422];
+    if (nonRetryableStatusCodes.includes(status)) {
+      return false;
+    }
+    
+    // File size errors - not retryable
+    if (message.includes('too large') || message.includes('413') || message.includes('payload')) {
+      return false;
+    }
+    
+    // Auth errors - not retryable
+    if (message.includes('unauthorized') || message.includes('forbidden')) {
+      return false;
+    }
+    
+    // Default to retryable for unknown errors
+    return true;
   };
 
   return (

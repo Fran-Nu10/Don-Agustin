@@ -5,9 +5,50 @@ import { supabase } from './supabase/client';
 
 
 // Enhanced error handling wrapper
-async function handleSupabaseError<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
+async function handleSupabaseError<T>(
+  operation: () => Promise<T>, 
+  operationName: string,
+  maxRetries: number = 3
+): Promise<T> {
+  let lastError: any;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 [${operationName}] Intento ${attempt}/${maxRetries}`);
+      const startTime = Date.now();
+      
+      const result = await operation();
+      
+      const endTime = Date.now();
+      console.log(`✅ [${operationName}] Éxito en intento ${attempt} (${endTime - startTime}ms)`);
+      
+      return result;
+    } catch (error: any) {
+      lastError = error;
+      console.error(`❌ [${operationName}] Error en intento ${attempt}:`, error);
+      
+      // Check if this is a retryable error
+      const isRetryable = isRetryableError(error);
+      console.log(`🔍 [${operationName}] ¿Error reintentable?`, isRetryable);
+      
+      if (!isRetryable || attempt === maxRetries) {
+        console.error(`🚫 [${operationName}] No se reintentará. Retryable: ${isRetryable}, Intento final: ${attempt === maxRetries}`);
+        break;
+      }
+      
+      // Calculate delay with exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10 seconds
+      console.log(`⏳ [${operationName}] Esperando ${delay}ms antes del siguiente intento...`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  // If we get here, all retries failed
+  console.error(`💥 [${operationName}] Todos los intentos fallaron. Error final:`, lastError);
+  
   try {
-    return await operation();
+    throw lastError;
   } catch (error: any) {
     console.error(`${operationName} error:`, error);
     
@@ -37,6 +78,79 @@ async function handleSupabaseError<T>(operation: () => Promise<T>, operationName
   }
 }
 
+// Helper function to determine if an error is retryable
+function isRetryableError(error: any): boolean {
+  if (!error) return false;
+  
+  const message = error.message?.toLowerCase() || '';
+  const status = error.status || error.code;
+  
+  // Network errors - always retryable
+  if (message.includes('failed to fetch') || 
+      message.includes('network error') || 
+      message.includes('timeout') ||
+      message.includes('connection') ||
+      message.includes('fetch')) {
+    console.log(`🌐 [RETRY] Error de red detectado: ${message}`);
+    return true;
+  }
+  
+  // HTTP status codes that are retryable
+  const retryableStatusCodes = [
+    408, // Request Timeout
+    429, // Too Many Requests
+    500, // Internal Server Error
+    502, // Bad Gateway
+    503, // Service Unavailable
+    504, // Gateway Timeout
+    520, // Unknown Error (Cloudflare)
+    521, // Web Server Is Down (Cloudflare)
+    522, // Connection Timed Out (Cloudflare)
+    523, // Origin Is Unreachable (Cloudflare)
+    524, // A Timeout Occurred (Cloudflare)
+  ];
+  
+  if (retryableStatusCodes.includes(status)) {
+    console.log(`🔄 [RETRY] Status code reintentable detectado: ${status}`);
+    return true;
+  }
+  
+  // Non-retryable errors (client errors, auth errors, etc.)
+  const nonRetryableStatusCodes = [
+    400, // Bad Request
+    401, // Unauthorized
+    403, // Forbidden
+    404, // Not Found
+    409, // Conflict
+    422, // Unprocessable Entity
+  ];
+  
+  if (nonRetryableStatusCodes.includes(status)) {
+    console.log(`🚫 [RETRY] Status code no reintentable detectado: ${status}`);
+    return false;
+  }
+  
+  // Auth-related errors - not retryable
+  if (message.includes('jwt') || 
+      message.includes('unauthorized') || 
+      message.includes('invalid api key') ||
+      message.includes('authentication')) {
+    console.log(`🔑 [RETRY] Error de autenticación detectado: ${message}`);
+    return false;
+  }
+  
+  // Validation errors - not retryable
+  if (message.includes('validation') || 
+      message.includes('invalid') || 
+      message.includes('required')) {
+    console.log(`📝 [RETRY] Error de validación detectado: ${message}`);
+    return false;
+  }
+  
+  // Default to retryable for unknown errors
+  console.log(`❓ [RETRY] Error desconocido, marcando como reintentable: ${message}`);
+  return true;
+}
 // Authentication functions
 export async function signIn(email: string, password: string) {
   return handleSupabaseError(async () => {
