@@ -77,8 +77,8 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.text('INFORMACIÓN DEL VIAJE', 20, finalY);
   
   // Convert price to USD if available
-  const priceDisplay = quotation.trip_price 
-    ? formatPrice(quotation.trip_price, quotation.trip_price_currency || 'UYU')
+  const priceDisplay = quotation.trip_price && quotation.trip_price_currency
+    ? formatPrice(quotation.trip_price, quotation.trip_price_currency)
     : 'A definir';
   
   const tripData = [
@@ -190,11 +190,10 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   doc.text('LISTADO DE COTIZACIONES', 20, tableY);
   
   const tableData = quotations.map(q => {
-    // Convert price to USD if available
+    // Format price with correct currency
     let priceDisplay = '-';
     if (q.trip_price) {
-      const usdPrice = convertToUSD(q.trip_price);
-      priceDisplay = `USD ${usdPrice.toFixed(0)}`;
+      priceDisplay = formatPrice(q.trip_price, q.trip_price_currency || 'UYU');
     }
     
     return [
@@ -303,7 +302,7 @@ export function generateClientPDF(client: Client) {
     ['Fuente:', client.source || 'No especificada'],
     ['Fecha de registro:', format(new Date(client.created_at), 'dd/MM/yyyy HH:mm', { locale: es })],
     ['Última actualización:', format(new Date(client.updated_at), 'dd/MM/yyyy HH:mm', { locale: es })],
-    ['Valor del viaje:', tripValueDisplay],
+    ['Valor del viaje:', client.trip_value ? formatPrice(client.trip_value, client.trip_value_currency || 'UYU') : 'No especificado'],
   ];
   
   autoTable(doc, {
@@ -474,11 +473,10 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   doc.text('LISTADO DE CLIENTES', 20, tableY);
   
   const tableData = clients.map(c => {
-    // Convert trip value to USD
+    // Format trip value with correct currency
     let valueDisplay = '-';
     if (c.trip_value) {
-      const usdValue = convertToUSD(c.trip_value);
-      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+      valueDisplay = formatPrice(c.trip_value, c.trip_value_currency || 'UYU');
     }
     
     return [
@@ -561,11 +559,10 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   
   // Tabla de clientes
   const tableData = clients.map(c => {
-    // Convert trip value to USD
+    // Format trip value with correct currency
     let valueDisplay = '-';
     if (c.trip_value) {
-      const usdValue = convertToUSD(c.trip_value);
-      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+      valueDisplay = formatPrice(c.trip_value, c.trip_value_currency || 'UYU');
     }
     
     return [
@@ -647,11 +644,10 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   
   // Tabla de clientes
   const tableData = clients.map(c => {
-    // Convert trip value to USD
+    // Format trip value with correct currency
     let valueDisplay = '-';
     if (c.trip_value) {
-      const usdValue = convertToUSD(c.trip_value);
-      valueDisplay = `USD ${usdValue.toFixed(0)}`;
+      valueDisplay = formatPrice(c.trip_value, c.trip_value_currency || 'UYU');
     }
     
     return [
