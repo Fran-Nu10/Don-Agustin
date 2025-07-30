@@ -207,12 +207,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
           toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
         } else {
+          toast.error('Error al subir la imagen. Por favor, inténtalo de nuevo.');
+        }
+      } else {
+        toast.error('Error al subir la imagen. Por favor, inténtalo de nuevo.');
       }
     } finally {
-      if (uploadTimeoutRef.current) {
-        clearTimeout(uploadTimeoutRef.current);
-        uploadTimeoutRef.current = null;
-      }
       if (uploadTimeoutRef.current) {
         clearTimeout(uploadTimeoutRef.current);
         uploadTimeoutRef.current = null;
