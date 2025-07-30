@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { useTrips } from '../../hooks/useTrips';
 
 export function AdminTripsPage() {
-  const { trips, loading, refetch } = useTrips();
+  const { trips, loading, refetch, addOrUpdateTrip, removeTrip } = useTrips();
   const [showForm, setShowForm] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,15 +38,25 @@ export function AdminTripsPage() {
       console.log('🌐 [CREATE TRIP] Llamando a createTrip API...');
       
       const startTime = Date.now();
-      await createTrip(data);
+      const newTrip = await createTrip(data);
       const endTime = Date.now();
       
       console.log('✅ [CREATE TRIP] API createTrip completada exitosamente');
+      console.log('📦 [CREATE TRIP] Nuevo viaje creado:', newTrip);
       console.log('⏱️ [CREATE TRIP] Tiempo de respuesta:', (endTime - startTime), 'ms');
-      console.log('🔄 [CREATE TRIP] Iniciando refetch de la lista de viajes...');
       
-      await refetch(); // Refresh the trips list
-      console.log('✅ [CREATE TRIP] Refetch completado exitosamente');
+      // Optimistic update - add the new trip immediately to the UI
+      console.log('🚀 [CREATE TRIP] Aplicando actualización optimista...');
+      addOrUpdateTrip(newTrip);
+      console.log('✅ [CREATE TRIP] Actualización optimista completada');
+      
+      // Background refetch to ensure data consistency
+      console.log('🔄 [CREATE TRIP] Iniciando refetch en segundo plano...');
+      refetch().then(() => {
+        console.log('✅ [CREATE TRIP] Refetch en segundo plano completado');
+      }).catch((error) => {
+        console.warn('⚠️ [CREATE TRIP] Error en refetch de segundo plano:', error);
+      });
       
       setShowForm(false);
       console.log('🎯 [CREATE TRIP] Formulario cerrado');
@@ -130,15 +140,25 @@ export function AdminTripsPage() {
       console.log('🌐 [UPDATE TRIP] Llamando a updateTrip API...');
       
       const startTime = Date.now();
-      await updateTrip(editingTrip.id, data);
+      const updatedTrip = await updateTrip(editingTrip.id, data);
       const endTime = Date.now();
       
       console.log('✅ [UPDATE TRIP] API updateTrip completada exitosamente');
+      console.log('📦 [UPDATE TRIP] Viaje actualizado:', updatedTrip);
       console.log('⏱️ [UPDATE TRIP] Tiempo de respuesta:', (endTime - startTime), 'ms');
-      console.log('🔄 [UPDATE TRIP] Iniciando refetch de la lista de viajes...');
       
-      await refetch(); // Refresh the trips list
-      console.log('✅ [UPDATE TRIP] Refetch completado exitosamente');
+      // Optimistic update - update the trip immediately in the UI
+      console.log('🚀 [UPDATE TRIP] Aplicando actualización optimista...');
+      addOrUpdateTrip(updatedTrip);
+      console.log('✅ [UPDATE TRIP] Actualización optimista completada');
+      
+      // Background refetch to ensure data consistency
+      console.log('🔄 [UPDATE TRIP] Iniciando refetch en segundo plano...');
+      refetch().then(() => {
+        console.log('✅ [UPDATE TRIP] Refetch en segundo plano completado');
+      }).catch((error) => {
+        console.warn('⚠️ [UPDATE TRIP] Error en refetch de segundo plano:', error);
+      });
       
       setEditingTrip(null);
       console.log('🎯 [UPDATE TRIP] Modo edición desactivado');
@@ -204,12 +224,30 @@ export function AdminTripsPage() {
       return;
     }
     
+    console.log('🗑️ [DELETE TRIP] Iniciando eliminación de viaje:', id);
+    
     try {
+      console.log('🌐 [DELETE TRIP] Llamando a deleteTrip API...');
       await deleteTrip(id);
-      await refetch(); // Refresh the trips list
+      console.log('✅ [DELETE TRIP] API deleteTrip completada exitosamente');
+      
+      // Optimistic update - remove the trip immediately from the UI
+      console.log('🚀 [DELETE TRIP] Aplicando actualización optimista...');
+      removeTrip(id);
+      console.log('✅ [DELETE TRIP] Actualización optimista completada');
+      
+      // Background refetch to ensure data consistency
+      console.log('🔄 [DELETE TRIP] Iniciando refetch en segundo plano...');
+      refetch().then(() => {
+        console.log('✅ [DELETE TRIP] Refetch en segundo plano completado');
+      }).catch((error) => {
+        console.warn('⚠️ [DELETE TRIP] Error en refetch de segundo plano:', error);
+      });
+      
       toast.success('Paquete eliminado con éxito');
+      console.log('✅ [DELETE TRIP] PROCESO COMPLETADO EXITOSAMENTE');
     } catch (error) {
-      console.error('Error deleting trip:', error);
+      console.error('❌ [DELETE TRIP] Error capturado:', error);
       toast.error('Error al eliminar el paquete');
     }
   };
