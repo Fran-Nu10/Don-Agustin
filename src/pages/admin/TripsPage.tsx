@@ -19,86 +19,183 @@ export function AdminTripsPage() {
   const [itemsPerPage] = useState(10); // Paginación para mejorar rendimiento
 
   const handleCreateTrip = async (data: TripFormData) => {
-    console.log('🚀 Iniciando creación de viaje...');
+    console.log('🚀 [CREATE TRIP] Iniciando creación de viaje...');
+    console.log('📋 [CREATE TRIP] Datos del formulario:', data);
+    console.log('🔍 [CREATE TRIP] Validando datos antes del envío...');
+    
+    // Log validation details
+    console.log('✅ [CREATE TRIP] Título:', data.title);
+    console.log('✅ [CREATE TRIP] Destino:', data.destination);
+    console.log('✅ [CREATE TRIP] Precio (UYU):', data.price);
+    console.log('✅ [CREATE TRIP] Imagen URL:', data.image_url ? 'Presente' : 'Faltante');
+    console.log('✅ [CREATE TRIP] Itinerario días:', data.itinerary?.length || 0);
+    console.log('✅ [CREATE TRIP] Servicios incluidos:', data.included_services?.length || 0);
+    console.log('✅ [CREATE TRIP] Tags:', data.tags?.length || 0);
+    
     try {
       setIsSubmitting(true);
-      console.log('📝 Estado isSubmitting establecido a true');
+      console.log('📝 [CREATE TRIP] Estado isSubmitting establecido a true');
+      console.log('🌐 [CREATE TRIP] Llamando a createTrip API...');
+      
+      const startTime = Date.now();
       await createTrip(data);
+      const endTime = Date.now();
+      
+      console.log('✅ [CREATE TRIP] API createTrip completada exitosamente');
+      console.log('⏱️ [CREATE TRIP] Tiempo de respuesta:', (endTime - startTime), 'ms');
+      console.log('🔄 [CREATE TRIP] Iniciando refetch de la lista de viajes...');
+      
       await refetch(); // Refresh the trips list
+      console.log('✅ [CREATE TRIP] Refetch completado exitosamente');
+      
       setShowForm(false);
-      console.log('✅ Viaje creado exitosamente');
+      console.log('🎯 [CREATE TRIP] Formulario cerrado');
+      console.log('✅ [CREATE TRIP] PROCESO COMPLETADO EXITOSAMENTE');
       toast.success('Paquete creado con éxito');
     } catch (error) {
-      console.error('Error creating trip:', error);
+      console.error('❌ [CREATE TRIP] Error capturado en catch block:', error);
+      console.error('❌ [CREATE TRIP] Tipo de error:', typeof error);
+      console.error('❌ [CREATE TRIP] Error completo:', JSON.stringify(error, null, 2));
+      
+      // Log additional error details
+      if (error && typeof error === 'object') {
+        console.error('❌ [CREATE TRIP] Error.message:', (error as any).message);
+        console.error('❌ [CREATE TRIP] Error.code:', (error as any).code);
+        console.error('❌ [CREATE TRIP] Error.status:', (error as any).status);
+        console.error('❌ [CREATE TRIP] Error.statusText:', (error as any).statusText);
+      }
       
       // Manejo robusto de errores para mostrar mensaje legible
       let errorMessage = 'Error al crear el paquete';
       if (error && typeof error === 'object' && 'message' in error) {
         const originalMessage = (error as any).message;
+        console.log('🔍 [CREATE TRIP] Analizando mensaje de error:', originalMessage);
+        
         if (originalMessage.includes('401') || originalMessage.includes('unauthorized')) {
           errorMessage = 'No tienes permisos para crear paquetes. Contacta al administrador.';
+          console.log('🚫 [CREATE TRIP] Error identificado como: PERMISOS');
         } else if (originalMessage.includes('network') || originalMessage.includes('fetch')) {
           errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+          console.log('🌐 [CREATE TRIP] Error identificado como: CONEXIÓN');
         } else if (originalMessage.includes('JWT') || originalMessage.includes('token')) {
           errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+          console.log('🔑 [CREATE TRIP] Error identificado como: SESIÓN EXPIRADA');
+        } else if (originalMessage.includes('413') || originalMessage.includes('too large')) {
+          errorMessage = 'Los datos del paquete son demasiado grandes. Intenta reducir la cantidad de información.';
+          console.log('📦 [CREATE TRIP] Error identificado como: PAYLOAD DEMASIADO GRANDE');
+        } else if (originalMessage.includes('timeout')) {
+          errorMessage = 'La operación tardó demasiado tiempo. Intenta nuevamente.';
+          console.log('⏰ [CREATE TRIP] Error identificado como: TIMEOUT');
         } else if (originalMessage) {
           errorMessage = `Error: ${originalMessage}`;
+          console.log('❓ [CREATE TRIP] Error no categorizado:', originalMessage);
         }
       }
       
-      console.log('❌ Error al crear viaje:', errorMessage);
+      console.log('💬 [CREATE TRIP] Mensaje de error para usuario:', errorMessage);
       toast.error(errorMessage);
     } finally {
-      console.log('🔄 Reseteando estado isSubmitting a false');
+      console.log('🔄 [CREATE TRIP] Ejecutando bloque finally...');
+      console.log('🔄 [CREATE TRIP] Reseteando estado isSubmitting a false');
       setIsSubmitting(false);
       // Verificación adicional para asegurar que el estado se resetee
       setTimeout(() => {
-        console.log('🔍 Verificación final: isSubmitting debería ser false');
+        console.log('🔍 [CREATE TRIP] Verificación final: isSubmitting debería ser false');
         setIsSubmitting(false);
       }, 100);
+      console.log('✅ [CREATE TRIP] Bloque finally completado');
     }
   };
 
   const handleUpdateTrip = async (data: TripFormData) => {
     if (!editingTrip) return;
     
-    console.log('🚀 Iniciando actualización de viaje...');
+    console.log('🚀 [UPDATE TRIP] Iniciando actualización de viaje...');
+    console.log('📋 [UPDATE TRIP] ID del viaje a actualizar:', editingTrip.id);
+    console.log('📋 [UPDATE TRIP] Datos del formulario:', data);
+    console.log('🔍 [UPDATE TRIP] Validando datos antes del envío...');
+    
+    // Log validation details
+    console.log('✅ [UPDATE TRIP] Título:', data.title);
+    console.log('✅ [UPDATE TRIP] Destino:', data.destination);
+    console.log('✅ [UPDATE TRIP] Precio (UYU):', data.price);
+    console.log('✅ [UPDATE TRIP] Imagen URL:', data.image_url ? 'Presente' : 'Faltante');
+    console.log('✅ [UPDATE TRIP] Itinerario días:', data.itinerary?.length || 0);
+    console.log('✅ [UPDATE TRIP] Servicios incluidos:', data.included_services?.length || 0);
+    console.log('✅ [UPDATE TRIP] Tags:', data.tags?.length || 0);
+    
     try {
       setIsSubmitting(true);
-      console.log('📝 Estado isSubmitting establecido a true');
+      console.log('📝 [UPDATE TRIP] Estado isSubmitting establecido a true');
+      console.log('🌐 [UPDATE TRIP] Llamando a updateTrip API...');
+      
+      const startTime = Date.now();
       await updateTrip(editingTrip.id, data);
+      const endTime = Date.now();
+      
+      console.log('✅ [UPDATE TRIP] API updateTrip completada exitosamente');
+      console.log('⏱️ [UPDATE TRIP] Tiempo de respuesta:', (endTime - startTime), 'ms');
+      console.log('🔄 [UPDATE TRIP] Iniciando refetch de la lista de viajes...');
+      
       await refetch(); // Refresh the trips list
+      console.log('✅ [UPDATE TRIP] Refetch completado exitosamente');
+      
       setEditingTrip(null);
-      console.log('✅ Viaje actualizado exitosamente');
+      console.log('🎯 [UPDATE TRIP] Modo edición desactivado');
+      console.log('✅ [UPDATE TRIP] PROCESO COMPLETADO EXITOSAMENTE');
       toast.success('Paquete actualizado con éxito');
     } catch (error) {
-      console.error('Error updating trip:', error);
+      console.error('❌ [UPDATE TRIP] Error capturado en catch block:', error);
+      console.error('❌ [UPDATE TRIP] Tipo de error:', typeof error);
+      console.error('❌ [UPDATE TRIP] Error completo:', JSON.stringify(error, null, 2));
+      
+      // Log additional error details
+      if (error && typeof error === 'object') {
+        console.error('❌ [UPDATE TRIP] Error.message:', (error as any).message);
+        console.error('❌ [UPDATE TRIP] Error.code:', (error as any).code);
+        console.error('❌ [UPDATE TRIP] Error.status:', (error as any).status);
+        console.error('❌ [UPDATE TRIP] Error.statusText:', (error as any).statusText);
+      }
       
       // Manejo robusto de errores para mostrar mensaje legible
       let errorMessage = 'Error al actualizar el paquete';
       if (error && typeof error === 'object' && 'message' in error) {
         const originalMessage = (error as any).message;
+        console.log('🔍 [UPDATE TRIP] Analizando mensaje de error:', originalMessage);
+        
         if (originalMessage.includes('401') || originalMessage.includes('unauthorized')) {
           errorMessage = 'No tienes permisos para actualizar paquetes. Contacta al administrador.';
+          console.log('🚫 [UPDATE TRIP] Error identificado como: PERMISOS');
         } else if (originalMessage.includes('network') || originalMessage.includes('fetch')) {
           errorMessage = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.';
+          console.log('🌐 [UPDATE TRIP] Error identificado como: CONEXIÓN');
         } else if (originalMessage.includes('JWT') || originalMessage.includes('token')) {
           errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+          console.log('🔑 [UPDATE TRIP] Error identificado como: SESIÓN EXPIRADA');
+        } else if (originalMessage.includes('413') || originalMessage.includes('too large')) {
+          errorMessage = 'Los datos del paquete son demasiado grandes. Intenta reducir la cantidad de información.';
+          console.log('📦 [UPDATE TRIP] Error identificado como: PAYLOAD DEMASIADO GRANDE');
+        } else if (originalMessage.includes('timeout')) {
+          errorMessage = 'La operación tardó demasiado tiempo. Intenta nuevamente.';
+          console.log('⏰ [UPDATE TRIP] Error identificado como: TIMEOUT');
         } else if (originalMessage) {
           errorMessage = `Error: ${originalMessage}`;
+          console.log('❓ [UPDATE TRIP] Error no categorizado:', originalMessage);
         }
       }
       
-      console.log('❌ Error al actualizar viaje:', errorMessage);
+      console.log('💬 [UPDATE TRIP] Mensaje de error para usuario:', errorMessage);
       toast.error(errorMessage);
     } finally {
-      console.log('🔄 Reseteando estado isSubmitting a false');
+      console.log('🔄 [UPDATE TRIP] Ejecutando bloque finally...');
+      console.log('🔄 [UPDATE TRIP] Reseteando estado isSubmitting a false');
       setIsSubmitting(false);
       // Verificación adicional para asegurar que el estado se resetee
       setTimeout(() => {
-        console.log('🔍 Verificación final: isSubmitting debería ser false');
+        console.log('🔍 [UPDATE TRIP] Verificación final: isSubmitting debería ser false');
         setIsSubmitting(false);
       }, 100);
+      console.log('✅ [UPDATE TRIP] Bloque finally completado');
     }
   };
 
