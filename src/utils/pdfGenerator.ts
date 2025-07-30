@@ -4,12 +4,7 @@ import { Quotation } from '../types/quotation';
 import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-// Convert UYU to USD
-const convertToUSD = (amount: number): number => {
-  // Using an approximate conversion rate of 40 UYU = 1 USD
-  return amount / 40;
-};
+import { formatPrice } from './currency';
 
 export function generateQuotationPDF(quotation: Quotation) {
   const doc = new jsPDF();
@@ -82,11 +77,9 @@ export function generateQuotationPDF(quotation: Quotation) {
   doc.text('INFORMACIÓN DEL VIAJE', 20, finalY);
   
   // Convert price to USD if available
-  let priceDisplay = 'A definir';
-  if (quotation.trip_price) {
-    const usdPrice = convertToUSD(quotation.trip_price);
-    priceDisplay = `USD ${usdPrice.toFixed(0)}`;
-  }
+  const priceDisplay = quotation.trip_price 
+    ? formatPrice(quotation.trip_price, quotation.trip_price_currency || 'UYU')
+    : 'A definir';
   
   const tripData = [
     ['Destino:', quotation.destination || 'A definir'],

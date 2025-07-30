@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
+import { formatPrice } from '../../utils/currency';
 
 // Helper function to safely create valid dates
 function createValidDate(dateString: string | null | undefined): Date | null {
@@ -123,9 +124,6 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {filledTrips.map((trip, index) => {
-            // Convert price from UYU to USD
-            const priceUSD = Math.floor(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
-            
             return (
               <motion.div
                 key={`${trip.id}-${index}`}
@@ -148,7 +146,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
                     
                     {/* Price tag - Now in USD */}
                     <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-                      USD {priceUSD}
+                      {formatPrice(trip.price, trip.currency_type)}
                     </div>
                     
                     {/* Optional "últimos lugares" tag */}

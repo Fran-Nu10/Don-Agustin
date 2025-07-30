@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { formatPrice } from '../../utils/currency';
 
 // Helper function to safely create valid dates
 function createValidDate(dateString: string | null | undefined): Date | null {
@@ -166,7 +167,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                         
                         {/* Price tag - Convert to USD */}
                         <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-                          USD {Math.floor(trip.price / 40)}
+                          {formatPrice(trip.price, trip.currency_type)}
                         </div>
                         
                         {/* Category badge - Only on desktop */}

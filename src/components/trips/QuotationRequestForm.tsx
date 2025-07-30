@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { createClient } from '../../lib/supabase/clients';
 import { createQuotation } from '../../lib/supabase/quotations';
 import { toast } from 'react-hot-toast';
+import { formatPrice } from '../../utils/currency';
 
 interface QuotationFormData {
   name: string;
@@ -36,8 +37,6 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
     }
   });
 
-  // Convert price from UYU to USD
-  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
 
   const onSubmit = async (data: QuotationFormData) => {
     try {
@@ -80,7 +79,8 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         trip_id: trip.id,
         trip_title: trip.title,
         trip_destination: trip.destination,
-        trip_price: trip.price
+        trip_price: trip.price,
+        trip_price_currency: trip.currency_type
       };
       
       console.log('Creating quotation with data:', quotationData);

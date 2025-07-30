@@ -14,6 +14,7 @@ import { es } from 'date-fns/locale';
 import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { formatPrice } from '../utils/currency';
 
 // Helper function to safely create valid dates
 function createValidDate(dateString: string | null | undefined): Date | null {
@@ -195,9 +196,6 @@ export function TripDetailPage() {
     ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   
-  // Convert price from UYU to USD
-  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
-
   // If trip doesn't have tags, assign default ones based on category
   let displayTags = trip.tags || [];
   if (displayTags.length === 0) {
@@ -241,7 +239,7 @@ export function TripDetailPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-0 right-0 bg-primary-950 text-white py-2 px-4 font-bold rounded-bl-lg text-xl">
-                    USD {priceUSD}
+                    {formatPrice(trip.price, trip.currency_type)}
                   </div>
                   
                   {/* Category badge with new colors */}
