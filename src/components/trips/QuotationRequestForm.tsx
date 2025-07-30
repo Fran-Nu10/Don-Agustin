@@ -42,12 +42,15 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
     try {
       setIsSubmitting(true);
       
+      // Convert price to USD for display in message
+      const priceUSD = trip.currency_type === 'USD' ? trip.price : Math.round(trip.price / 40);
+      
       // 1. Create client in CRM with trip information
       const clientData = {
         name: data.name,
         email: data.email,
         phone: data.phone || '',
-        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: USD ${priceUSD}. Viajeros: ${data.adults} adultos, ${data.children} niños.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
+        message: `Interesado en el paquete: ${trip.title} - ${trip.destination}. Fecha de salida: ${new Date(trip.departure_date).toLocaleDateString('es-UY')}. Precio: ${formatPrice(trip.price, trip.currency_type)}. Viajeros: ${data.adults} adultos, ${data.children} niños.${data.observations ? ` Mensaje adicional: ${data.observations}` : ''}`,
         status: 'nuevo' as const,
         // Add trip-related fields
         last_booked_trip_id: trip.id,
@@ -56,6 +59,7 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         last_booked_trip_date: trip.departure_date,
         preferred_destination: trip.destination,
         trip_value: trip.price,
+        trip_value_currency: trip.currency_type,
       };
 
       console.log('Creating client with data:', clientData);

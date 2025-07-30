@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { generateQuotationPDF } from '../../utils/pdfGenerator';
+import { formatPrice } from '../../utils/currency';
 
 interface QuotationsTableProps {
   quotations: Quotation[];

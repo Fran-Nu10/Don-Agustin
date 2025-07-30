@@ -87,7 +87,9 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             
             {/* Price tag - Now in USD */}
             <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-              {formatPrice(trip.price, trip.currency_type)}
+              <span className="text-sm md:text-base font-bold">
+                {formatPrice(trip.price, trip.currency_type)}
+              </span>
             </div>
             
             {/* Category badge with new colors */}

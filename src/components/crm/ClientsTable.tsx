@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download, Tag, AlertTriangle, Clock, Star, DollarSign } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { generateClientPDF } from '../../utils/pdfGenerator';
+import { formatPrice } from '../../utils/currency';
 
 interface ClientsTableProps {
   clients: Client[];
@@ -194,10 +195,10 @@ export function ClientsTable({
     return new Date(followUpDate) < new Date();
   };
 
-  // Convert trip value from UYU to USD
-  const getTripValueUSD = (value?: number) => {
+  // Format trip value with correct currency
+  const getFormattedTripValue = (value?: number, currency?: string) => {
     if (!value) return null;
-    return Math.round(value / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+    return formatPrice(value, currency as 'UYU' | 'USD' || 'UYU');
   };
 
   return (
@@ -376,11 +377,11 @@ export function ClientsTable({
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
-                      {tripValueUSD ? (
+                      {client.trip_value ? (
                         <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-2 text-green-600" />
-                          <span className="text-green-600 font-medium">
-                            USD {tripValueUSD}
+                          <DollarSign className="h-4 w-4 mr-2 text-primary-600" />
+                          <span className="text-primary-600 font-medium">
+                            {getFormattedTripValue(client.trip_value, client.trip_value_currency)}
                           </span>
                         </div>
                       ) : (

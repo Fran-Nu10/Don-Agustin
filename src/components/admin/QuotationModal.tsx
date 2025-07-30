@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 import { X, Calendar, Phone, Mail, User, MapPin, Users, MessageSquare, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { formatPrice } from '../../utils/currency';
 
 interface QuotationModalProps {
   quotation: Quotation | null;
@@ -101,10 +102,10 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
     }
   };
 
-  // Convert price from UYU to USD
-  const getPriceUSD = (uyuPrice?: number) => {
-    if (!uyuPrice) return 'No especificado';
-    return `USD ${Math.round(uyuPrice / 40)}`; // Using an approximate conversion rate of 40 UYU = 1 USD
+  // Format price with correct currency
+  const getFormattedPrice = (price?: number, currency?: string) => {
+    if (!price) return 'No especificado';
+    return formatPrice(price, currency as 'UYU' | 'USD' || 'UYU');
   };
 
   if (!isOpen || !quotation) return null;
@@ -163,7 +164,7 @@ export function QuotationModal({ quotation, isOpen, onClose, onSave, isSubmittin
                     <div>
                       <p className="text-sm text-secondary-500">Precio</p>
                       <p className="font-medium text-secondary-900">
-                        {getPriceUSD(quotation.trip_price)}
+                        {getFormattedPrice(quotation.trip_price, quotation.trip_price_currency)}
                       </p>
                     </div>
                   </div>

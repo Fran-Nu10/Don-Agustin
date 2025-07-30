@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 import { X, Calendar, Phone, Mail, User, MessageSquare, FileText, AlertCircle, Trash2, DollarSign, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { formatPrice } from '../../utils/currency';
 
 interface ClientModalProps {
   client: Client | null;
@@ -197,10 +198,10 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
     }
   };
 
-  // Convert trip value from UYU to USD
-  const getTripValueUSD = (value?: number) => {
-    if (!value) return 0;
-    return Math.round(value / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
+  // Format trip value with correct currency
+  const getFormattedTripValue = (value?: number, currency?: string) => {
+    if (!value) return 'Sin valor asignado';
+    return formatPrice(value, currency as 'UYU' | 'USD' || 'UYU');
   };
 
   if (!isOpen || !client) return null;
@@ -266,7 +267,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     <div>
                       <p className="text-sm text-secondary-500">Valor del viaje</p>
                       <p className="font-medium text-secondary-900">
-                        USD {getTripValueUSD(client.trip_value)}
+                        {getFormattedTripValue(client.trip_value, client.trip_value_currency)}
                       </p>
                     </div>
                   </div>

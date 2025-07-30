@@ -239,7 +239,9 @@ export function TripDetailPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-0 right-0 bg-primary-950 text-white py-2 px-4 font-bold rounded-bl-lg text-xl">
-                    {formatPrice(trip.price, trip.currency_type)}
+                    <span className="text-lg md:text-xl font-bold">
+                      {formatPrice(trip.price, trip.currency_type)}
+                    </span>
                   </div>
                   
                   {/* Category badge with new colors */}
