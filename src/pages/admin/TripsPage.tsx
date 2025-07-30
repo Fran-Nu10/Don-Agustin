@@ -19,31 +19,35 @@ export function AdminTripsPage() {
   const [itemsPerPage] = useState(10); // Paginación para mejorar rendimiento
 
   const handleCreateTrip = async (data: TripFormData) => {
-    console.log('🚀 [CREATE TRIP] Iniciando creación de viaje...');
-    console.log('📋 [CREATE TRIP] Datos del formulario:', data);
+    console.log('🚀 [CREATE TRIP] Iniciando función handleCreateTrip...');
+    console.log('📋 [CREATE TRIP] Datos recibidos del formulario:', JSON.stringify(data, null, 2));
     console.log('🔍 [CREATE TRIP] Validando datos antes del envío...');
     
     // Log validation details
     console.log('✅ [CREATE TRIP] Título:', data.title);
     console.log('✅ [CREATE TRIP] Destino:', data.destination);
-    console.log('✅ [CREATE TRIP] Precio (UYU):', data.price);
+    console.log('✅ [CREATE TRIP] Precio:', data.price, data.currency_type);
     console.log('✅ [CREATE TRIP] Imagen URL:', data.image_url ? 'Presente' : 'Faltante');
     console.log('✅ [CREATE TRIP] Itinerario días:', data.itinerary?.length || 0);
     console.log('✅ [CREATE TRIP] Servicios incluidos:', data.included_services?.length || 0);
     console.log('✅ [CREATE TRIP] Tags:', data.tags?.length || 0);
     
     try {
+      console.log('📝 [CREATE TRIP] Estableciendo isSubmitting a true...');
       setIsSubmitting(true);
-      console.log('📝 [CREATE TRIP] Estado isSubmitting establecido a true');
+      console.log('✅ [CREATE TRIP] Estado isSubmitting establecido a true');
+      
       console.log('🌐 [CREATE TRIP] Llamando a createTrip API...');
+      console.log('⏰ [CREATE TRIP] Timestamp inicio:', new Date().toISOString());
       
       const startTime = Date.now();
       const newTrip = await createTrip(data);
       const endTime = Date.now();
       
       console.log('✅ [CREATE TRIP] API createTrip completada exitosamente');
-      console.log('📦 [CREATE TRIP] Nuevo viaje creado:', newTrip);
+      console.log('📦 [CREATE TRIP] Nuevo viaje creado:', JSON.stringify(newTrip, null, 2));
       console.log('⏱️ [CREATE TRIP] Tiempo de respuesta:', (endTime - startTime), 'ms');
+      console.log('⏰ [CREATE TRIP] Timestamp fin:', new Date().toISOString());
       
       // Optimistic update - add the new trip immediately to the UI
       console.log('🚀 [CREATE TRIP] Aplicando actualización optimista...');
@@ -58,14 +62,16 @@ export function AdminTripsPage() {
         console.warn('⚠️ [CREATE TRIP] Error en refetch de segundo plano:', error);
       });
       
+      console.log('🎯 [CREATE TRIP] Cerrando formulario...');
       setShowForm(false);
-      console.log('🎯 [CREATE TRIP] Formulario cerrado');
-      console.log('✅ [CREATE TRIP] PROCESO COMPLETADO EXITOSAMENTE');
+      console.log('✅ [CREATE TRIP] Formulario cerrado');
+      console.log('🎉 [CREATE TRIP] PROCESO COMPLETADO EXITOSAMENTE');
       toast.success('Paquete creado con éxito');
     } catch (error) {
       console.error('❌ [CREATE TRIP] Error capturado en catch block:', error);
       console.error('❌ [CREATE TRIP] Tipo de error:', typeof error);
       console.error('❌ [CREATE TRIP] Error completo:', JSON.stringify(error, null, 2));
+      console.error('⏰ [CREATE TRIP] Timestamp error:', new Date().toISOString());
       
       // Log additional error details
       if (error && typeof error === 'object') {
