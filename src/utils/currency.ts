@@ -51,7 +51,6 @@ export function QuotationRequestForm({ trip, onSuccess }: QuotationRequestFormPr
         email: data.email,
         phone: data.phone || '',
         status: 'nuevo' as const,
-    }).format(numericAmount);
         last_booked_trip_id: trip.id,
         last_booked_trip_title: trip.title,
         last_booked_trip_destination: trip.destination,
