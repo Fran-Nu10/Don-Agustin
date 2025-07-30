@@ -43,6 +43,7 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
       last_booked_trip_date: clientData.last_booked_trip_date || null,
       preferred_destination: clientData.preferred_destination || clientData.last_booked_trip_destination || null,
       trip_value: clientData.trip_value || null,
+      trip_value_currency: clientData.trip_value_currency || null,
       // Set scheduled_date automatically for public bookings
       scheduled_date: new Date().toISOString(),
     };

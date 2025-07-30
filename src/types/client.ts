@@ -19,6 +19,7 @@ export interface Client {
   next_follow_up?: string;
   tags?: string[];
   trip_value?: number; // Valor del viaje
+  trip_value_currency?: 'UYU' | 'USD';
   // New trip-related fields
   last_booked_trip_id?: string;
   last_booked_trip_title?: string;
@@ -43,6 +44,7 @@ export interface ClientFormData {
   next_follow_up?: string;
   tags?: string[];
   trip_value?: number; // Valor del viaje
+  trip_value_currency?: 'UYU' | 'USD';
   // New trip-related fields
   last_booked_trip_id?: string;
   last_booked_trip_title?: string;

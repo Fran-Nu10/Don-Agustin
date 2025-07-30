@@ -25,12 +25,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
 
-  // Convert price from UYU to USD for display
-  const getUSDPrice = (uyuPrice?: number) => {
-    if (!uyuPrice) return '';
-    return Math.round(uyuPrice / 40).toString(); // Using an approximate conversion rate of 40 UYU = 1 USD
-  };
-
   const {
     register,
     handleSubmit,
@@ -45,6 +39,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           destination: initialData.destination,
           description: initialData.description,
           price: initialData.price,
+          currency_type: initialData.currency_type,
           departure_date: initialData.departure_date.split('T')[0],
           return_date: initialData.return_date.split('T')[0],
           available_spots: initialData.available_spots,
@@ -57,6 +52,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       : {
           itinerary: [{ day: 1, title: '', description: '' }],
           included_services: [{ icon: 'Hotel', title: '', description: '' }],
+          currency_type: 'UYU' as const,
           tags: [],
         },
   });
@@ -384,27 +380,36 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block mb-1 text-sm font-medium text-secondary-900">
-              Precio (USD)
+              Precio
             </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              defaultValue={getUSDPrice(initialData?.price)}
-              {...register('price', { 
-                required: 'El precio es obligatorio',
-                valueAsNumber: true,
-                min: { value: 0, message: 'El precio debe ser mayor a 0' },
-                // Convert USD to UYU on submit
-                setValueAs: (v) => v ? parseFloat(v) * 40 : 0 // Multiply by 40 to convert to UYU
-              })}
-            />
+            <div className="flex">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-l-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                {...register('price', { 
+                  required: 'El precio es obligatorio',
+                  valueAsNumber: true,
+                  min: { value: 0, message: 'El precio debe ser mayor a 0' },
+                })}
+              />
+              <select
+                {...register('currency_type', { required: 'La moneda es obligatoria' })}
+                className="px-3 py-2 bg-white border border-l-0 border-secondary-300 rounded-r-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="UYU">$U (UYU)</option>
+                <option value="USD">$ (USD)</option>
+              </select>
+            </div>
             {errors.price && (
               <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
             )}
+            {errors.currency_type && (
+              <p className="mt-1 text-sm text-red-600">{errors.currency_type.message}</p>
+            )}
             <p className="text-xs text-secondary-500 mt-1">
-              Ingrese el precio en dólares americanos (USD). Se guardará en pesos uruguayos.
+              Selecciona la moneda en la que quieres mostrar el precio del paquete.
             </p>
           </div>
           

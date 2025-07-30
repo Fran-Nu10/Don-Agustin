@@ -27,6 +27,7 @@ export interface Trip {
   destination: string;
   description: string;
   price: number;
+  currency_type: 'UYU' | 'USD';
   departure_date: string;
   return_date: string;
   available_spots: number;
@@ -74,6 +75,7 @@ export interface TripFormData {
   destination: string;
   description: string;
   price: number;
+  currency_type: 'UYU' | 'USD';
   departure_date: string;
   return_date: string;
   available_spots: number;

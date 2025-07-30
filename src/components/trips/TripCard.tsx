@@ -5,6 +5,7 @@ import { Calendar, MapPin, Tag, ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { formatPrice } from '../../utils/currency';
 
 interface TripCardProps {
   trip: Trip;
@@ -29,9 +30,6 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
   const tripDuration = (departureDate && returnDate) 
     ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
-  
-  // Convert price from UYU to USD
-  const priceUSD = Math.round(trip.price / 40); // Using an approximate conversion rate of 40 UYU = 1 USD
   
   // Get tag color based on tag name
   const getTagColor = (tag: string) => {
@@ -89,7 +87,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
             
             {/* Price tag - Now in USD */}
             <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-              USD {priceUSD}
+              {formatPrice(trip.price, trip.currency_type)}
             </div>
             
             {/* Category badge with new colors */}

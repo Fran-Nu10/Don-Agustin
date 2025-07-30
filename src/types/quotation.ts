@@ -18,6 +18,7 @@ export interface Quotation {
   trip_title?: string;
   trip_destination?: string;
   trip_price?: number;
+  trip_price_currency?: 'UYU' | 'USD';
 }
 
 export interface QuotationFormData {
@@ -36,6 +37,7 @@ export interface QuotationFormData {
   trip_title?: string;
   trip_destination?: string;
   trip_price?: number;
+  trip_price_currency?: 'UYU' | 'USD';
 }
 
 export interface QuotationFilters {
