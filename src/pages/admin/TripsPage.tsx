@@ -320,6 +320,8 @@ export function AdminTripsPage() {
       
       {/* Trip Form */}
       {(showForm || editingTrip) && (
+        <div>
+          {console.log('📋 [FORM RENDER] Renderizando formulario - showForm:', showForm, 'editingTrip:', !!editingTrip)}
         <Card className="mb-8">
           <CardHeader>
             <h2 className="font-heading font-bold text-xl text-secondary-900">
@@ -327,6 +329,7 @@ export function AdminTripsPage() {
             </h2>
           </CardHeader>
           <CardContent>
+            {console.log('📋 [FORM RENDER] Pasando props a TripForm - onSubmit:', typeof (editingTrip ? handleUpdateTrip : handleCreateTrip))}
             <TripForm
               initialData={editingTrip || undefined}
               onSubmit={editingTrip ? handleUpdateTrip : handleCreateTrip}
@@ -336,6 +339,7 @@ export function AdminTripsPage() {
               <Button
                 variant="ghost"
                 onClick={() => {
+                  console.log('🔘 [CANCEL] Botón cancelar clickeado');
                   setShowForm(false);
                   setEditingTrip(null);
                 }}
@@ -345,6 +349,7 @@ export function AdminTripsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       )}
       
       {/* Search */}
