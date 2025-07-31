@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { User, Trip, Booking, Stats, TripFormData, ItineraryDay, IncludedService } from '../types';
 import { supabase } from './supabase/client';
+import { sanitizeTripData } from '../utils/dataSanitizer';
 
 
 // Enhanced error handling wrapper
@@ -301,7 +302,11 @@ export async function getTrip(id: string): Promise<Trip | null> {
 
 export async function createTrip(tripData: TripFormData): Promise<Trip> {
   return handleSupabaseError(async () => {
-    const { itinerary, included_services, ...tripInfo } = tripData;
+    console.log('🧹 [CREATE TRIP] Aplicando sanitización de datos...');
+    const sanitizedTripData = sanitizeTripData(tripData);
+    console.log('✅ [CREATE TRIP] Datos sanitizados aplicados');
+    
+    const { itinerary, included_services, ...tripInfo } = sanitizedTripData;
     
     // Create the trip first
     const { data: trip, error: tripError } = await supabase
@@ -355,7 +360,11 @@ export async function createTrip(tripData: TripFormData): Promise<Trip> {
 
 export async function updateTrip(id: string, tripData: TripFormData): Promise<Trip> {
   return handleSupabaseError(async () => {
-    const { itinerary, included_services, ...tripInfo } = tripData;
+    console.log('🧹 [UPDATE TRIP] Aplicando sanitización de datos...');
+    const sanitizedTripData = sanitizeTripData(tripData);
+    console.log('✅ [UPDATE TRIP] Datos sanitizados aplicados');
+    
+    const { itinerary, included_services, ...tripInfo } = sanitizedTripData;
     
     // Update the trip
     const { data: trip, error: tripError } = await supabase

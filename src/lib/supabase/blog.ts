@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { BlogPost, BlogCategory, BlogTag, BlogFormData } from '../../types/blog';
+import { sanitizeBlogData } from '../../utils/dataSanitizer';
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   const { data, error } = await supabase
@@ -103,6 +104,10 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
   const { data: user, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
+  console.log('🧹 [CREATE BLOG POST] Aplicando sanitización de datos...');
+  const sanitizedData = sanitizeBlogData(data);
+  console.log('✅ [CREATE BLOG POST] Datos sanitizados aplicados');
+
   // Get user from users table using the current user's ID
   const { data: userData, error: userDataError } = await supabase
     .from('users')
@@ -115,7 +120,7 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
     throw new Error('No se pudo obtener la información del usuario');
   }
 
-  const slug = data.title
+  const slug = sanitizedData.title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
@@ -125,10 +130,10 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
   const { data: post, error } = await supabase
     .from('blog_posts')
     .insert({
-      ...data,
+      ...sanitizedData,
       slug,
       author_id: userData.id,
-      published_at: data.status === 'published' ? new Date().toISOString() : null,
+      published_at: sanitizedData.status === 'published' ? new Date().toISOString() : null,
     })
     .select(`
       id,
@@ -152,12 +157,16 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
 }
 
 export async function updateBlogPost(id: string, data: Partial<BlogFormData>): Promise<BlogPost> {
+  console.log('🧹 [UPDATE BLOG POST] Aplicando sanitización de datos...');
+  const sanitizedData = sanitizeBlogData(data);
+  console.log('✅ [UPDATE BLOG POST] Datos sanitizados aplicados');
+  
   const updateData: any = {
-    ...data,
+    ...sanitizedData,
     updated_at: new Date().toISOString(),
   };
 
-  if (data.status === 'published' && !data.published_at) {
+  if (sanitizedData.status === 'published' && !sanitizedData.published_at) {
     updateData.published_at = new Date().toISOString();
   }
 

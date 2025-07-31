@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { Quotation, QuotationFormData } from '../../types/quotation';
+import { sanitizeFormData } from '../../utils/dataSanitizer';
 
 export async function getQuotations(): Promise<Quotation[]> {
   const { data, error } = await supabase
@@ -26,10 +27,14 @@ export async function getQuotation(id: string): Promise<Quotation | null> {
 }
 
 export async function createQuotation(quotationData: QuotationFormData): Promise<Quotation> {
+  console.log('🧹 [CREATE QUOTATION] Aplicando sanitización de datos...');
+  const sanitizedData = sanitizeFormData(quotationData);
+  console.log('✅ [CREATE QUOTATION] Datos sanitizados aplicados');
+  
   // Remove manual timestamp setting - let the database handle defaults and triggers
   const { data, error } = await supabase
     .from('quotations')
-    .insert([quotationData])
+    .insert([sanitizedData])
     .select()
     .single();
 
@@ -38,10 +43,14 @@ export async function createQuotation(quotationData: QuotationFormData): Promise
 }
 
 export async function updateQuotation(id: string, quotationData: Partial<QuotationFormData>): Promise<Quotation> {
+  console.log('🧹 [UPDATE QUOTATION] Aplicando sanitización de datos...');
+  const sanitizedData = sanitizeFormData(quotationData);
+  console.log('✅ [UPDATE QUOTATION] Datos sanitizados aplicados');
+  
   // Remove manual updated_at setting - let the database trigger handle it
   const { data, error } = await supabase
     .from('quotations')
-    .update(quotationData)
+    .update(sanitizedData)
     .eq('id', id)
     .select()
     .single();

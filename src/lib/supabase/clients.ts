@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { Client, ClientFormData } from '../../types/client';
+import { sanitizeClientData } from '../../utils/dataSanitizer';
 
 export async function getClients(): Promise<Client[]> {
   const { data, error } = await supabase
@@ -29,21 +30,25 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
   try {
     console.log('Creating client with data:', clientData);
     
+    console.log('🧹 [CREATE CLIENT] Aplicando sanitización de datos...');
+    const sanitizedClientData = sanitizeClientData(clientData);
+    console.log('✅ [CREATE CLIENT] Datos sanitizados aplicados');
+    
     // Prepare data for insertion - only include fields that are allowed for public insertion
     const dataToInsert = {
-      name: clientData.name,
-      email: clientData.email,
-      phone: clientData.phone || null,
-      message: clientData.message || null,
-      status: clientData.status || 'nuevo',
+      name: sanitizedClientData.name,
+      email: sanitizedClientData.email,
+      phone: sanitizedClientData.phone || null,
+      message: sanitizedClientData.message || null,
+      status: sanitizedClientData.status || 'nuevo',
       // Trip-related fields
-      last_booked_trip_id: clientData.last_booked_trip_id || null,
-      last_booked_trip_title: clientData.last_booked_trip_title || null,
-      last_booked_trip_destination: clientData.last_booked_trip_destination || null,
-      last_booked_trip_date: clientData.last_booked_trip_date || null,
-      preferred_destination: clientData.preferred_destination || clientData.last_booked_trip_destination || null,
-      trip_value: clientData.trip_value || null,
-      trip_value_currency: clientData.trip_value_currency || null,
+      last_booked_trip_id: sanitizedClientData.last_booked_trip_id || null,
+      last_booked_trip_title: sanitizedClientData.last_booked_trip_title || null,
+      last_booked_trip_destination: sanitizedClientData.last_booked_trip_destination || null,
+      last_booked_trip_date: sanitizedClientData.last_booked_trip_date || null,
+      preferred_destination: sanitizedClientData.preferred_destination || sanitizedClientData.last_booked_trip_destination || null,
+      trip_value: sanitizedClientData.trip_value || null,
+      trip_value_currency: sanitizedClientData.trip_value_currency || null,
       // Set scheduled_date automatically for public bookings
       scheduled_date: new Date().toISOString(),
     };
@@ -86,8 +91,8 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
       // This is acceptable for public forms where we just need to confirm creation
       return {
         id: 'created', // Placeholder ID
-        name: dataToInsert.name,
-        email: dataToInsert.email,
+        name: sanitizedClientData.name,
+        email: sanitizedClientData.email,
         phone: dataToInsert.phone,
         message: dataToInsert.message,
         status: dataToInsert.status,
@@ -110,11 +115,15 @@ export async function createClient(clientData: Omit<ClientFormData, 'internal_no
 }
 
 export async function updateClient(id: string, clientData: Partial<ClientFormData>): Promise<Client> {
+  console.log('🧹 [UPDATE CLIENT] Aplicando sanitización de datos...');
+  const sanitizedClientData = sanitizeClientData(clientData);
+  console.log('✅ [UPDATE CLIENT] Datos sanitizados aplicados');
+  
   // Handle scheduled_date properly - convert to ISO string or set to null
   const updateData = {
-    ...clientData,
-    scheduled_date: clientData.scheduled_date ? 
-      new Date(clientData.scheduled_date).toISOString() : null,
+    ...sanitizedClientData,
+    scheduled_date: sanitizedClientData.scheduled_date ? 
+      new Date(sanitizedClientData.scheduled_date).toISOString() : null,
     updated_at: new Date().toISOString(),
   };
 
