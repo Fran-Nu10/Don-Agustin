@@ -5,7 +5,7 @@ import { es } from 'date-fns/locale';
 import { ArrowUpDown, Eye, Calendar, Phone, Mail, MapPin, Download, Tag, AlertTriangle, Clock, Star, DollarSign } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { generateClientPDF } from '../../utils/pdfGenerator';
-import { formatPrice } from '../../utils/currency';
+import { formatPrice, getTripValueUSD } from '../../utils/currency';
 
 interface ClientsTableProps {
   clients: Client[];
