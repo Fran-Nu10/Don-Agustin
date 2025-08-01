@@ -97,7 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         const currentUser = await getCurrentUserPromise;
-        const currentUser = await getCurrentUser();
         console.log('Current user from getCurrentUser:', currentUser);
         setUser(currentUser);
       } catch (error) {
@@ -144,7 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               getCurrentUserPromise = getCurrentUser();
             }
             const currentUser = await getCurrentUserPromise;
-            const currentUser = await getCurrentUser();
             console.log('User from getCurrentUser after auth change:', currentUser);
             setUser(currentUser);
           } else {
