@@ -99,21 +99,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const currentUser = await getCurrentUser();
             console.log('User from getCurrentUser after auth change:', currentUser);
             setUser(currentUser);
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            if (!currentUser && currentSession) {
-              console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
-              await supabase.auth.signOut();
-              setUser(null);
-              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
-            }
           } else {
             setUser(null);
           }
         } catch (error) {
           console.error('Error handling auth state change:', error);
-          await supabase.auth.signOut();
+          // Let getCurrentUser handle its own retries and error recovery
+          // Only set user to null if getCurrentUser definitively fails
           setUser(null);
-          toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
         } finally {
           setLoading(false);
         }
