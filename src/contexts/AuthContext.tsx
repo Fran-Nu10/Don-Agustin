@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase/client';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isRecoveringSession: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
   isOwner: () => boolean;
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
 
   async function login(data: LoginFormData) {
@@ -77,17 +79,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
  useEffect(() => {
+    let sessionRecoveryTimeout: NodeJS.Timeout | null = null;
+    let getCurrentUserPromise: Promise<User | null> | null = null;
+
     async function checkUser() {
       try {
         console.log('Checking current user...');
+        
+        // Set recovery timeout for UI feedback
+        sessionRecoveryTimeout = setTimeout(() => {
+          setIsRecoveringSession(true);
+        }, 3000);
+        
+        // Prevent multiple simultaneous calls to getCurrentUser
+        if (!getCurrentUserPromise) {
+          getCurrentUserPromise = getCurrentUser();
+        }
+        
+        const currentUser = await getCurrentUserPromise;
         const currentUser = await getCurrentUser();
         console.log('Current user from getCurrentUser:', currentUser);
         setUser(currentUser);
       } catch (error) {
         console.error('Error checking user:', error);
+        
+        // If getCurrentUser fails twice or times out, force logout
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount < maxRetries) {
+          try {
+            retryCount++;
+            console.log(`Retry attempt ${retryCount}/${maxRetries} for getCurrentUser`);
+            const retryUser = await getCurrentUser();
+            setUser(retryUser);
+            break;
+          } catch (retryError) {
+            console.error(`Retry ${retryCount} failed:`, retryError);
+            if (retryCount >= maxRetries) {
+              console.log('Max retries reached, forcing logout');
+              await signOut();
+              setUser(null);
+            }
+          }
+        }
         setUser(null);
       } finally {
+        if (sessionRecoveryTimeout) {
+          clearTimeout(sessionRecoveryTimeout);
+        }
+        setIsRecoveringSession(false);
         setLoading(false);
+        getCurrentUserPromise = null;
       }
     }
 
@@ -96,6 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           console.log('Auth state changed:', event, 'Session:', session?.user?.id);
           if (session?.user) {
+            // Prevent redundant calls if we already have a getCurrentUser promise
+            if (!getCurrentUserPromise) {
+              getCurrentUserPromise = getCurrentUser();
+            }
+            const currentUser = await getCurrentUserPromise;
             const currentUser = await getCurrentUser();
             console.log('User from getCurrentUser after auth change:', currentUser);
             setUser(currentUser);
@@ -109,17 +157,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
         } finally {
           setLoading(false);
+          getCurrentUserPromise = null;
         }
       }
     );
 
+    // Listen for localStorage changes from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      // Check if Supabase session keys were removed from localStorage
+      if (e.key && e.key.includes('supabase.auth.token') && e.newValue === null) {
+        console.log('Session removed from another tab, forcing logout');
+        setUser(null);
+        setLoading(false);
+        // Don't call signOut() here to avoid infinite loops
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     checkUser();
 
-    // Removed storage event listener since we're using sessionStorage now
-    // Each tab will have its own isolated session
 
     return () => {
       subscription?.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+      if (sessionRecoveryTimeout) {
+        clearTimeout(sessionRecoveryTimeout);
+      }
     };
   }, []);
 
@@ -128,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     loading,
+    isRecoveringSession,
     login,
     logout,
     isOwner,
