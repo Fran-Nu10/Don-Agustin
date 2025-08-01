@@ -76,82 +76,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   }
 
-useEffect(() => {
-  let cancelled = false;
-
-  async function checkUser() {
-    try {
-      console.log('Checking current user...');
-      const currentUser = await getCurrentUser();
-      if (!cancelled) {
+ useEffect(() => {
+    async function checkUser() {
+      try {
+        console.log('Checking current user...');
+        const currentUser = await getCurrentUser();
         console.log('Current user from getCurrentUser:', currentUser);
         setUser(currentUser);
-      }
-    } catch (error) {
-      console.error('Error checking user:', error);
-      if (!cancelled) setUser(null);
-    } finally {
-      if (!cancelled) setLoading(false);
-    }
-  }
-
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      try {
-        console.log('Auth state changed:', event, 'Session:', session?.user?.id);
-        if (session?.user) {
-          const currentUser = await getCurrentUser();
-          if (!cancelled) setUser(currentUser);
-
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (!currentUser && currentSession) {
-            console.warn('Corrupt session. Forcing logout.');
-            await supabase.auth.signOut();
-            if (!cancelled) setUser(null);
-            toast.error('Tu sesión es inválida. Iniciá sesión de nuevo.');
-          }
-        } else {
-          if (!cancelled) setUser(null);
-        }
       } catch (error) {
-        console.error('Error en cambio de sesión:', error);
-        await supabase.auth.signOut();
-        if (!cancelled) setUser(null);
-        toast.error('Error de sesión. Iniciá sesión de nuevo.');
+        console.error('Error checking user:', error);
+        setUser(null);
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     }
-  );
 
-  checkUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        try {
+          console.log('Auth state changed:', event, 'Session:', session?.user?.id);
+          if (session?.user) {
+            const currentUser = await getCurrentUser();
+            console.log('User from getCurrentUser after auth change:', currentUser);
+            setUser(currentUser);
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (!currentUser && currentSession) {
+              console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
+              await supabase.auth.signOut();
+              setUser(null);
+              toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+            }
+          } else {
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error handling auth state change:', error);
+          await supabase.auth.signOut();
+          setUser(null);
+          toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
 
-  function handleVisibilityChange() {
-    if (document.visibilityState === 'visible') {
-      console.log('Revalidando por visibilidad...');
-      setLoading(true);
-      getCurrentUser()
-        .then((currentUser) => {
-          if (!cancelled) setUser(currentUser);
-        })
-        .catch((err) => {
-          console.error('Error al revalidar:', err);
-          if (!cancelled) setUser(null);
-        })
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
-    }
-  }
+    checkUser();
 
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Removed storage event listener since we're using sessionStorage now
+    // Each tab will have its own isolated session
 
-  return () => {
-    cancelled = true;
-    subscription?.unsubscribe?.();
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-  };
-}, []);
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
 
 
   const value = {
