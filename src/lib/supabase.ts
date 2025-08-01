@@ -46,6 +46,7 @@ async function handleSupabaseError<T>(
           console.error(`🚫 [${operationName}] Máximo de reintentos para timeout alcanzado`);
           break;
         }
+        }
       }
       
       // Check if this is a retryable error
