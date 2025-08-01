@@ -543,7 +543,7 @@ export async function deleteTrip(id: string): Promise<void> {
     }
 
     console.log('Trip deleted successfully');
-  }, 'Delete trip');
+  }, 'Delete trip', 3, 30000);
 }
 
 // Booking functions
