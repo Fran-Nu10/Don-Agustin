@@ -10,7 +10,7 @@ async function handleSupabaseError<T>(
   operation: () => Promise<T>, 
   operationName: string,
   maxRetries: number = 3,
-  timeoutMs: number = 15000 // Timeout global de 15 segundos
+  timeoutMs: number = 45000 // Timeout global de 45 segundos para Bolt
 ): Promise<T> {
   let lastError: any;
   
@@ -233,7 +233,7 @@ export async function getCurrentUser(): Promise<User | null> {
     // First, try to get the session. This is more robust for rehydrating.
     const sessionResult = await handleSupabaseError(async () => {
       return await supabase.auth.getSession();
-    }, 'Get session', 3, 30000);
+    }, 'Get session', 3, 60000);
 
     const { data: { session }, error: sessionError } = sessionResult;
 
@@ -259,7 +259,7 @@ export async function getCurrentUser(): Promise<User | null> {
         .select('*')
         .eq('user_id', authUser.id)
         .single();
-    }, 'Get user from users table', 3, 30000);
+    }, 'Get user from users table', 3, 60000);
 
     const { data: existingUser, error: fetchError } = userResult;
 
@@ -279,7 +279,7 @@ export async function getCurrentUser(): Promise<User | null> {
             }])
             .select()
             .single();
-        }, 'Create new user', 3, 30000);
+        }, 'Create new user', 3, 60000);
 
         const { data: newUser, error: insertError } = createUserResult;
 
@@ -295,7 +295,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
     console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
-  }, 'Get current user', 3, 30000);
+  }, 'Get current user', 3, 60000);
 }
 
 // Trip functions
@@ -544,7 +544,7 @@ export async function deleteTrip(id: string): Promise<void> {
     }
 
     console.log('Trip deleted successfully');
-  }, 'Delete trip', 3, 30000);
+  }, 'Delete trip', 3, 60000);
 }
 
 // Booking functions
@@ -763,5 +763,5 @@ export async function getStats(): Promise<Stats> {
       console.error('Error in getStats:', error);
       throw error;
     }
-  }, 'Get stats');
+  }, 'Get stats', 3, 60000);
 }

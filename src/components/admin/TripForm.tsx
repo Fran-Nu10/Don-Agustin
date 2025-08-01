@@ -222,7 +222,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`⏰ UPLOAD TIMEOUT: La carga de imagen excedió 30 segundos`));
-          }, 30000); // 30 segundos para uploads
+          }, 60000); // 60 segundos para uploads en Bolt
         });
         
         const result = await Promise.race([uploadPromise, timeoutPromise]);

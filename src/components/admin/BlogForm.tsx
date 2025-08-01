@@ -150,7 +150,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`⏰ BLOG UPLOAD TIMEOUT: La carga de imagen del blog excedió 30 segundos`));
-          }, 30000); // 30 segundos para uploads
+          }, 60000); // 60 segundos para uploads en Bolt
         });
         
         const result = await Promise.race([uploadPromise, timeoutPromise]);
