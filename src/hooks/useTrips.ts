@@ -11,7 +11,9 @@ export function useTrips() {
   const loadTrips = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🚀 [USE TRIPS] Iniciando carga de trips...');
       const data = await getTrips();
+      console.log('✅ [USE TRIPS] Trips cargados exitosamente:', data.length);
       setTrips(data);
       setError(null);
     } catch (err) {
@@ -20,6 +22,7 @@ export function useTrips() {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       toast.error(`Error al cargar los paquetes: ${errorMessage}`); // Mostrar notificación de error
     } finally {
+      console.log('🏁 [USE TRIPS] Finalizando carga de trips, setting loading to false');
       setLoading(false);
     }
   }, []);

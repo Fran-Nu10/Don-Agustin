@@ -218,7 +218,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   };
 
   // Enhanced image upload function with retry logic
-  const uploadImageWithRetry = async (file: File, fileName: string, maxRetries: number = 5) => {
+  const uploadImageWithRetry = async (file: File, fileName: string, maxRetries: number = 3) => {
     let lastError: any;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -226,12 +226,21 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         console.log(`🔄 [IMAGE UPLOAD] Intento ${attempt}/${maxRetries}`);
         const startTime = Date.now();
         
-        const result = await supabase.storage
+        // Crear timeout específico para uploads de imágenes (30 segundos)
+        const uploadPromise = supabase.storage
           .from('blog-images')
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: true
           });
+        
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`⏰ UPLOAD TIMEOUT: La carga de imagen excedió 30 segundos`));
+          }, 30000); // 30 segundos para uploads
+        });
+        
+        const result = await Promise.race([uploadPromise, timeoutPromise]);
         
         if (result.error) {
           throw result.error;
@@ -244,6 +253,15 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
       } catch (error: any) {
         lastError = error;
         console.error(`❌ [IMAGE UPLOAD] Error en intento ${attempt}:`, error);
+        
+        // Manejo específico para timeouts de upload
+        if (error.message?.includes('UPLOAD TIMEOUT:')) {
+          console.error(`⏰ [IMAGE UPLOAD] Timeout de upload detectado en intento ${attempt}`);
+          if (attempt >= 2) { // Solo 2 intentos para timeouts de upload
+            console.error(`🚫 [IMAGE UPLOAD] Máximo de reintentos para timeout de upload alcanzado`);
+            break;
+          }
+        }
         
         // Check if this is a retryable error
         const isRetryable = isImageUploadRetryable(error);
@@ -263,6 +281,12 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
     
     console.error(`💥 [IMAGE UPLOAD] Todos los intentos fallaron. Error final:`, lastError);
+    
+    // Manejo específico de errores de timeout para uploads
+    if (lastError.message?.includes('UPLOAD TIMEOUT:')) {
+      throw new Error('La carga de la imagen tardó demasiado tiempo. Por favor, verifica tu conexión a internet e intenta con una imagen más pequeña.');
+    }
+    
     throw lastError;
   };
 
@@ -273,10 +297,14 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     const message = error.message?.toLowerCase() || '';
     const status = error.status || error.code;
     
+    // Upload timeout errors - retryable but with limited attempts
+    if (message.includes('upload timeout:') || message.includes('timeout')) {
+      return true;
+    }
+    
     // Network errors - always retryable
     if (message.includes('failed to fetch') || 
         message.includes('network error') || 
-        message.includes('timeout') ||
         message.includes('connection') ||
         message.includes('fetch')) {
       return true;

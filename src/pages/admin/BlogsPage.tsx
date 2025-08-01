@@ -26,12 +26,15 @@ export function BlogsPage() {
   async function loadPosts() {
     try {
       setLoading(true);
+      console.log('🚀 [BLOGS PAGE] Iniciando carga de posts...');
       const postsData = await getAllBlogPosts();
+      console.log('✅ [BLOGS PAGE] Posts cargados exitosamente:', postsData.length);
       setPosts(postsData);
     } catch (error) {
       console.error('Error loading posts:', error);
       toast.error('Error al cargar los artículos');
     } finally {
+      console.log('🏁 [BLOGS PAGE] Finalizando carga de posts, setting loading to false');
       setLoading(false);
     }
   }

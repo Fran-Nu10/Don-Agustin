@@ -59,10 +59,12 @@ export function ClientsPage() {
   async function loadData() {
     try {
       setLoading(true);
+      console.log('🚀 [CLIENTS PAGE] Iniciando carga de datos...');
       const [clientsData, tripsData] = await Promise.all([
         getClients(),
         getTrips()
       ]);
+      console.log('✅ [CLIENTS PAGE] Datos cargados exitosamente - Clientes:', clientsData.length, 'Trips:', tripsData.length);
       setClients(clientsData);
       
       // Extract unique destinations from trips
@@ -72,6 +74,7 @@ export function ClientsPage() {
       console.error('Error loading data:', error);
       toast.error('Error al cargar los datos');
     } finally {
+      console.log('🏁 [CLIENTS PAGE] Finalizando carga de datos, setting loading to false');
       setLoading(false);
     }
   }

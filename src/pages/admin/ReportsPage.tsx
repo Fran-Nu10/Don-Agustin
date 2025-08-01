@@ -43,12 +43,15 @@ export function ReportsPage() {
   async function loadReportsData() {
     try {
       setLoading(true);
+      console.log('🚀 [REPORTS PAGE] Iniciando carga de datos de reportes...');
       const data = await getReportsData(filters);
+      console.log('✅ [REPORTS PAGE] Datos de reportes cargados exitosamente');
       setReportsData(data);
     } catch (error) {
       console.error('Error loading reports data:', error);
       toast.error('Error al cargar los datos de reportes');
     } finally {
+      console.log('🏁 [REPORTS PAGE] Finalizando carga de reportes, setting loading to false');
       setLoading(false);
     }
   }

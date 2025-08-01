@@ -46,12 +46,15 @@ export function QuotationsPage() {
   async function loadQuotations() {
     try {
       setLoading(true);
+      console.log('🚀 [QUOTATIONS PAGE] Iniciando carga de cotizaciones...');
       const quotationsData = await getQuotations();
+      console.log('✅ [QUOTATIONS PAGE] Cotizaciones cargadas exitosamente:', quotationsData.length);
       setQuotations(quotationsData);
     } catch (error) {
       console.error('Error loading quotations:', error);
       toast.error('Error al cargar las cotizaciones');
     } finally {
+      console.log('🏁 [QUOTATIONS PAGE] Finalizando carga de cotizaciones, setting loading to false');
       setLoading(false);
     }
   }

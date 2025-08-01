@@ -9,7 +9,8 @@ import { sanitizeTripData } from '../utils/dataSanitizer';
 async function handleSupabaseError<T>(
   operation: () => Promise<T>, 
   operationName: string,
-  maxRetries: number = 3
+  maxRetries: number = 3,
+  timeoutMs: number = 15000 // Timeout global de 15 segundos
 ): Promise<T> {
   let lastError: any;
   
@@ -18,7 +19,16 @@ async function handleSupabaseError<T>(
       console.log(`🔄 [${operationName}] Intento ${attempt}/${maxRetries}`);
       const startTime = Date.now();
       
-      const result = await operation();
+      // Crear promesa de timeout que se rechaza después del tiempo límite
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`⏰ TIMEOUT: La operación "${operationName}" excedió el tiempo límite de ${timeoutMs}ms`));
+        }, timeoutMs);
+      });
+      
+      // Hacer que la operación compita con el timeout
+      console.log(`⏱️ [${operationName}] Iniciando operación con timeout de ${timeoutMs}ms...`);
+      const result = await Promise.race([operation(), timeoutPromise]);
       
       const endTime = Date.now();
       console.log(`✅ [${operationName}] Éxito en intento ${attempt} (${endTime - startTime}ms)`);
@@ -27,6 +37,16 @@ async function handleSupabaseError<T>(
     } catch (error: any) {
       lastError = error;
       console.error(`❌ [${operationName}] Error en intento ${attempt}:`, error);
+      
+      // Verificar si es un error de timeout
+      if (error.message?.includes('TIMEOUT:')) {
+        console.error(`⏰ [${operationName}] Error de timeout detectado en intento ${attempt}`);
+        // Los timeouts son reintentables, pero con menos intentos
+        if (attempt >= Math.min(maxRetries, 2)) {
+          console.error(`🚫 [${operationName}] Máximo de reintentos para timeout alcanzado`);
+          break;
+        }
+      }
       
       // Check if this is a retryable error
       const isRetryable = isRetryableError(error);
@@ -38,7 +58,7 @@ async function handleSupabaseError<T>(
       }
       
       // Calculate delay with exponential backoff
-      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10 seconds
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000); // Max 8 seconds para evitar timeouts largos
       console.log(`⏳ [${operationName}] Esperando ${delay}ms antes del siguiente intento...`);
       
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -49,6 +69,11 @@ async function handleSupabaseError<T>(
   console.error(`💥 [${operationName}] Todos los intentos fallaron. Error final:`, lastError);
   
   try {
+    // Manejo específico para errores de timeout
+    if (lastError.message?.includes('TIMEOUT:')) {
+      throw new Error(`⏰ La operación "${operationName}" tardó demasiado tiempo. Esto puede deberse a problemas de conexión o sobrecarga del servidor. Por favor, verifica tu conexión a internet y recarga la página si el problema persiste.`);
+    }
+    
     throw lastError;
   } catch (error: any) {
     console.error(`${operationName} error:`, error);
@@ -86,10 +111,15 @@ function isRetryableError(error: any): boolean {
   const message = error.message?.toLowerCase() || '';
   const status = error.status || error.code;
   
+  // Timeout errors - retryable but with limited attempts
+  if (message.includes('timeout') || message.includes('TIMEOUT:')) {
+    console.log(`⏰ [RETRY] Error de timeout detectado: ${message}`);
+    return true;
+  }
+  
   // Network errors - always retryable
   if (message.includes('failed to fetch') || 
       message.includes('network error') || 
-      message.includes('timeout') ||
       message.includes('connection') ||
       message.includes('fetch')) {
     console.log(`🌐 [RETRY] Error de red detectado: ${message}`);

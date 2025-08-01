@@ -151,7 +151,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
   };
 
   // Enhanced blog image upload function with retry logic
-  const uploadBlogImageWithRetry = async (file: File, fileName: string, maxRetries: number = 5) => {
+  const uploadBlogImageWithRetry = async (file: File, fileName: string, maxRetries: number = 3) => {
     let lastError: any;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -159,12 +159,21 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         console.log(`🔄 [BLOG IMAGE UPLOAD] Intento ${attempt}/${maxRetries}`);
         const startTime = Date.now();
         
-        const result = await supabase.storage
+        // Crear timeout específico para uploads de imágenes del blog (30 segundos)
+        const uploadPromise = supabase.storage
           .from('blog-images')
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
           });
+        
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`⏰ BLOG UPLOAD TIMEOUT: La carga de imagen del blog excedió 30 segundos`));
+          }, 30000); // 30 segundos para uploads
+        });
+        
+        const result = await Promise.race([uploadPromise, timeoutPromise]);
         
         if (result.error) {
           throw result.error;
@@ -177,6 +186,15 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
       } catch (error: any) {
         lastError = error;
         console.error(`❌ [BLOG IMAGE UPLOAD] Error en intento ${attempt}:`, error);
+        
+        // Manejo específico para timeouts de upload del blog
+        if (error.message?.includes('BLOG UPLOAD TIMEOUT:')) {
+          console.error(`⏰ [BLOG IMAGE UPLOAD] Timeout de upload detectado en intento ${attempt}`);
+          if (attempt >= 2) { // Solo 2 intentos para timeouts de upload
+            console.error(`🚫 [BLOG IMAGE UPLOAD] Máximo de reintentos para timeout de upload alcanzado`);
+            break;
+          }
+        }
         
         // Check if this is a retryable error
         const isRetryable = isBlogImageUploadRetryable(error);
@@ -196,6 +214,12 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     }
     
     console.error(`💥 [BLOG IMAGE UPLOAD] Todos los intentos fallaron. Error final:`, lastError);
+    
+    // Manejo específico de errores de timeout para uploads del blog
+    if (lastError.message?.includes('BLOG UPLOAD TIMEOUT:')) {
+      throw new Error('La carga de la imagen del blog tardó demasiado tiempo. Por favor, verifica tu conexión a internet e intenta con una imagen más pequeña.');
+    }
+    
     throw lastError;
   };
 
@@ -206,10 +230,14 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     const message = error.message?.toLowerCase() || '';
     const status = error.status || error.code;
     
+    // Blog upload timeout errors - retryable but with limited attempts
+    if (message.includes('blog upload timeout:') || message.includes('timeout')) {
+      return true;
+    }
+    
     // Network errors - always retryable
     if (message.includes('failed to fetch') || 
         message.includes('network error') || 
-        message.includes('timeout') ||
         message.includes('connection') ||
         message.includes('fetch')) {
       return true;
