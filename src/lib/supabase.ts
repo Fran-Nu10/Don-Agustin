@@ -41,7 +41,12 @@ async function handleSupabaseError<T>(
       // Verificar si es un error de timeout
       if (error.message?.includes('TIMEOUT:')) {
         console.error(`⏰ [${operationName}] Error de timeout detectado en intento ${attempt}`);
-        // Continue with retry logic - don't break early for timeouts
+        if (attempt >= maxRetries) {
+        if (attempt >= Math.min(maxRetries, 2)) {
+          console.error(`🚫 [${operationName}] Máximo de reintentos para timeout alcanzado`);
+          break;
+        }
+        }
       }
       
       // Check if this is a retryable error
@@ -234,7 +239,7 @@ export async function getCurrentUser(): Promise<User | null> {
     // First, try to get the session. This is more robust for rehydrating.
     const sessionResult = await handleSupabaseError(async () => {
       return await supabase.auth.getSession();
-    }, 'Get session', 5, 30000);
+    }, 'Get session', 3, 30000);
 
     const { data: { session }, error: sessionError } = sessionResult;
 
@@ -260,7 +265,7 @@ export async function getCurrentUser(): Promise<User | null> {
         .select('*')
         .eq('user_id', authUser.id)
         .single();
-    }, 'Get user from users table', 5, 30000);
+    }, 'Get user from users table', 3, 30000);
 
     const { data: existingUser, error: fetchError } = userResult;
 
@@ -280,7 +285,7 @@ export async function getCurrentUser(): Promise<User | null> {
             }])
             .select()
             .single();
-        }, 'Create new user', 5, 30000);
+        }, 'Create new user', 3, 30000);
 
         const { data: newUser, error: insertError } = createUserResult;
 
@@ -296,7 +301,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
     console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
-  }, 'Get current user', 5, 30000);
+  }, 'Get current user', 3, 30000);
 }
 
 // Trip functions
@@ -313,7 +318,7 @@ export async function getTrips(): Promise<Trip[]> {
 
     if (error) throw error;
     return data || [];
-  }, 'Get trips', 5, 30000);
+  }, 'Get trips');
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {
