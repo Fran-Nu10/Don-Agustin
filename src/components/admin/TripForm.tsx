@@ -20,6 +20,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageInputKey, setImageInputKey] = useState(0);
+  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
