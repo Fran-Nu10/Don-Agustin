@@ -214,14 +214,14 @@ export async function signIn(email: string, password: string) {
     }
 
     return userData;
-  }, 'Sign in', 3, 10000);
+  }, 'Sign in', 3, 30000);
 }
 
 export async function signOut() {
   return handleSupabaseError(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-  }, 'Sign out', 3, 10000);
+  }, 'Sign out', 3, 30000);
 }
 
 
@@ -233,7 +233,7 @@ export async function getCurrentUser(): Promise<User | null> {
     // First, try to get the session. This is more robust for rehydrating.
     const sessionResult = await handleSupabaseError(async () => {
       return await supabase.auth.getSession();
-    }, 'Get session', 3, 10000);
+    }, 'Get session', 3, 30000);
 
     const { data: { session }, error: sessionError } = sessionResult;
 
@@ -295,7 +295,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
     console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
-  }, 'Get current user', 3, 10000);
+  }, 'Get current user', 3, 30000);
 }
 
 // Trip functions
