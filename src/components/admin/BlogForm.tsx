@@ -31,7 +31,6 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageInputKey, setImageInputKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     register,
@@ -68,17 +67,6 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
 
     setIsUploadingImage(true);
     setImageFile(file);
-    
-    // Set timeout for upload with complete cleanup
-    uploadTimeoutRef.current = setTimeout(() => {
-      console.warn('Image upload timeout - cleaning up all state');
-      setIsUploadingImage(false);
-      setImageFile(null);
-      setImagePreview('');
-      setValue('image_url', '');
-      setImageInputKey(prev => prev + 1); // Force input re-mount
-      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
-    }, 30000); // 30 seconds
     
     try {
       // Create preview URL
@@ -128,10 +116,6 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         toast.error('Error al subir la imagen. Por favor intenta nuevamente.');
       }
     }
-      if (uploadTimeoutRef.current) {
-        clearTimeout(uploadTimeoutRef.current);
-        uploadTimeoutRef.current = null;
-      }
   };
 
   // Remove image
@@ -144,10 +128,6 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
     
     // Always reset upload state and clear timeout
     setIsUploadingImage(false);
-    if (uploadTimeoutRef.current) {
-      clearTimeout(uploadTimeoutRef.current);
-      uploadTimeoutRef.current = null;
-    }
   };
 
   // Enhanced blog image upload function with retry logic
@@ -341,15 +321,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
             <Button
               type="button"
               variant="ghost"
-              onClick={() => {
-                // Resetear el estado de carga antes de abrir el selector
-                setIsUploadingImage(false);
-                if (uploadTimeoutRef.current) {
-                  clearTimeout(uploadTimeoutRef.current);
-                  uploadTimeoutRef.current = null;
-                }
-                fileInputRef.current?.click();
-              }}
+              onClick={removeImage}
               className="text-red-600 hover:text-red-700"
             >
               <X className="h-4 w-4 mr-2" />
