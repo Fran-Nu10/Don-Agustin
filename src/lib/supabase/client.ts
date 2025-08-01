@@ -44,7 +44,7 @@ if (!supabase) {
   supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
-      persistSession: false,
+      persistSession: true,
       detectSessionInUrl: true,
       storage: sessionStorage,
     },
