@@ -4,7 +4,7 @@ import { Quotation } from '../types/quotation';
 import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { formatPrice } from './currency';
+import { formatPrice, convertToUSD } from './currency';
 
 export function generateQuotationPDF(quotation: Quotation) {
   const doc = new jsPDF();
