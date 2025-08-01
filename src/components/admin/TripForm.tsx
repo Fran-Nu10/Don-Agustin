@@ -20,7 +20,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imagePreview, setImagePreview] = useState<string>(initialData?.image_url || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageInputKey, setImageInputKey] = useState(0);
-  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
@@ -144,17 +143,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
 
     setIsUploadingImage(true);
     
-    // Set timeout for upload with complete cleanup
-    uploadTimeoutRef.current = setTimeout(() => {
-      console.warn('Image upload timeout - cleaning up all state');
-      setIsUploadingImage(false);
-      setImageFile(null);
-      setImagePreview('');
-      setValue('image_url', '');
-      setImageInputKey(prev => prev + 1); // Force input re-mount
-      toast.error('La carga de la imagen tardó demasiado. Por favor, inténtalo de nuevo.');
-    }, 30000); // 30 seconds
-    
     try {
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
@@ -209,10 +197,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         toast.error('Error al subir la imagen. Por favor, inténtalo de nuevo.');
       }
     } finally {
-      if (uploadTimeoutRef.current) {
-        clearTimeout(uploadTimeoutRef.current);
-        uploadTimeoutRef.current = null;
-      }
       setIsUploadingImage(false);
     }
   };
@@ -346,10 +330,6 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     
     // Always reset upload state and clear timeout
     setIsUploadingImage(false);
-    if (uploadTimeoutRef.current) {
-      clearTimeout(uploadTimeoutRef.current);
-      uploadTimeoutRef.current = null;
-    }
   };
 
   const iconOptions = [
