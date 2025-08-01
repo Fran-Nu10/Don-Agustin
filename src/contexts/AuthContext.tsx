@@ -77,17 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
 useEffect(() => {
+  let cancelled = false;
+
   async function checkUser() {
     try {
       console.log('Checking current user...');
       const currentUser = await getCurrentUser();
-      console.log('Current user from getCurrentUser:', currentUser);
-      setUser(currentUser);
+      if (!cancelled) {
+        console.log('Current user from getCurrentUser:', currentUser);
+        setUser(currentUser);
+      }
     } catch (error) {
       console.error('Error checking user:', error);
-      setUser(null);
+      if (!cancelled) setUser(null);
     } finally {
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
   }
 
@@ -97,26 +101,25 @@ useEffect(() => {
         console.log('Auth state changed:', event, 'Session:', session?.user?.id);
         if (session?.user) {
           const currentUser = await getCurrentUser();
-          console.log('User from getCurrentUser after auth change:', currentUser);
-          setUser(currentUser);
+          if (!cancelled) setUser(currentUser);
 
           const { data: { session: currentSession } } = await supabase.auth.getSession();
           if (!currentUser && currentSession) {
-            console.warn('Corrupt or desynchronized session during auth change. Forcing logout.');
+            console.warn('Corrupt session. Forcing logout.');
             await supabase.auth.signOut();
-            setUser(null);
-            toast.error('Tu sesión es inválida o está desincronizada. Por favor, inicia sesión nuevamente.');
+            if (!cancelled) setUser(null);
+            toast.error('Tu sesión es inválida. Iniciá sesión de nuevo.');
           }
         } else {
-          setUser(null);
+          if (!cancelled) setUser(null);
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
+        console.error('Error en cambio de sesión:', error);
         await supabase.auth.signOut();
-        setUser(null);
-        toast.error('Error de sesión. Por favor vuelve a iniciar sesión.');
+        if (!cancelled) setUser(null);
+        toast.error('Error de sesión. Iniciá sesión de nuevo.');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
   );
@@ -125,19 +128,18 @@ useEffect(() => {
 
   function handleVisibilityChange() {
     if (document.visibilityState === 'visible') {
-      console.log('Pestaña volvió a estar visible. Revalidando sesión...');
+      console.log('Revalidando por visibilidad...');
       setLoading(true);
       getCurrentUser()
         .then((currentUser) => {
-          console.log('Revalidado en visibilidad:', currentUser);
-          setUser(currentUser);
+          if (!cancelled) setUser(currentUser);
         })
         .catch((err) => {
-          console.error('Error al revalidar en visibilidad:', err);
-          setUser(null);
+          console.error('Error al revalidar:', err);
+          if (!cancelled) setUser(null);
         })
         .finally(() => {
-          setLoading(false);
+          if (!cancelled) setLoading(false);
         });
     }
   }
@@ -145,7 +147,8 @@ useEffect(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
   return () => {
-    subscription?.unsubscribe?.(); // importante: protección por si es undefined
+    cancelled = true;
+    subscription?.unsubscribe?.();
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
 }, []);
