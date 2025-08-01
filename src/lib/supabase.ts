@@ -41,7 +41,7 @@ async function handleSupabaseError<T>(
       // Verificar si es un error de timeout
       if (error.message?.includes('TIMEOUT:')) {
         console.error(`⏰ [${operationName}] Error de timeout detectado en intento ${attempt}`);
-        // Los timeouts son reintentables, pero con menos intentos
+        if (attempt >= maxRetries) {
         if (attempt >= Math.min(maxRetries, 2)) {
           console.error(`🚫 [${operationName}] Máximo de reintentos para timeout alcanzado`);
           break;

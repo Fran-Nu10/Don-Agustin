@@ -242,7 +242,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
         // Manejo específico para timeouts de upload
         if (error.message?.includes('UPLOAD TIMEOUT:')) {
           console.error(`⏰ [IMAGE UPLOAD] Timeout de upload detectado en intento ${attempt}`);
-          if (attempt >= 2) { // Solo 2 intentos para timeouts de upload
+          if (attempt >= maxRetries) {
             console.error(`🚫 [IMAGE UPLOAD] Máximo de reintentos para timeout de upload alcanzado`);
             break;
           }

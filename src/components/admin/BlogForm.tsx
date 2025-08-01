@@ -170,7 +170,7 @@ export function BlogForm({ initialData, onSubmit, isSubmitting }: BlogFormProps)
         // Manejo específico para timeouts de upload del blog
         if (error.message?.includes('BLOG UPLOAD TIMEOUT:')) {
           console.error(`⏰ [BLOG IMAGE UPLOAD] Timeout de upload detectado en intento ${attempt}`);
-          if (attempt >= 2) { // Solo 2 intentos para timeouts de upload
+          if (attempt >= maxRetries) {
             console.error(`🚫 [BLOG IMAGE UPLOAD] Máximo de reintentos para timeout de upload alcanzado`);
             break;
           }
