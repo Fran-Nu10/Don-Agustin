@@ -233,11 +233,15 @@ export async function signOut() {
 
 
 export async function getCurrentUser(): Promise<User | null> {
-  try {
+  return handleSupabaseError(async () => {
     console.log('🔍 getCurrentUser: Iniciando...');
 
     // First, try to get the session. This is more robust for rehydrating.
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const sessionResult = await handleSupabaseError(async () => {
+      return await supabase.auth.getSession();
+    }, 'Get session', 3, 30000);
+
+    const { data: { session }, error: sessionError } = sessionResult;
 
     if (sessionError) {
       console.error('⚠️ Error al obtener la sesión de Supabase:', sessionError);
@@ -255,46 +259,49 @@ export async function getCurrentUser(): Promise<User | null> {
     const authUser = session.user;
     console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
 
-    const { data: existingUser, error: fetchError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .single();
+    const userResult = await handleSupabaseError(async () => {
+      return await supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+    }, 'Get user from users table', 3, 30000);
+
+    const { data: existingUser, error: fetchError } = userResult;
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         console.log('👤 Usuario no existe en public.users, creando nuevo...');
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert([{
-            id: authUser.id,
-            user_id: authUser.id,
-            email: authUser.email,
-            role: 'employee',
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
+        
+        const createUserResult = await handleSupabaseError(async () => {
+          return await supabase
+            .from('users')
+            .insert([{
+              id: authUser.id,
+              user_id: authUser.id,
+              email: authUser.email,
+              role: 'employee',
+              created_at: new Date().toISOString()
+            }])
+            .select()
+            .single();
+        }, 'Create new user', 3, 30000);
+
+        const { data: newUser, error: insertError } = createUserResult;
 
         if (insertError) {
           console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
-          throw insertError; // Re-throw to be caught by handleSupabaseError
+          throw insertError;
         }
         console.log('✅ Nuevo usuario creado:', newUser);
         return newUser;
       }
       console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
-      throw fetchError; // Re-throw to be caught by handleSupabaseError
+      throw fetchError;
     }
     console.log('✅ Usuario encontrado en public.users:', existingUser);
     return existingUser;
-
-  } catch (error) {
-    console.error('🔥 Error fatal en getCurrentUser:', error);
-    // If any other error occurs, ensure session is cleared for this tab only
-    await supabase.auth.signOut();
-    return null;
-  }
+  }, 'Get current user', 3, 30000);
 }
 
 // Trip functions
