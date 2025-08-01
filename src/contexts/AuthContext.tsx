@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
 
+  // Prevent concurrent user checks
+  let currentCheckPromise: Promise<void> | null = null;
+
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
@@ -59,10 +62,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Centralized user check function
+  async function performUserCheck(source: string = 'manual'): Promise<void> {
+    // Prevent concurrent calls
+    if (currentCheckPromise) {
+      console.log(`🔄 [AUTH] User check already in progress, waiting for completion (source: ${source})`);
+      return currentCheckPromise;
+    }
 
+    console.log(`🚀 [AUTH] Starting user check (source: ${source})`);
+    
+    let sessionRecoveryTimeout: NodeJS.Timeout | null = null;
+    let retryCount = 0;
+    const maxRetries = 2;
 
+    currentCheckPromise = (async () => {
+      try {
+        setLoading(true);
+        
+        // Set recovery timeout for UI feedback (after 3 seconds)
+        sessionRecoveryTimeout = setTimeout(() => {
+          console.log('⏰ [AUTH] Session recovery taking longer than expected, showing recovery message');
+          setIsRecoveringSession(true);
+        }, 3000);
 
+        while (retryCount <= maxRetries) {
+          try {
+            console.log(`🔍 [AUTH] Attempt ${retryCount + 1}/${maxRetries + 1} to get current user`);
+            
+            // Create timeout promise for getCurrentUser (10 seconds)
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              setTimeout(() => {
+                reject(new Error('⏰ getCurrentUser timeout after 10 seconds'));
+              }, 10000);
+            });
 
+            const getUserPromise = getCurrentUser();
+            const currentUser = await Promise.race([getUserPromise, timeoutPromise]);
+            
+            console.log(`✅ [AUTH] User check successful (source: ${source}):`, currentUser?.id || 'no user');
+            setUser(currentUser);
+            return; // Success, exit the function
+            
+          } catch (error) {
+            retryCount++;
+            console.error(`❌ [AUTH] User check attempt ${retryCount} failed:`, error);
+            
+            if (retryCount > maxRetries) {
+              console.error(`🚫 [AUTH] Max retries reached, forcing logout (source: ${source})`);
+              // Force logout after max retries
+              try {
+                await signOut();
+              } catch (logoutError) {
+                console.error('Error during forced logout:', logoutError);
+              }
+              setUser(null);
+              return;
+            }
+            
+            // Wait before retry (exponential backoff)
+            const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 3000);
+            console.log(`⏳ [AUTH] Waiting ${delay}ms before retry ${retryCount + 1}`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      } finally {
+        if (sessionRecoveryTimeout) {
+          clearTimeout(sessionRecoveryTimeout);
+        }
+        setIsRecoveringSession(false);
+        setLoading(false);
+        currentCheckPromise = null;
+        console.log(`🏁 [AUTH] User check completed (source: ${source})`);
+      }
+    })();
+
+    return currentCheckPromise;
+  }
 
   function isOwner() {
     console.log('isOwner check, user:', user);
@@ -78,84 +154,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   }
 
- useEffect(() => {
-    let sessionRecoveryTimeout: NodeJS.Timeout | null = null;
-    let getCurrentUserPromise: Promise<User | null> | null = null;
-
-    async function checkUser() {
-      try {
-        console.log('Checking current user...');
-        
-        // Set recovery timeout for UI feedback
-        sessionRecoveryTimeout = setTimeout(() => {
-          setIsRecoveringSession(true);
-        }, 3000);
-        
-        // Prevent multiple simultaneous calls to getCurrentUser
-        if (!getCurrentUserPromise) {
-          getCurrentUserPromise = getCurrentUser();
-        }
-        
-        const currentUser = await getCurrentUserPromise;
-        console.log('Current user from getCurrentUser:', currentUser);
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Error checking user:', error);
-        
-        // If getCurrentUser fails twice or times out, force logout
-        let retryCount = 0;
-        const maxRetries = 2;
-        
-        while (retryCount < maxRetries) {
-          try {
-            retryCount++;
-            console.log(`Retry attempt ${retryCount}/${maxRetries} for getCurrentUser`);
-            const retryUser = await getCurrentUser();
-            setUser(retryUser);
-            break;
-          } catch (retryError) {
-            console.error(`Retry ${retryCount} failed:`, retryError);
-            if (retryCount >= maxRetries) {
-              console.log('Max retries reached, forcing logout');
-              await signOut();
-              setUser(null);
-            }
-          }
-        }
-        setUser(null);
-      } finally {
-        if (sessionRecoveryTimeout) {
-          clearTimeout(sessionRecoveryTimeout);
-        }
-        setIsRecoveringSession(false);
-        setLoading(false);
-        getCurrentUserPromise = null;
-      }
-    }
-
+  useEffect(() => {
+    console.log('🎯 [AUTH] AuthProvider useEffect mounted');
+    
+    // Handle auth state changes from Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        try {
-          console.log('Auth state changed:', event, 'Session:', session?.user?.id);
-          if (session?.user) {
-            // Prevent redundant calls if we already have a getCurrentUser promise
-            if (!getCurrentUserPromise) {
-              getCurrentUserPromise = getCurrentUser();
-            }
-            const currentUser = await getCurrentUserPromise;
-            console.log('User from getCurrentUser after auth change:', currentUser);
-            setUser(currentUser);
-          } else {
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error handling auth state change:', error);
-          // Let getCurrentUser handle its own retries and error recovery
-          // Only set user to null if getCurrentUser definitively fails
+        console.log(`🔔 [AUTH] Auth state changed: ${event}, Session:`, session?.user?.id || 'none');
+        
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('🚪 [AUTH] User signed out or no session, clearing user state');
           setUser(null);
-        } finally {
           setLoading(false);
-          getCurrentUserPromise = null;
+          return;
+        }
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          console.log(`🔄 [AUTH] Triggering user check due to: ${event}`);
+          await performUserCheck(`onAuthStateChange-${event}`);
         }
       }
     );
@@ -164,27 +180,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleStorageChange = (e: StorageEvent) => {
       // Check if Supabase session keys were removed from localStorage
       if (e.key && e.key.includes('supabase.auth.token') && e.newValue === null) {
-        console.log('Session removed from another tab, forcing logout');
-        setUser(null);
-        setLoading(false);
-        // Don't call signOut() here to avoid infinite loops
+        console.log('🔄 [AUTH] Session removed from another tab, triggering user check');
+        performUserCheck('storage-change');
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
-    checkUser();
-
+    
+    // Initial user check
+    performUserCheck('initial-mount');
 
     return () => {
+      console.log('🧹 [AUTH] Cleaning up AuthProvider');
       subscription?.unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
-      if (sessionRecoveryTimeout) {
-        clearTimeout(sessionRecoveryTimeout);
-      }
+      currentCheckPromise = null;
     };
-  }, []);
-
-
+  }, []); // Empty dependency array - only run once on mount
 
   const value = {
     user,
