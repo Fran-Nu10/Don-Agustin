@@ -5,7 +5,7 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
-import { useSessionCleanup } from '../hooks/useSessionCleanup';
+
 
 
 interface AuthContextType {
