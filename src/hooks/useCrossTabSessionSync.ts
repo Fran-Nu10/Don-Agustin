@@ -63,7 +63,10 @@ export function useCrossTabSessionSync({ setUser }: UseCrossTabSessionSyncProps)
             }
           } else {
             console.log('⚠️ [CROSS TAB SYNC] No user found after token change');
-            setUser(null);
+            // Use the updateUserState function if available, otherwise fallback to setUser
+            if (typeof setUser === 'function') {
+              setUser(null);
+            }
           }
           
           const perfEnd = performance.now();

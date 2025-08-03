@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getCurrentUser, signIn, signOut } from '../lib/supabase';
 import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Prevent concurrent user checks
   let currentCheckPromise: Promise<void> | null = null;
 
+  // Optimized user state update function
+  const updateUserState = useCallback((newUser: User | null) => {
+    setUser(prevUser => {
+      // If both are null, no change needed
+      if (!prevUser && !newUser) {
+        console.log('🔄 [AUTH] No user state change needed (both null)');
+        return prevUser;
+      }
+      
+      // If one is null and the other isn't, update
+      if (!prevUser || !newUser) {
+        console.log('🔄 [AUTH] User state changed (null <-> user)');
+        return newUser;
+      }
+      
+      // If both exist, only update if key properties changed
+      if (prevUser.id !== newUser.id || prevUser.role !== newUser.role) {
+        console.log('🔄 [AUTH] User state changed (id or role changed)');
+        return newUser;
+      }
+      
+      // No significant change, keep previous reference
+      console.log('🔄 [AUTH] No significant user state change, keeping previous reference');
+      return prevUser;
+    });
+  }, []);
+
+  // Memoized permission check functions
+  const isOwner = useCallback(() => {
+    console.log('isOwner check, user:', user);
+    const result = user?.role === 'owner' || user?.role === 'admin';
+    console.log('isOwner result:', result);
+    return result;
+  }, [user]);
+
+  const isEmployee = useCallback(() => {
+    console.log('isEmployee check, user:', user);
+    const result = user?.role === 'employee' || isOwner();
+    console.log('isEmployee result:', result);
+    return result;
+  }, [user, isOwner]);
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
@@ -51,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       await signOut();
-      setUser(null);
+      updateUserState(null);
       toast.success('Sesión cerrada correctamente');
       // Asegurar que la redirección ocurra después de limpiar el estado
       setTimeout(() => {
@@ -102,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const attemptEnd = performance.now();
             console.log(`✅ [AUTH] User check successful (source: ${source}):`, currentUser?.id || 'no user');
             console.log(`📊 [AUTH] User check attempt took ${(attemptEnd - attemptStart).toFixed(1)}ms`);
-            setUser(currentUser);
+            updateUserState(currentUser);
             
             const totalTime = performance.now();
             console.log(`📊 [AUTH] Total performUserCheck time: ${(totalTime - perfStart).toFixed(1)}ms`);
@@ -122,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               } catch (logoutError) {
                 console.error('Error during forced logout:', logoutError);
               }
-              setUser(null);
+              updateUserState(null);
               return;
             }
             
@@ -146,19 +187,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return currentCheckPromise;
   }
 
-  function isOwner() {
-    console.log('isOwner check, user:', user);
-    const result = user?.role === 'owner' || user?.role === 'admin';
-    console.log('isOwner result:', result);
-    return result;
-  }
-
-  function isEmployee() {
-    console.log('isEmployee check, user:', user);
-    const result = user?.role === 'employee' || isOwner();
-    console.log('isEmployee result:', result);
-    return result;
-  }
 
   useEffect(() => {
     console.log('🎯 [AUTH] AuthProvider useEffect mounted');
@@ -170,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (event === 'SIGNED_OUT' || !session) {
           console.log('🚪 [AUTH] User signed out or no session, clearing user state');
-          setUser(null);
+          updateUserState(null);
           setLoading(false);
           return;
         }
