@@ -1,16 +1,14 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { getCurrentUser, signIn, signOut } from '../lib/supabase';
+import { signIn, signOut } from '../lib/supabase';
 import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
-import { useCrossTabSessionSync } from '../hooks/useCrossTabSessionSync';
+import { saveUserToCookie, getUserFromCookie, removeUserCookie } from '../utils/auth-cookies';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isRecoveringSession: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
   isOwner: () => boolean;
@@ -22,65 +20,109 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
-
-  // Initialize cross-tab session synchronization
-  useCrossTabSessionSync({ setUser });
-
-  // Prevent concurrent user checks
-  let currentCheckPromise: Promise<void> | null = null;
-
-  // Optimized user state update function
-  const updateUserState = useCallback((newUser: User | null) => {
-    setUser(prevUser => {
-      // If both are null, no change needed
-      if (!prevUser && !newUser) {
-        console.log('🔄 [AUTH] No user state change needed (both null)');
-        return prevUser;
-      }
-      
-      // If one is null and the other isn't, update
-      if (!prevUser || !newUser) {
-        console.log('🔄 [AUTH] User state changed (null <-> user)');
-        return newUser;
-      }
-      
-      // If both exist, only update if key properties changed
-      if (prevUser.id !== newUser.id || prevUser.role !== newUser.role) {
-        console.log('🔄 [AUTH] User state changed (id or role changed)');
-        return newUser;
-      }
-      
-      // No significant change, keep previous reference
-      console.log('🔄 [AUTH] No significant user state change, keeping previous reference');
-      return prevUser;
-    });
-  }, []);
 
   // Memoized permission check functions
   const isOwner = useCallback(() => {
-    console.log('isOwner check, user:', user);
-    const result = user?.role === 'owner' || user?.role === 'admin';
-    console.log('isOwner result:', result);
+    const result = user?.role === 'owner';
+    console.log('🔑 [COOKIE AUTH] isOwner check:', result, 'for user:', user?.email);
     return result;
-  }, [user]);
+  }, [user?.role, user?.email]);
 
   const isEmployee = useCallback(() => {
-    console.log('isEmployee check, user:', user);
     const result = user?.role === 'employee' || isOwner();
-    console.log('isEmployee result:', result);
+    console.log('🔑 [COOKIE AUTH] isEmployee check:', result, 'for user:', user?.email);
     return result;
-  }, [user, isOwner]);
+  }, [user?.role, user?.email, isOwner]);
+
+  // Initialize user from cookie on app start
+  useEffect(() => {
+    console.log('🚀 [COOKIE AUTH] Initializing authentication from cookie...');
+    
+    const initializeAuth = async () => {
+      try {
+        setLoading(true);
+        
+        // Try to get user from cookie first
+        const cookieUser = getUserFromCookie();
+        
+        if (cookieUser) {
+          console.log('✅ [COOKIE AUTH] User found in cookie, validating session...');
+          
+          // Validate that the Supabase session is still active
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.warn('⚠️ [COOKIE AUTH] Session validation failed:', error);
+            removeUserCookie();
+            setUser(null);
+          } else if (session && session.user) {
+            console.log('✅ [COOKIE AUTH] Session validated, user authenticated');
+            setUser(cookieUser);
+          } else {
+            console.log('⚠️ [COOKIE AUTH] No active session, removing cookie');
+            removeUserCookie();
+            setUser(null);
+          }
+        } else {
+          console.log('ℹ️ [COOKIE AUTH] No user cookie found, checking Supabase session...');
+          
+          // Check if there's an active Supabase session without cookie
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (!error && session && session.user) {
+            console.log('✅ [COOKIE AUTH] Found active Supabase session, fetching user data...');
+            
+            // Get user data from database
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .single();
+            
+            if (!userError && userData) {
+              console.log('✅ [COOKIE AUTH] User data fetched, saving to cookie');
+              setUser(userData);
+              saveUserToCookie(userData);
+            } else {
+              console.log('⚠️ [COOKIE AUTH] Could not fetch user data');
+              setUser(null);
+            }
+          } else {
+            console.log('ℹ️ [COOKIE AUTH] No active session found');
+            setUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('❌ [COOKIE AUTH] Error during initialization:', error);
+        removeUserCookie();
+        setUser(null);
+      } finally {
+        setLoading(false);
+        console.log('🏁 [COOKIE AUTH] Authentication initialization completed');
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  // Simple login function
   async function login(data: LoginFormData) {
     try {
       setLoading(true);
-      console.log('Login attempt with email:', data.email);
-      await signIn(data.email, data.password);
-      console.log('Login successful, user state will be updated by onAuthStateChange');
+      console.log('🔐 [COOKIE AUTH] Starting login process...');
+      
+      // Authenticate with Supabase
+      const userData = await signIn(data.email, data.password);
+      
+      // Save to cookie and update state
+      saveUserToCookie(userData);
+      setUser(userData);
+      
+      console.log('✅ [COOKIE AUTH] Login successful, user saved to cookie');
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ [COOKIE AUTH] Login error:', error);
       toast.error('Credenciales incorrectas. Por favor, intenta nuevamente.');
       throw error;
     } finally {
@@ -88,154 +130,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Simple logout function
   async function logout() {
     try {
       setLoading(true);
+      console.log('🚪 [COOKIE AUTH] Starting logout process...');
+      
+      // Sign out from Supabase
       await signOut();
-      updateUserState(null);
+      
+      // Clear cookie and state
+      removeUserCookie();
+      setUser(null);
+      
+      console.log('✅ [COOKIE AUTH] Logout successful');
       toast.success('Sesión cerrada correctamente');
-      // Asegurar que la redirección ocurra después de limpiar el estado
-      setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 100);
+      
+      // Navigate to login
+      navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ [COOKIE AUTH] Logout error:', error);
       toast.error('Error al cerrar sesión');
     } finally {
       setLoading(false);
     }
   }
 
-  // Centralized user check function
-  async function performUserCheck(source: string = 'manual'): Promise<void> {
-    // Prevent concurrent calls
-    if (currentCheckPromise) {
-      console.log(`🔄 [AUTH] User check already in progress, waiting for completion (source: ${source})`);
-      return currentCheckPromise;
-    }
-
-    console.log(`🚀 [AUTH] Starting user check (source: ${source})`);
-    
-    let sessionRecoveryTimeout: NodeJS.Timeout | null = null;
-    let retryCount = 0;
-    const maxRetries = 2;
-
-    currentCheckPromise = (async () => {
-      try {
-        setLoading(true);
-        const perfStart = performance.now();
-        
-        // Set recovery timeout for UI feedback (after 3 seconds)
-        sessionRecoveryTimeout = setTimeout(() => {
-          console.log('⏰ [AUTH] Session recovery taking longer than expected, showing recovery message');
-          setIsRecoveringSession(true);
-        }, 3000);
-
-        while (retryCount <= maxRetries) {
-          try {
-            console.log(`🔍 [AUTH] Attempt ${retryCount + 1}/${maxRetries + 1} to get current user`);
-            const attemptStart = performance.now();
-            
-            // getCurrentUser now handles its own timeouts (70s) and retries through handleSupabaseError
-            // No additional timeout wrapper needed here
-            const currentUser = await getCurrentUser();
-            
-            const attemptEnd = performance.now();
-            console.log(`✅ [AUTH] User check successful (source: ${source}):`, currentUser?.id || 'no user');
-            console.log(`📊 [AUTH] User check attempt took ${(attemptEnd - attemptStart).toFixed(1)}ms`);
-            updateUserState(currentUser);
-            
-            const totalTime = performance.now();
-            console.log(`📊 [AUTH] Total performUserCheck time: ${(totalTime - perfStart).toFixed(1)}ms`);
-            return; // Success, exit the function
-            
-          } catch (error) {
-            retryCount++;
-            const attemptEnd = performance.now();
-            console.error(`❌ [AUTH] User check attempt ${retryCount} failed:`, error);
-            console.log(`📊 [AUTH] Failed attempt took ${(attemptEnd - (sessionRecoveryTimeout ? perfStart : performance.now())).toFixed(1)}ms`);
-            
-            if (retryCount > maxRetries) {
-              console.error(`🚫 [AUTH] Max retries reached, forcing logout (source: ${source})`);
-              // Force logout after max retries
-              try {
-                await signOut();
-              } catch (logoutError) {
-                console.error('Error during forced logout:', logoutError);
-              }
-              updateUserState(null);
-              return;
-            }
-            
-            // Wait before retry (exponential backoff)
-            const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 3000);
-            console.log(`⏳ [AUTH] Waiting ${delay}ms before retry ${retryCount + 1}`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-        }
-      } finally {
-        if (sessionRecoveryTimeout) {
-          clearTimeout(sessionRecoveryTimeout);
-        }
-        setIsRecoveringSession(false);
-        setLoading(false);
-        currentCheckPromise = null;
-        console.log(`🏁 [AUTH] User check completed (source: ${source})`);
-      }
-    })();
-
-    return currentCheckPromise;
-  }
-
-
-  useEffect(() => {
-    console.log('🎯 [AUTH] AuthProvider useEffect mounted');
-    
-    // Handle auth state changes from Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log(`🔔 [AUTH] Auth state changed: ${event}, Session:`, session?.user?.id || 'none');
-        
-        if (event === 'SIGNED_OUT' || !session) {
-          console.log('🚪 [AUTH] User signed out or no session, clearing user state');
-          updateUserState(null);
-          setLoading(false);
-          return;
-        }
-        
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-          console.log(`🔄 [AUTH] Triggering user check due to: ${event}`);
-          await performUserCheck(`onAuthStateChange-${event}`);
-        }
-      }
-    );
-
-    // Listen for localStorage changes from other tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      // Check if Supabase session keys were removed from localStorage
-      if (e.key && e.key.includes('supabase.auth.token') && e.newValue === null) {
-        console.log('🔄 [AUTH] Session removed from another tab, triggering user check');
-        performUserCheck('storage-change');
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Initial user check
-    performUserCheck('initial-mount');
-
-    return () => {
-      console.log('🧹 [AUTH] Cleaning up AuthProvider');
-      subscription?.unsubscribe();
-      window.removeEventListener('storage', handleStorageChange);
-      currentCheckPromise = null;
-    };
-  }, []); // Empty dependency array - only run once on mount
-
   const value = {
     user,
     loading,
-    isRecoveringSession,
     login,
     logout,
     isOwner,
