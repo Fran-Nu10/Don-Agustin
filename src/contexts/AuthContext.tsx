@@ -91,15 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             console.log(`🔍 [AUTH] Attempt ${retryCount + 1}/${maxRetries + 1} to get current user`);
             
-            // Create timeout promise for getCurrentUser (10 seconds)
-            const timeoutPromise = new Promise<never>((_, reject) => {
-              setTimeout(() => {
-                reject(new Error('⏰ getCurrentUser timeout after 10 seconds'));
-              }, 10000);
-            });
-
-            const getUserPromise = getCurrentUser();
-            const currentUser = await Promise.race([getUserPromise, timeoutPromise]);
+            // Let getCurrentUser handle its own timeouts and retries through handleSupabaseError
+            const currentUser = await getCurrentUser();
             
             console.log(`✅ [AUTH] User check successful (source: ${source}):`, currentUser?.id || 'no user');
             setUser(currentUser);
