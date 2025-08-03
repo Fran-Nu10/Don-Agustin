@@ -254,132 +254,96 @@ export async function signOut() {
 
 
 export async function getCurrentUser(): Promise<User | null> {
-  return handleSupabaseError(async () => {
-    const totalStart = performance.now();
-    console.log('🔍 [GET CURRENT USER] Starting getCurrentUser function...');
-    
-    const perfStart = performance.now();
-    console.log('🔍 getCurrentUser: Iniciando...');
+  const totalStart = performance.now();
+  console.log('🔍 [GET CURRENT USER] Starting getCurrentUser function...');
+  
+  const perfStart = performance.now();
+  console.log('🔍 getCurrentUser: Iniciando...');
 
-    // First, try to get the session. This is more robust for rehydrating.
-    const sessionWrapperStart = performance.now();
-    console.log('🔍 [GET CURRENT USER] About to call handleSupabaseError for session...');
-    const sessionResult = await handleSupabaseError(async () => {
-      const sessionPerfStart = performance.now();
-      console.log('📋 [GET SESSION] Starting session retrieval...');
-      
-      const result = await supabase.auth.getSession();
-      
-      const sessionPerfEnd = performance.now();
-      console.log(`📋 [GET SESSION] Session retrieval completed in ${(sessionPerfEnd - sessionPerfStart).toFixed(1)}ms`);
-      
-      return result;
-    }, 'Get session', 3, 90000);
-    const sessionWrapperEnd = performance.now();
-    console.log(`🔍 [GET CURRENT USER] Session wrapper completed in ${(sessionWrapperEnd - sessionWrapperStart).toFixed(1)}ms`);
+  // First, try to get the session. This is more robust for rehydrating.
+  const sessionStart = performance.now();
+  console.log('📋 [GET SESSION] Starting session retrieval...');
+  
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  const sessionEnd = performance.now();
+  console.log(`📋 [GET SESSION] Session retrieval completed in ${(sessionEnd - sessionStart).toFixed(1)}ms`);
 
-    const { data: { session }, error: sessionError } = sessionResult;
+  if (sessionError) {
+    console.error('⚠️ Error al obtener la sesión de Supabase:', sessionError);
+    // If there's a session error, it's likely a problem, so clear and return null.
+    await supabase.auth.signOut(); // Ensure any corrupted session is cleared
+    return null;
+  }
 
-    if (sessionError) {
-      console.error('⚠️ Error al obtener la sesión de Supabase:', sessionError);
-      // If there's a session error, it's likely a problem, so clear and return null.
-      await supabase.auth.signOut(); // Ensure any corrupted session is cleared
-      return null;
-    }
-
-    if (!session) {
-      console.log('⚠️ No hay sesión activa de Supabase.');
-      const perfEnd = performance.now();
-      console.log(`🔍 [GET CURRENT USER] No session found. Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
-      const totalEnd = performance.now();
-      console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (no session): ${(totalEnd - totalStart).toFixed(1)}ms`);
-      return null; // No active session, so no user.
-    }
-
-    // If session exists, then get the user from our users table
-    const authUser = session.user;
-    const sessionTime = performance.now();
-    console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
-    console.log(`📊 [GET CURRENT USER] Session validation took ${(sessionTime - perfStart).toFixed(1)}ms`);
-
-    const userWrapperStart = performance.now();
-    console.log('🔍 [GET CURRENT USER] About to call handleSupabaseError for user query...');
-    const userResult = await handleSupabaseError(async () => {
-      const userQueryStart = performance.now();
-      console.log('👤 [USER QUERY] Fetching user from users table...');
-      
-      const result = await supabase
-      return await supabase
-        .from('users')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .single();
-      
-      const userQueryEnd = performance.now();
-      console.log(`👤 [USER QUERY] User query completed in ${(userQueryEnd - userQueryStart).toFixed(1)}ms`);
-      
-      return result;
-    }, 'Get user from users table', 3, 90000);
-    const userWrapperEnd = performance.now();
-    console.log(`🔍 [GET CURRENT USER] User wrapper completed in ${(userWrapperEnd - userWrapperStart).toFixed(1)}ms`);
-
-    const { data: existingUser, error: fetchError } = userResult;
-
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        const createUserStart = performance.now();
-        console.log('👤 Usuario no existe en public.users, creando nuevo...');
-        
-        const createUserResult = await handleSupabaseError(async () => {
-          const createUserStart = performance.now();
-          console.log('➕ [CREATE USER] Creating new user in users table...');
-          
-          const result = await supabase
-          return await supabase
-            .from('users')
-            .insert([{
-              id: authUser.id,
-              user_id: authUser.id,
-              email: authUser.email,
-              role: 'employee',
-              created_at: new Date().toISOString()
-            }])
-            .select()
-            .single();
-          
-          const createUserEnd = performance.now();
-          console.log(`➕ [CREATE USER] User creation completed in ${(createUserEnd - createUserStart).toFixed(1)}ms`);
-          
-          return result;
-        }, 'Create new user', 3, 90000);
-
-        const { data: newUser, error: insertError } = createUserResult;
-
-        if (insertError) {
-          console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
-          throw insertError;
-        }
-        
-        const createUserEnd = performance.now();
-        console.log(`🔍 [GET CURRENT USER] User creation process took ${(createUserEnd - createUserStart).toFixed(1)}ms`);
-        const perfEnd = performance.now();
-        console.log('✅ Nuevo usuario creado:', newUser);
-        console.log(`🔍 [GET CURRENT USER] Total time with user creation: ${(perfEnd - perfStart).toFixed(1)}ms`);
-        const totalEnd = performance.now();
-        console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (new user): ${(totalEnd - totalStart).toFixed(1)}ms`);
-        return newUser;
-      }
-      console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
-      throw fetchError;
-    }
-    
+  if (!session) {
+    console.log('⚠️ No hay sesión activa de Supabase.');
     const perfEnd = performance.now();
-    console.log('✅ Usuario encontrado en public.users:', existingUser);
-    console.log(`🔍 [GET CURRENT USER] Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
+    console.log(`🔍 [GET CURRENT USER] No session found. Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
     const totalEnd = performance.now();
-    console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (existing user): ${(totalEnd - totalStart).toFixed(1)}ms`);
-    return existingUser;
-  }, 'Get current user', 3, 90000);
+    console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (no session): ${(totalEnd - totalStart).toFixed(1)}ms`);
+    return null; // No active session, so no user.
+  }
+
+  // If session exists, then get the user from our users table
+  const authUser = session.user;
+  const sessionTime = performance.now();
+  console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
+  console.log(`📊 [GET CURRENT USER] Session validation took ${(sessionTime - perfStart).toFixed(1)}ms`);
+
+  const userQueryStart = performance.now();
+  console.log('👤 [USER QUERY] Fetching user from users table...');
+  
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('user_id', authUser.id)
+    .single();
+  
+  const userQueryEnd = performance.now();
+  console.log(`👤 [USER QUERY] User query completed in ${(userQueryEnd - userQueryStart).toFixed(1)}ms`);
+
+  if (fetchError) {
+    if (fetchError.code === 'PGRST116') {
+      const createUserStart = performance.now();
+      console.log('👤 Usuario no existe en public.users, creando nuevo...');
+      
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{
+          id: authUser.id,
+          user_id: authUser.id,
+          email: authUser.email,
+          role: 'employee',
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
+        throw insertError;
+      }
+      
+      const createUserEnd = performance.now();
+      console.log(`🔍 [GET CURRENT USER] User creation process took ${(createUserEnd - createUserStart).toFixed(1)}ms`);
+      const perfEnd = performance.now();
+      console.log('✅ Nuevo usuario creado:', newUser);
+      console.log(`🔍 [GET CURRENT USER] Total time with user creation: ${(perfEnd - perfStart).toFixed(1)}ms`);
+      const totalEnd = performance.now();
+      console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (new user): ${(totalEnd - totalStart).toFixed(1)}ms`);
+      return newUser;
+    }
+    console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
+    throw fetchError;
+  }
+  
+  const perfEnd = performance.now();
+  console.log('✅ Usuario encontrado en public.users:', existingUser);
+  console.log(`🔍 [GET CURRENT USER] Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
+  const totalEnd = performance.now();
+  console.log(`🔍 [GET CURRENT USER] TOTAL getCurrentUser time (existing user): ${(totalEnd - totalStart).toFixed(1)}ms`);
+  return existingUser;
 }
 
 // Trip functions
@@ -684,217 +648,215 @@ export async function getBookingsByTrip(tripId: string): Promise<Booking[]> {
 
 // Enhanced Stats functions
 export async function getStats(): Promise<Stats> {
-  return handleSupabaseError(async () => {
-    const totalStart = performance.now();
-    console.log('📊 [GET STATS] Starting getStats function...');
+  const totalStart = performance.now();
+  console.log('📊 [GET STATS] Starting getStats function...');
+  
+  try {
+    console.log('📊 [GET STATS] Fetching dashboard statistics...');
     
-    try {
-      console.log('📊 [GET STATS] Fetching dashboard statistics...');
-      
-      // Get total trips with count
-      const tripsStart = performance.now();
-      console.log('📊 [GET STATS] Step 1: Fetching trips...');
-      const { data: tripsData, error: tripsError, count: totalTrips } = await supabase
-        .from('trips')
-        .select('*', { count: 'exact' });
-      const tripsEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 1 completed in ${(tripsEnd - tripsStart).toFixed(1)}ms`);
+    // Get total trips with count
+    const tripsStart = performance.now();
+    console.log('📊 [GET STATS] Step 1: Fetching trips...');
+    const { data: tripsData, error: tripsError, count: totalTrips } = await supabase
+      .from('trips')
+      .select('*', { count: 'exact' });
+    const tripsEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 1 completed in ${(tripsEnd - tripsStart).toFixed(1)}ms`);
 
-      if (tripsError) {
-        console.error('Error fetching trips:', tripsError);
-        throw tripsError;
-      }
-      
-      console.log(`📊 [GET STATS] Found ${totalTrips} total trips`);
-
-      // Get total quotations with count - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const quotationsStart = performance.now();
-      console.log('📊 [GET STATS] Step 2: Fetching quotations...');
-      const { data: quotationsData, error: quotationsError, count: totalQuotations } = await supabase
-        .from('quotations')
-        .select('*', { count: 'exact' })
-        .limit(1000); // Ensure we get all quotations
-      const quotationsEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 2 completed in ${(quotationsEnd - quotationsStart).toFixed(1)}ms`);
-
-      if (quotationsError) {
-        console.error('Error fetching quotations:', quotationsError);
-        throw quotationsError;
-      }
-      
-      console.log(`📊 [GET STATS] Found ${totalQuotations} total quotations`);
-
-      // Get upcoming trips
-      const upcomingStart = performance.now();
-      console.log('📊 [GET STATS] Step 3: Fetching upcoming trips...');
-      const { data: upcomingTripsData, error: upcomingError, count: upcomingTrips } = await supabase
-        .from('trips')
-        .select('*', { count: 'exact' })
-        .gt('departure_date', new Date().toISOString());
-      const upcomingEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 3 completed in ${(upcomingEnd - upcomingStart).toFixed(1)}ms`);
-
-      if (upcomingError) {
-        console.error('Error fetching upcoming trips:', upcomingError);
-        throw upcomingError;
-      }
-      
-      console.log(`📊 [GET STATS] Found ${upcomingTrips} upcoming trips`);
-
-      // Get quotations with trip details for destination analysis - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const quotationsWithTripsStart = performance.now();
-      console.log('📊 [GET STATS] Step 4: Fetching quotations with trip details...');
-      const { data: quotationsWithTrips, error: quotationsWithTripsError } = await supabase
-        .from('quotations')
-        .select(`
-          id,
-          created_at,
-          trip_id,
-          trip_destination,
-          destination
-        `);
-      const quotationsWithTripsEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 4 completed in ${(quotationsWithTripsEnd - quotationsWithTripsStart).toFixed(1)}ms`);
-
-      if (quotationsWithTripsError) {
-        console.error('Error fetching quotations with trips:', quotationsWithTripsError);
-        throw quotationsWithTripsError;
-      }
-
-      // Count quotations by destination - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const processingStart = performance.now();
-      console.log('📊 [GET STATS] Step 5: Processing destination counts...');
-      const destinationCounts: { [key: string]: number } = {};
-      
-      if (quotationsWithTrips && quotationsWithTrips.length > 0) {
-        console.log('📊 [GET STATS] Processing quotations for destination counts...');
-        quotationsWithTrips.forEach(quotation => {
-          // Use trip_destination if available, otherwise use destination
-          const destination = quotation.trip_destination || quotation.destination;
-          if (destination) {
-            destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
-          }
-        });
-      } else {
-        // Si no hay cotizaciones, usar los destinos de los viajes disponibles
-        console.log('📊 [GET STATS] No quotations found, using trip destinations instead');
-        tripsData?.forEach(trip => {
-          const destination = trip.destination;
-          destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
-        });
-      }
-      const processingEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 5 completed in ${(processingEnd - processingStart).toFixed(1)}ms`);
-
-      // Convert to array and sort by count
-      const sortingStart = performance.now();
-      console.log('📊 [GET STATS] Step 6: Sorting popular destinations...');
-      const popularDestinations = Object.entries(destinationCounts)
-        .map(([destination, count]) => ({ destination, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5); // Top 5 destinations
-      const sortingEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 6 completed in ${(sortingEnd - sortingStart).toFixed(1)}ms`);
-      
-      console.log('📊 [GET STATS] Popular destinations:', popularDestinations);
-
-      // Calculate category distribution
-      const categoryStart = performance.now();
-      console.log('📊 [GET STATS] Step 7: Calculating category distribution...');
-      const categoryCount: { [key: string]: number } = {};
-      tripsData?.forEach(trip => {
-        const category = trip.category;
-        categoryCount[category] = (categoryCount[category] || 0) + 1;
-      });
-
-      const totalTripsCount = tripsData?.length || 0;
-      const categoryDistribution = Object.entries(categoryCount).map(([category, count]) => ({
-        category: category === 'nacional' ? 'Nacional' : 
-                  category === 'internacional' ? 'Internacional' : 
-                  category === 'grupal' ? 'Grupal' : category,
-        count,
-        percentage: totalTripsCount > 0 ? (count / totalTripsCount) * 100 : 0
-      }));
-      const categoryEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 7 completed in ${(categoryEnd - categoryStart).toFixed(1)}ms`);
-      
-      console.log('📊 [GET STATS] Category distribution:', categoryDistribution);
-
-      // Calculate quotation trend - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const trendStart = performance.now();
-      console.log('📊 [GET STATS] Step 8: Calculating quotation trends...');
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-      
-      const recentQuotations = quotationsData?.filter(quotation => 
-        new Date(quotation.created_at) >= sevenDaysAgo
-      ) || [];
-      
-      const previousWeekQuotations = quotationsData?.filter(quotation => {
-        const quotationDate = new Date(quotation.created_at);
-        return quotationDate >= fourteenDaysAgo && quotationDate < sevenDaysAgo;
-      }) || [];
-      
-      const currentWeekCount = recentQuotations.length;
-      const previousWeekCount = previousWeekQuotations.length;
-      
-      const quotationTrend = previousWeekCount > 0 
-        ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100 
-        : currentWeekCount > 0 ? 100 : 0;
-      const trendEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 8 completed in ${(trendEnd - trendStart).toFixed(1)}ms`);
-      
-      console.log(`📊 [GET STATS] Quotation trend: ${quotationTrend.toFixed(1)}% (${currentWeekCount} vs ${previousWeekCount})`);
-
-      // Calculate average quotations per day - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const averageStart = performance.now();
-      console.log('📊 [GET STATS] Step 9: Calculating averages...');
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const last30DaysQuotations = quotationsData?.filter(quotation => 
-        new Date(quotation.created_at) >= thirtyDaysAgo
-      ) || [];
-      
-      const averageQuotationsPerDay = last30DaysQuotations.length / 30;
-      console.log(`📊 [GET STATS] Average quotations per day: ${averageQuotationsPerDay.toFixed(2)}`);
-
-      // Calculate recent quotations count - UPDATED FROM BOOKINGS TO QUOTATIONS
-      const recentQuotationsCount = recentQuotations.length;
-      console.log(`📊 [GET STATS] Recent quotations (last 7 days): ${recentQuotationsCount}`);
-
-      // Calculate conversion rate
-      const conversionRate = totalTrips && totalTrips > 0 
-        ? ((totalQuotations || 0) / totalTrips) * 100 
-        : 0;
-      const averageEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 9 completed in ${(averageEnd - averageStart).toFixed(1)}ms`);
-      
-      console.log(`📊 [GET STATS] Conversion rate: ${conversionRate.toFixed(1)}%`);
-
-      const resultStart = performance.now();
-      console.log('📊 [GET STATS] Step 10: Building result object...');
-      const result = {
-        totalTrips: totalTrips || 0,
-        totalBookings: totalQuotations || 0, // Now represents total quotations
-        upcomingTrips: upcomingTrips || 0,
-        popularDestinations,
-        categoryDistribution,
-        bookingTrend: Math.round(quotationTrend * 10) / 10, // Now represents quotation trend
-        averageBookingsPerDay: Math.round(averageQuotationsPerDay * 10) / 10, // Now represents average quotations per day
-        recentBookingsCount: recentQuotationsCount, // Now represents recent quotations count
-        conversionRate,
-      };
-      const resultEnd = performance.now();
-      console.log(`📊 [GET STATS] Step 10 completed in ${(resultEnd - resultStart).toFixed(1)}ms`);
-      
-      const totalEnd = performance.now();
-      console.log(`📊 [GET STATS] TOTAL getStats function time: ${(totalEnd - totalStart).toFixed(1)}ms`);
-      
-      return result;
-    } catch (error) {
-      const totalEnd = performance.now();
-      console.error(`📊 [GET STATS] ERROR after ${(totalEnd - totalStart).toFixed(1)}ms:`, error);
-      throw error;
+    if (tripsError) {
+      console.error('Error fetching trips:', tripsError);
+      throw tripsError;
     }
-  }, 'Get stats', 3, 90000);
+    
+    console.log(`📊 [GET STATS] Found ${totalTrips} total trips`);
+
+    // Get total quotations with count - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const quotationsStart = performance.now();
+    console.log('📊 [GET STATS] Step 2: Fetching quotations...');
+    const { data: quotationsData, error: quotationsError, count: totalQuotations } = await supabase
+      .from('quotations')
+      .select('*', { count: 'exact' })
+      .limit(1000); // Ensure we get all quotations
+    const quotationsEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 2 completed in ${(quotationsEnd - quotationsStart).toFixed(1)}ms`);
+
+    if (quotationsError) {
+      console.error('Error fetching quotations:', quotationsError);
+      throw quotationsError;
+    }
+    
+    console.log(`📊 [GET STATS] Found ${totalQuotations} total quotations`);
+
+    // Get upcoming trips
+    const upcomingStart = performance.now();
+    console.log('📊 [GET STATS] Step 3: Fetching upcoming trips...');
+    const { data: upcomingTripsData, error: upcomingError, count: upcomingTrips } = await supabase
+      .from('trips')
+      .select('*', { count: 'exact' })
+      .gt('departure_date', new Date().toISOString());
+    const upcomingEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 3 completed in ${(upcomingEnd - upcomingStart).toFixed(1)}ms`);
+
+    if (upcomingError) {
+      console.error('Error fetching upcoming trips:', upcomingError);
+      throw upcomingError;
+    }
+    
+    console.log(`📊 [GET STATS] Found ${upcomingTrips} upcoming trips`);
+
+    // Get quotations with trip details for destination analysis - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const quotationsWithTripsStart = performance.now();
+    console.log('📊 [GET STATS] Step 4: Fetching quotations with trip details...');
+    const { data: quotationsWithTrips, error: quotationsWithTripsError } = await supabase
+      .from('quotations')
+      .select(`
+        id,
+        created_at,
+        trip_id,
+        trip_destination,
+        destination
+      `);
+    const quotationsWithTripsEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 4 completed in ${(quotationsWithTripsEnd - quotationsWithTripsStart).toFixed(1)}ms`);
+
+    if (quotationsWithTripsError) {
+      console.error('Error fetching quotations with trips:', quotationsWithTripsError);
+      throw quotationsWithTripsError;
+    }
+
+    // Count quotations by destination - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const processingStart = performance.now();
+    console.log('📊 [GET STATS] Step 5: Processing destination counts...');
+    const destinationCounts: { [key: string]: number } = {};
+    
+    if (quotationsWithTrips && quotationsWithTrips.length > 0) {
+      console.log('📊 [GET STATS] Processing quotations for destination counts...');
+      quotationsWithTrips.forEach(quotation => {
+        // Use trip_destination if available, otherwise use destination
+        const destination = quotation.trip_destination || quotation.destination;
+        if (destination) {
+          destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
+        }
+      });
+    } else {
+      // Si no hay cotizaciones, usar los destinos de los viajes disponibles
+      console.log('📊 [GET STATS] No quotations found, using trip destinations instead');
+      tripsData?.forEach(trip => {
+        const destination = trip.destination;
+        destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
+      });
+    }
+    const processingEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 5 completed in ${(processingEnd - processingStart).toFixed(1)}ms`);
+
+    // Convert to array and sort by count
+    const sortingStart = performance.now();
+    console.log('📊 [GET STATS] Step 6: Sorting popular destinations...');
+    const popularDestinations = Object.entries(destinationCounts)
+      .map(([destination, count]) => ({ destination, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Top 5 destinations
+    const sortingEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 6 completed in ${(sortingEnd - sortingStart).toFixed(1)}ms`);
+    
+    console.log('📊 [GET STATS] Popular destinations:', popularDestinations);
+
+    // Calculate category distribution
+    const categoryStart = performance.now();
+    console.log('📊 [GET STATS] Step 7: Calculating category distribution...');
+    const categoryCount: { [key: string]: number } = {};
+    tripsData?.forEach(trip => {
+      const category = trip.category;
+      categoryCount[category] = (categoryCount[category] || 0) + 1;
+    });
+
+    const totalTripsCount = tripsData?.length || 0;
+    const categoryDistribution = Object.entries(categoryCount).map(([category, count]) => ({
+      category: category === 'nacional' ? 'Nacional' : 
+                category === 'internacional' ? 'Internacional' : 
+                category === 'grupal' ? 'Grupal' : category,
+      count,
+      percentage: totalTripsCount > 0 ? (count / totalTripsCount) * 100 : 0
+    }));
+    const categoryEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 7 completed in ${(categoryEnd - categoryStart).toFixed(1)}ms`);
+    
+    console.log('📊 [GET STATS] Category distribution:', categoryDistribution);
+
+    // Calculate quotation trend - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const trendStart = performance.now();
+    console.log('📊 [GET STATS] Step 8: Calculating quotation trends...');
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    
+    const recentQuotations = quotationsData?.filter(quotation => 
+      new Date(quotation.created_at) >= sevenDaysAgo
+    ) || [];
+    
+    const previousWeekQuotations = quotationsData?.filter(quotation => {
+      const quotationDate = new Date(quotation.created_at);
+      return quotationDate >= fourteenDaysAgo && quotationDate < sevenDaysAgo;
+    }) || [];
+    
+    const currentWeekCount = recentQuotations.length;
+    const previousWeekCount = previousWeekQuotations.length;
+    
+    const quotationTrend = previousWeekCount > 0 
+      ? ((currentWeekCount - previousWeekCount) / previousWeekCount) * 100 
+      : currentWeekCount > 0 ? 100 : 0;
+    const trendEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 8 completed in ${(trendEnd - trendStart).toFixed(1)}ms`);
+    
+    console.log(`📊 [GET STATS] Quotation trend: ${quotationTrend.toFixed(1)}% (${currentWeekCount} vs ${previousWeekCount})`);
+
+    // Calculate average quotations per day - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const averageStart = performance.now();
+    console.log('📊 [GET STATS] Step 9: Calculating averages...');
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last30DaysQuotations = quotationsData?.filter(quotation => 
+      new Date(quotation.created_at) >= thirtyDaysAgo
+    ) || [];
+    
+    const averageQuotationsPerDay = last30DaysQuotations.length / 30;
+    console.log(`📊 [GET STATS] Average quotations per day: ${averageQuotationsPerDay.toFixed(2)}`);
+
+    // Calculate recent quotations count - UPDATED FROM BOOKINGS TO QUOTATIONS
+    const recentQuotationsCount = recentQuotations.length;
+    console.log(`📊 [GET STATS] Recent quotations (last 7 days): ${recentQuotationsCount}`);
+
+    // Calculate conversion rate
+    const conversionRate = totalTrips && totalTrips > 0 
+      ? ((totalQuotations || 0) / totalTrips) * 100 
+      : 0;
+    const averageEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 9 completed in ${(averageEnd - averageStart).toFixed(1)}ms`);
+    
+    console.log(`📊 [GET STATS] Conversion rate: ${conversionRate.toFixed(1)}%`);
+
+    const resultStart = performance.now();
+    console.log('📊 [GET STATS] Step 10: Building result object...');
+    const result = {
+      totalTrips: totalTrips || 0,
+      totalBookings: totalQuotations || 0, // Now represents total quotations
+      upcomingTrips: upcomingTrips || 0,
+      popularDestinations,
+      categoryDistribution,
+      bookingTrend: Math.round(quotationTrend * 10) / 10, // Now represents quotation trend
+      averageBookingsPerDay: Math.round(averageQuotationsPerDay * 10) / 10, // Now represents average quotations per day
+      recentBookingsCount: recentQuotationsCount, // Now represents recent quotations count
+      conversionRate,
+    };
+    const resultEnd = performance.now();
+    console.log(`📊 [GET STATS] Step 10 completed in ${(resultEnd - resultStart).toFixed(1)}ms`);
+    
+    const totalEnd = performance.now();
+    console.log(`📊 [GET STATS] TOTAL getStats function time: ${(totalEnd - totalStart).toFixed(1)}ms`);
+    
+    return result;
+  } catch (error) {
+    const totalEnd = performance.now();
+    console.error(`📊 [GET STATS] ERROR after ${(totalEnd - totalStart).toFixed(1)}ms:`, error);
+    throw error;
+  }
 }
