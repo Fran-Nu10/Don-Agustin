@@ -5,9 +5,7 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
-import { useSessionCleanup } from '../hooks/useSessionManage
-  ';
-
+import { useSessionManager } from '../lib/hooks/useSessionManager';
 
 interface AuthContextType {
   user: User | null;
@@ -26,8 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
-
-    useSessionCleanup();
 
   // Prevent concurrent user checks
   let currentCheckPromise: Promise<void> | null = null;
