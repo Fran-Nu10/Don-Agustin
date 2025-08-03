@@ -133,25 +133,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Simple logout function
   async function logout() {
     try {
-      setLoading(true);
       console.log('🚪 [COOKIE AUTH] Starting logout process...');
-      
-      // Sign out from Supabase
-      await signOut();
       
       // Clear cookie and state
       removeUserCookie();
       setUser(null);
       
-      console.log('✅ [COOKIE AUTH] Logout successful');
-      toast.success('Sesión cerrada correctamente');
+      console.log('✅ [COOKIE AUTH] Local state cleared');
       
-      // Navigate to login
+      // Navigate immediately to provide instant feedback
       navigate('/login', { replace: true });
+      
+      // Try to sign out from Supabase in the background
+      try {
+        setLoading(true);
+        await signOut();
+        console.log('✅ [COOKIE AUTH] Supabase logout successful');
+        toast.success('Sesión cerrada correctamente');
+      } catch (supabaseError: any) {
+        console.log('⚠️ [COOKIE AUTH] Supabase logout error:', supabaseError);
+        
+        // Handle specific case where session was already missing/expired
+        if (supabaseError.message?.includes('Auth session missing') || 
+            supabaseError.message?.includes('AuthSessionMissingError')) {
+          console.log('ℹ️ [COOKIE AUTH] Session was already expired/missing');
+          toast.success('Sesión cerrada correctamente (la sesión ya había expirado)');
+        } else if (supabaseError.message?.includes('403') || 
+                   supabaseError.message?.includes('unauthorized')) {
+          console.log('ℹ️ [COOKIE AUTH] Session was already invalidated');
+          toast.success('Sesión cerrada correctamente (la sesión ya había sido invalidada)');
+        } else {
+          console.warn('⚠️ [COOKIE AUTH] Unexpected logout error, but local state cleared');
+          toast.success('Sesión cerrada localmente (error de conexión con el servidor)');
+        }
+      } finally {
+        setLoading(false);
+      }
+      
     } catch (error) {
-      console.error('❌ [COOKIE AUTH] Logout error:', error);
-      toast.error('Error al cerrar sesión');
-    } finally {
+      console.error('❌ [COOKIE AUTH] Unexpected error during logout:', error);
+      // Even if there's an unexpected error, ensure user is logged out locally
+      removeUserCookie();
+      setUser(null);
+      navigate('/login', { replace: true });
+      toast.success('Sesión cerrada localmente');
       setLoading(false);
     }
   }

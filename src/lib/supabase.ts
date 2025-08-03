@@ -170,7 +170,9 @@ function isRetryableError(error: any): boolean {
   if (message.includes('jwt') || 
       message.includes('unauthorized') || 
       message.includes('invalid api key') ||
-      message.includes('authentication')) {
+      message.includes('authentication') ||
+      message.includes('auth session missing') ||
+      message.includes('authsessionmissingerror')) {
     console.log(`🔑 [RETRY] Error de autenticación detectado: ${message}`);
     return false;
   }
