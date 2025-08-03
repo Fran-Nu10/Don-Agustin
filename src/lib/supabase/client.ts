@@ -52,6 +52,40 @@ if (!supabase) {
       headers: {
         'apikey': supabaseAnonKey,
       },
+      fetch: async (input, init) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          console.log('⏰ [SUPABASE FETCH] Aborting request after 60 seconds:', input);
+          controller.abort();
+        }, 60000); // 60 seconds timeout for all Supabase operations
+
+        try {
+          const startTime = performance.now();
+          const response = await fetch(input, {
+            ...init,
+            signal: controller.signal,
+          });
+          const endTime = performance.now();
+          
+          // Log performance for monitoring
+          const duration = endTime - startTime;
+          if (duration > 5000) { // Log slow requests (>5s)
+            console.warn(`🐌 [SUPABASE FETCH] Slow request detected: ${duration.toFixed(0)}ms for ${input}`);
+          } else {
+            console.log(`⚡ [SUPABASE FETCH] Request completed in ${duration.toFixed(0)}ms for ${input}`);
+          }
+          
+          return response;
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            console.error('⏰ [SUPABASE FETCH] Request aborted due to timeout:', input);
+            throw new Error('⏰ SUPABASE TIMEOUT: Request exceeded 60 seconds');
+          }
+          throw error;
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      },
     },
   });
 }

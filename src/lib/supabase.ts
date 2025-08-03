@@ -10,7 +10,7 @@ async function handleSupabaseError<T>(
   operation: () => Promise<T>, 
   operationName: string,
   maxRetries: number = 3,
-  timeoutMs: number = 45000 // Timeout global de 45 segundos para Bolt
+  timeoutMs: number = 70000 // Increased to 70 seconds to work with global fetch timeout of 60s
 ): Promise<T> {
   let lastError: any;
   
@@ -18,20 +18,30 @@ async function handleSupabaseError<T>(
     try {
       console.log(`🔄 [${operationName}] Intento ${attempt}/${maxRetries}`);
       const startTime = Date.now();
+      const perfStart = performance.now();
       
       // Crear promesa de timeout que se rechaza después del tiempo límite
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`⏰ TIMEOUT: La operación "${operationName}" excedió el tiempo límite de ${timeoutMs}ms`));
+          reject(new Error(`⏰ HANDLESUPABASEERROR TIMEOUT: La operación "${operationName}" excedió el tiempo límite de ${timeoutMs}ms`));
         }, timeoutMs);
       });
       
       // Hacer que la operación compita con el timeout
-      console.log(`⏱️ [${operationName}] Iniciando operación con timeout de ${timeoutMs}ms...`);
+      console.log(`⏱️ [${operationName}] Iniciando operación con timeout de ${timeoutMs}ms (global fetch: 60s)...`);
       const result = await Promise.race([operation(), timeoutPromise]);
       
       const endTime = Date.now();
-      console.log(`✅ [${operationName}] Éxito en intento ${attempt} (${endTime - startTime}ms)`);
+      const perfEnd = performance.now();
+      const duration = endTime - startTime;
+      const perfDuration = perfEnd - perfStart;
+      
+      console.log(`✅ [${operationName}] Éxito en intento ${attempt} (${duration}ms wall time, ${perfDuration.toFixed(1)}ms performance)`);
+      
+      // Log performance warnings for slow operations
+      if (perfDuration > 10000) {
+        console.warn(`🐌 [${operationName}] SLOW OPERATION: ${perfDuration.toFixed(1)}ms - Consider investigating`);
+      }
       
       return result;
     } catch (error: any) {
@@ -39,7 +49,7 @@ async function handleSupabaseError<T>(
       console.error(`❌ [${operationName}] Error en intento ${attempt}:`, error);
       
       // Verificar si es un error de timeout
-      if (error.message?.includes('TIMEOUT:')) {
+      if (error.message?.includes('TIMEOUT:') || error.message?.includes('SUPABASE TIMEOUT:')) {
         console.error(`⏰ [${operationName}] Error de timeout detectado en intento ${attempt}`);
       }
       
@@ -65,7 +75,7 @@ async function handleSupabaseError<T>(
   
   try {
     // Manejo específico para errores de timeout
-    if (lastError.message?.includes('TIMEOUT:')) {
+    if (lastError.message?.includes('TIMEOUT:') || lastError.message?.includes('SUPABASE TIMEOUT:')) {
       throw new Error(`⏰ La operación "${operationName}" tardó demasiado tiempo. Esto puede deberse a problemas de conexión o sobrecarga del servidor. Por favor, verifica tu conexión a internet y recarga la página si el problema persiste.`);
     }
     
@@ -180,6 +190,9 @@ function isRetryableError(error: any): boolean {
 // Authentication functions
 export async function signIn(email: string, password: string) {
   return handleSupabaseError(async () => {
+    const perfStart = performance.now();
+    console.log('🔐 [SIGN IN] Starting authentication process...');
+    
     // First authenticate with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -187,6 +200,9 @@ export async function signIn(email: string, password: string) {
     });
     
     if (authError) throw authError;
+    
+    const authTime = performance.now();
+    console.log(`✅ [SIGN IN] Supabase auth completed in ${(authTime - perfStart).toFixed(1)}ms`);
 
     // Then get the user data from our users table
     const { data: userData, error: userError } = await supabase
@@ -210,30 +226,50 @@ export async function signIn(email: string, password: string) {
         .single();
 
       if (createError) throw createError;
+      
+      const totalTime = performance.now();
+      console.log(`✅ [SIGN IN] New user created. Total process: ${(totalTime - perfStart).toFixed(1)}ms`);
       return newUser;
     }
 
+    const totalTime = performance.now();
+    console.log(`✅ [SIGN IN] Existing user found. Total process: ${(totalTime - perfStart).toFixed(1)}ms`);
     return userData;
-  }, 'Sign in', 3, 30000);
+  }, 'Sign in', 3, 70000);
 }
 
 export async function signOut() {
   return handleSupabaseError(async () => {
+    const perfStart = performance.now();
+    console.log('🚪 [SIGN OUT] Starting logout process...');
+    
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-  }, 'Sign out', 3, 30000);
+    
+    const perfEnd = performance.now();
+    console.log(`✅ [SIGN OUT] Logout completed in ${(perfEnd - perfStart).toFixed(1)}ms`);
+  }, 'Sign out', 3, 70000);
 }
 
 
 
 export async function getCurrentUser(): Promise<User | null> {
   return handleSupabaseError(async () => {
+    const perfStart = performance.now();
     console.log('🔍 getCurrentUser: Iniciando...');
 
     // First, try to get the session. This is more robust for rehydrating.
     const sessionResult = await handleSupabaseError(async () => {
-      return await supabase.auth.getSession();
-    }, 'Get session', 3, 30000);
+      const sessionPerfStart = performance.now();
+      console.log('📋 [GET SESSION] Starting session retrieval...');
+      
+      const result = await supabase.auth.getSession();
+      
+      const sessionPerfEnd = performance.now();
+      console.log(`📋 [GET SESSION] Session retrieval completed in ${(sessionPerfEnd - sessionPerfStart).toFixed(1)}ms`);
+      
+      return result;
+    }, 'Get session', 3, 70000);
 
     const { data: { session }, error: sessionError } = sessionResult;
 
@@ -246,20 +282,33 @@ export async function getCurrentUser(): Promise<User | null> {
 
     if (!session) {
       console.log('⚠️ No hay sesión activa de Supabase.');
+      const perfEnd = performance.now();
+      console.log(`🔍 [GET CURRENT USER] No session found. Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
       return null; // No active session, so no user.
     }
 
     // If session exists, then get the user from our users table
     const authUser = session.user;
+    const sessionTime = performance.now();
     console.log('✅ Usuario autenticado encontrado (desde sesión):', authUser.id, authUser.email);
+    console.log(`📊 [GET CURRENT USER] Session validation took ${(sessionTime - perfStart).toFixed(1)}ms`);
 
     const userResult = await handleSupabaseError(async () => {
+      const userQueryStart = performance.now();
+      console.log('👤 [USER QUERY] Fetching user from users table...');
+      
+      const result = await supabase
       return await supabase
         .from('users')
         .select('*')
         .eq('user_id', authUser.id)
         .single();
-    }, 'Get user from users table', 3, 10000);
+      
+      const userQueryEnd = performance.now();
+      console.log(`👤 [USER QUERY] User query completed in ${(userQueryEnd - userQueryStart).toFixed(1)}ms`);
+      
+      return result;
+    }, 'Get user from users table', 3, 70000);
 
     const { data: existingUser, error: fetchError } = userResult;
 
@@ -268,6 +317,10 @@ export async function getCurrentUser(): Promise<User | null> {
         console.log('👤 Usuario no existe en public.users, creando nuevo...');
         
         const createUserResult = await handleSupabaseError(async () => {
+          const createUserStart = performance.now();
+          console.log('➕ [CREATE USER] Creating new user in users table...');
+          
+          const result = await supabase
           return await supabase
             .from('users')
             .insert([{
@@ -279,7 +332,12 @@ export async function getCurrentUser(): Promise<User | null> {
             }])
             .select()
             .single();
-        }, 'Create new user', 3, 10000);
+          
+          const createUserEnd = performance.now();
+          console.log(`➕ [CREATE USER] User creation completed in ${(createUserEnd - createUserStart).toFixed(1)}ms`);
+          
+          return result;
+        }, 'Create new user', 3, 70000);
 
         const { data: newUser, error: insertError } = createUserResult;
 
@@ -287,15 +345,21 @@ export async function getCurrentUser(): Promise<User | null> {
           console.error('❌ Error al crear nuevo usuario en public.users:', insertError);
           throw insertError;
         }
+        
+        const perfEnd = performance.now();
         console.log('✅ Nuevo usuario creado:', newUser);
+        console.log(`🔍 [GET CURRENT USER] Total time with user creation: ${(perfEnd - perfStart).toFixed(1)}ms`);
         return newUser;
       }
       console.error('❌ Error inesperado al buscar usuario en public.users:', fetchError);
       throw fetchError;
     }
+    
+    const perfEnd = performance.now();
     console.log('✅ Usuario encontrado en public.users:', existingUser);
+    console.log(`🔍 [GET CURRENT USER] Total time: ${(perfEnd - perfStart).toFixed(1)}ms`);
     return existingUser;
-  }, 'Get current user', 3, 30000);
+  }, 'Get current user', 3, 70000);
 }
 
 // Trip functions

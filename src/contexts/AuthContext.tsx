@@ -5,7 +5,7 @@ import { User, LoginFormData } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase/client';
-import { useSessionManager } from '../lib/hooks/useSessionManager';
+import { useCrossTabSessionSync } from '../hooks/useCrossTabSessionSync';
 
 interface AuthContextType {
   user: User | null;
@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
+
+  // Initialize cross-tab session synchronization
+  useCrossTabSessionSync({ setUser });
 
   // Prevent concurrent user checks
   let currentCheckPromise: Promise<void> | null = null;
@@ -80,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     currentCheckPromise = (async () => {
       try {
         setLoading(true);
+        const perfStart = performance.now();
         
         // Set recovery timeout for UI feedback (after 3 seconds)
         sessionRecoveryTimeout = setTimeout(() => {
@@ -90,17 +94,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         while (retryCount <= maxRetries) {
           try {
             console.log(`🔍 [AUTH] Attempt ${retryCount + 1}/${maxRetries + 1} to get current user`);
+            const attemptStart = performance.now();
             
-            // Let getCurrentUser handle its own timeouts and retries through handleSupabaseError
+            // getCurrentUser now handles its own timeouts (70s) and retries through handleSupabaseError
+            // No additional timeout wrapper needed here
             const currentUser = await getCurrentUser();
             
+            const attemptEnd = performance.now();
             console.log(`✅ [AUTH] User check successful (source: ${source}):`, currentUser?.id || 'no user');
+            console.log(`📊 [AUTH] User check attempt took ${(attemptEnd - attemptStart).toFixed(1)}ms`);
             setUser(currentUser);
+            
+            const totalTime = performance.now();
+            console.log(`📊 [AUTH] Total performUserCheck time: ${(totalTime - perfStart).toFixed(1)}ms`);
             return; // Success, exit the function
             
           } catch (error) {
             retryCount++;
+            const attemptEnd = performance.now();
             console.error(`❌ [AUTH] User check attempt ${retryCount} failed:`, error);
+            console.log(`📊 [AUTH] Failed attempt took ${(attemptEnd - (sessionRecoveryTimeout ? perfStart : performance.now())).toFixed(1)}ms`);
             
             if (retryCount > maxRetries) {
               console.error(`🚫 [AUTH] Max retries reached, forcing logout (source: ${source})`);
