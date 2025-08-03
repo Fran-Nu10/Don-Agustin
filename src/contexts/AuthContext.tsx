@@ -35,9 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       console.log('Login attempt with email:', data.email);
-      const userData = await signIn(data.email, data.password);
-      console.log('Login response:', userData);
-      setUser(userData);
+      await signIn(data.email, data.password);
+      console.log('Login successful, user state will be updated by onAuthStateChange');
       toast.success('¡Sesión iniciada correctamente!');
     } catch (error) {
       console.error('Login error:', error);
