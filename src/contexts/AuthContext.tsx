@@ -26,6 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const navigate = useNavigate();
 
+    useSessionCleanup();
+
   // Prevent concurrent user checks
   let currentCheckPromise: Promise<void> | null = null;
 
