@@ -5,6 +5,7 @@ import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatPrice, convertToUSD } from './currency';
+import { createValidDate, formatDateES } from './dateUtils';
 
 export function generateQuotationPDF(quotation: Quotation) {
   const doc = new jsPDF();
@@ -83,8 +84,8 @@ export function generateQuotationPDF(quotation: Quotation) {
   
   const tripData = [
     ['Destino:', quotation.destination || 'A definir'],
-    ['Fecha de salida:', quotation.departure_date ? format(new Date(quotation.departure_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
-    ['Fecha de regreso:', quotation.return_date ? format(new Date(quotation.return_date), 'dd MMM yyyy', { locale: es }) : 'Flexible'],
+    ['Fecha de salida:', quotation.departure_date ? formatDateES(createValidDate(quotation.departure_date), 'dd MMM yyyy') : 'Flexible'],
+    ['Fecha de regreso:', quotation.return_date ? formatDateES(createValidDate(quotation.return_date), 'dd MMM yyyy') : 'Flexible'],
     ['Fechas flexibles:', quotation.flexible_dates ? 'Sí' : 'No'],
     ['Adultos:', quotation.adults.toString()],
     ['Menores:', quotation.children.toString()],
