@@ -90,7 +90,7 @@ export function BlogSection() {
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>
                       {(() => {
-                        const publishedDate = createValidDate(post.published_at);
+                        const publishedDate = post.published_at ? new Date(post.published_at) : null;
                         return publishedDate ? format(publishedDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
                       })()}
                     </span>
