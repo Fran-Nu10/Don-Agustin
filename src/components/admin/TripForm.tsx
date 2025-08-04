@@ -50,7 +50,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           tags: initialData.tags || [],
         }
       : {
-          itinerary: [{ day: 1, title: '', description: '' }],
+          itinerary: [],
           included_services: [{ icon: 'Hotel', title: '', description: '' }],
           currency_type: 'UYU' as const,
           tags: [],
@@ -640,9 +640,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                   <Input
                     label="Título del día"
                     fullWidth
-                    {...register(`itinerary.${index}.title`, {
-                      required: 'El título es obligatorio',
-                    })}
+                    {...register(`itinerary.${index}.title`)}
                   />
                   
                   <input

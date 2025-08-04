@@ -17,8 +17,8 @@ export function formatPrice(price: number, currency: 'UYU' | 'USD' = 'UYU'): str
       maximumFractionDigits: 0,
     }).format(price) + ' USD';
   } else {
-    // For UYU, use $U prefix without additional currency code
-    return '$U ' + new Intl.NumberFormat('es-UY', {
+    // For UYU, use $ prefix without additional currency code
+    return '$ ' + new Intl.NumberFormat('es-UY', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
