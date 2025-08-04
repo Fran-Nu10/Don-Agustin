@@ -6,7 +6,13 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../../utils/currency';
-import { createValidDate, formatDateES, calculateDuration } from '../../utils/dateUtils';
+
+// Helper function to safely create valid dates
+function createValidDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return !isNaN(date.getTime()) ? date : null;
+}
 
 interface GroupTripsCarouselProps {
   trips: Trip[];
@@ -199,14 +205,24 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                               <div className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>
-                                  {formatDateES(createValidDate(trip.departure_date), 'dd MMM yyyy')}
+                                  {(() => {
+                                    const departureDate = createValidDate(trip.departure_date);
+                                    return departureDate ? format(departureDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
+                                  })()}
                                 </span>
                               </div>
                               
                               <div className="flex items-center">
                                 <Clock className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>
-                                  {calculateDuration(createValidDate(trip.departure_date), createValidDate(trip.return_date))} días
+                                  {(() => {
+                                    const departureDate = createValidDate(trip.departure_date);
+                                    const returnDate = createValidDate(trip.return_date);
+                                    const duration = (departureDate && returnDate) 
+                                      ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
+                                      : 0;
+                                    return `${duration} días`;
+                                  })()}
                                 </span>
                               </div>
                             </div>

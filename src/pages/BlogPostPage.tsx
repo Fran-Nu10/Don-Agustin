@@ -9,7 +9,6 @@ import { es } from 'date-fns/locale';
 import { getBlogPost, getBlogPosts } from '../lib/supabase/blog';
 import { BlogPost } from '../types/blog';
 import { toast } from 'react-hot-toast';
-import { createValidDate, formatDateES } from '../utils/dateUtils';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();

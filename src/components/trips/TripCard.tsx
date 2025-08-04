@@ -6,22 +6,30 @@ import { Trip } from '../../types';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../utils/currency';
-import { createValidDate, formatDateES, calculateDuration } from '../../utils/dateUtils';
 
 interface TripCardProps {
   trip: Trip;
   showActions?: boolean;
 }
 
+// Helper function to safely create valid dates
+function createValidDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return !isNaN(date.getTime()) ? date : null;
+}
+
 export function TripCard({ trip, showActions = true }: TripCardProps) {
   const departureDate = createValidDate(trip.departure_date);
   const returnDate = createValidDate(trip.return_date);
   
-  const formattedDepartureDate = formatDateES(departureDate, 'dd MMM yyyy');
-  const formattedReturnDate = formatDateES(returnDate, 'dd MMM yyyy');
+  const formattedDepartureDate = departureDate ? format(departureDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
+  const formattedReturnDate = returnDate ? format(returnDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
   
   // Calculate trip duration
-  const tripDuration = calculateDuration(departureDate, returnDate);
+  const tripDuration = (departureDate && returnDate) 
+    ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
   
   // Get tag color based on tag name
   const getTagColor = (tag: string) => {

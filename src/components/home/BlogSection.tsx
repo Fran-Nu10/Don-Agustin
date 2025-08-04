@@ -6,7 +6,13 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getBlogPosts } from '../../lib/supabase/blog';
 import { BlogPost } from '../../types/blog';
-import { createValidDate, formatDateES } from '../../utils/dateUtils';
+
+// Helper function to safely create valid dates
+function createValidDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return !isNaN(date.getTime()) ? date : null;
+}
 
 export function BlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -89,7 +95,10 @@ export function BlogSection() {
                   <div className="flex items-center text-secondary-500 text-sm mb-2">
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>
-                      {formatDateES(createValidDate(post.published_at), 'dd MMM yyyy')}
+                      {(() => {
+                        const publishedDate = createValidDate(post.published_at);
+                        return publishedDate ? format(publishedDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
+                      })()}
                     </span>
                   </div>
                   
