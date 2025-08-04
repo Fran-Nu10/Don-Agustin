@@ -7,12 +7,6 @@ import { es } from 'date-fns/locale';
 import { getBlogPosts } from '../../lib/supabase/blog';
 import { BlogPost } from '../../types/blog';
 
-// Helper function to safely create valid dates
-function createValidDate(dateString: string | null | undefined): Date | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return !isNaN(date.getTime()) ? date : null;
-}
 
 export function BlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);

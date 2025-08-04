@@ -6,13 +6,8 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../../utils/currency';
+import { createValidDate } from '../../utils/dateUtils';
 
-// Helper function to safely create valid dates
-function createValidDate(dateString: string | null | undefined): Date | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return !isNaN(date.getTime()) ? date : null;
-}
 
 interface GroupTripsCarouselProps {
   trips: Trip[];

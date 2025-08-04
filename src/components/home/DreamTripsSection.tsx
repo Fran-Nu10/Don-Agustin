@@ -4,13 +4,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Trip } from '../../types';
 import { formatPrice } from '../../utils/currency';
+import { createValidDate } from '../../utils/dateUtils';
 
-// Helper function to safely create valid dates
-function createValidDate(dateString: string | null | undefined): Date | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return !isNaN(date.getTime()) ? date : null;
-}
 
 interface DreamTripsSectionProps {
   trips: Trip[];

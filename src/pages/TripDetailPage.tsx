@@ -15,13 +15,8 @@ import { Calendar, MapPin, Tag, Clock, ArrowLeft, FileText, Download, Eye } from
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/currency';
+import { createValidDate } from '../utils/dateUtils';
 
-// Helper function to safely create valid dates
-function createValidDate(dateString: string | null | undefined): Date | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return !isNaN(date.getTime()) ? date : null;
-}
 
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
