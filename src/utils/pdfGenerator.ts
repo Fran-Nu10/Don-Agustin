@@ -418,7 +418,8 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   
   // Estadísticas
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  const totalValueUSD = convertToUSD(totalValue);
+  // For aggregation in reports, convert to common currency (USD)
+  const totalValueUSD = totalValue / 40;
   
   const stats = {
     total: clients.length,
@@ -553,7 +554,8 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   
   // Calcular valor total en USD
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  const totalValueUSD = convertToUSD(totalValue);
+  // For aggregation in reports, convert to common currency (USD)
+  const totalValueUSD = totalValue / 40;
   doc.text(`Valor total: USD ${totalValueUSD.toFixed(0)}`, 20, 74);
   
   // Tabla de clientes
@@ -638,7 +640,8 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   
   // Calcular valor total en USD
   const totalValue = clients.reduce((sum, client) => sum + (client.trip_value || 0), 0);
-  const totalValueUSD = convertToUSD(totalValue);
+  // For aggregation in reports, convert to common currency (USD)
+  const totalValueUSD = totalValue / 40;
   doc.text(`Valor total: USD ${totalValueUSD.toFixed(0)}`, 20, 74);
   
   // Tabla de clientes
