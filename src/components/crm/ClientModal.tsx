@@ -486,7 +486,7 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                 {/* Valor del viaje - Now in USD */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-secondary-900">
-                    Valor del viaje (USD)
+                    Valor del viaje
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -495,23 +495,19 @@ export function ClientModal({ client, isOpen, onClose, onSave, onDelete, isSubmi
                     <input
                       type="number"
                       min="0"
-                      step="100"
+                      step="1"
                       className="block w-full pl-10 pr-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       {...register('trip_value', { 
                         valueAsNumber: true,
                         min: { value: 0, message: 'El valor no puede ser negativo' },
-                        // Convert USD to UYU on input
-                        setValueAs: (v) => v ? parseFloat(v) * 40 : 0 // Multiply by 40 to convert to UYU
                       })}
-                      // Display the USD value in the input
-                      defaultValue={getTripValueUSD(client.trip_value)}
                     />
                   </div>
                   {errors.trip_value && (
                     <p className="mt-1 text-sm text-red-600">{errors.trip_value.message}</p>
                   )}
                   <p className="text-xs text-secondary-500 mt-1">
-                    Ingrese el valor en dólares americanos (USD). Se convertirá automáticamente a pesos uruguayos.
+                    Ingrese el valor del viaje en la moneda que corresponda.
                   </p>
                 </div>
               </div>

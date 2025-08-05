@@ -12,8 +12,9 @@ export function ClientStats({ stats }: ClientStatsProps) {
   const formatCurrency = (amount?: number) => {
     if (amount === undefined || amount === null) return '$0';
     
-    // Convert from UYU to USD (approximate conversion rate)
-    const usdAmount = amount / 40; // Using an approximate conversion rate of 40 UYU = 1 USD
+    // For stats aggregation, we need a common currency unit
+    // Convert to USD for aggregation purposes only
+    const usdAmount = amount / 40;
     
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

@@ -24,29 +24,3 @@ export function formatPrice(price: number, currency: 'UYU' | 'USD' = 'UYU'): str
     }).format(price);
   }
 }
-
-/**
- * Converts UYU to USD using approximate exchange rate
- * @param amountUYU - Amount in Uruguayan Pesos
- * @returns Amount in USD
- */
-export function convertToUSD(amountUYU: number): number {
-  // Using approximate conversion rate of 40 UYU = 1 USD
-  return Math.round(amountUYU / 40);
-}
-
-/**
- * Gets trip value in USD for display purposes
- * @param tripValue - Trip value (can be in UYU or USD)
- * @param currency - Currency type
- * @returns Value in USD
- */
-export function getTripValueUSD(tripValue?: number, currency: 'UYU' | 'USD' = 'UYU'): number {
-  if (!tripValue) return 0;
-  
-  if (currency === 'USD') {
-    return tripValue;
-  } else {
-    return convertToUSD(tripValue);
-  }
-}

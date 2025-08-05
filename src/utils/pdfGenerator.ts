@@ -4,7 +4,7 @@ import { Quotation } from '../types/quotation';
 import { Client } from '../types/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { formatPrice, convertToUSD } from './currency';
+import { formatPrice } from './currency';
 
 export function generateQuotationPDF(quotation: Quotation) {
   const doc = new jsPDF();
@@ -285,8 +285,7 @@ export function generateClientPDF(client: Client) {
   // Convert trip value to USD
   let tripValueDisplay = 'No especificado';
   if (client.trip_value) {
-    const usdValue = convertToUSD(client.trip_value);
-    tripValueDisplay = `USD ${usdValue.toFixed(0)}`;
+    tripValueDisplay = formatPrice(client.trip_value, client.trip_value_currency as 'UYU' | 'USD' || 'UYU');
   }
   
   // Información personal

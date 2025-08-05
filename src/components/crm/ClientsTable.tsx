@@ -195,12 +195,6 @@ export function ClientsTable({
     return new Date(followUpDate) < new Date();
   };
 
-  // Format trip value with correct currency
-  const getFormattedTripValue = (value?: number, currency?: string) => {
-    if (!value) return null;
-    return formatPrice(value, currency as 'UYU' | 'USD' || 'UYU');
-  };
-
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -283,7 +277,6 @@ export function ClientsTable({
               sortedClients.map((client) => {
                 const formattedScheduledDate = formatScheduledDate(client.scheduled_date);
                 const isFollowUpOverdue = isOverdue(client.next_follow_up);
-                const tripValueUSD = getTripValueUSD(client.trip_value);
                 const isSelected = selectedClients.includes(client.id);
                 
                 return (
@@ -381,7 +374,7 @@ export function ClientsTable({
                         <div className="flex items-center">
                           <DollarSign className="h-4 w-4 mr-2 text-primary-600" />
                           <span className="text-primary-600 font-medium">
-                            {getFormattedTripValue(client.trip_value, client.trip_value_currency)}
+                            {formatPrice(client.trip_value, client.trip_value_currency as 'UYU' | 'USD' || 'UYU')}
                           </span>
                         </div>
                       ) : (

@@ -350,7 +350,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     
     try {
       console.log('✅ [TRIP FORM] Llamando a onSubmit...');
-      // The price is already in UYU in the form data, no need to convert
+      // The price is saved exactly as entered, no conversion needed
       onSubmit(data);
       console.log('✅ [TRIP FORM] onSubmit llamado exitosamente');
     } catch (error) {
@@ -431,7 +431,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                 <p className="mt-1 text-sm text-red-600">{errors.currency_type.message}</p>
               )}
               <p className="text-xs text-secondary-500 mt-1">
-                Selecciona la moneda en la que quieres mostrar el precio del paquete.
+                El precio se guardará exactamente como lo ingreses, sin conversiones.
               </p>
             </div>
             
