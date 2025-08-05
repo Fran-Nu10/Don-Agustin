@@ -150,7 +150,7 @@ export function TripsPage() {
     
     // Filter by price range (convert from UYU to USD)
     filtered = filtered.filter((trip) => {
-      const priceUSD = Math.floor(trip.price / 40);
+      const priceUSD = trip.currency_type === 'USD' ? trip.price : Math.floor(trip.price / 40);
       return priceUSD >= priceRange.min && priceUSD <= priceRange.max;
     });
     
