@@ -6,6 +6,7 @@ import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Plus, Search, Edit, Trash2, FileText, Download, Eye } from 'lucide-react';
 import { Trip, TripFormData } from '../../types';
 import { getTrips, createTrip, updateTrip, deleteTrip } from '../../lib/supabase';
+import { formatPrice } from '../../utils/currency';
 import { toast } from 'react-hot-toast';
 import { useTrips } from '../../hooks/useTrips';
 
@@ -408,7 +409,7 @@ export function AdminTripsPage() {
                       </div>
                     </div>
                     <div className="text-lg font-bold text-primary-950">
-                      ${trip.price.toLocaleString('es-UY')}
+                      {formatPrice(trip.price, trip.currency_type)}
                     </div>
                   </div>
                   
