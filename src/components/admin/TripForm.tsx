@@ -408,7 +408,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
                 <input
                   type="number"
                   min="0"
-                  step="1"
+                 
                   className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-l-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   {...register('price', { 
                     required: 'El precio es obligatorio',
