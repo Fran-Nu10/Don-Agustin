@@ -186,10 +186,12 @@ export function TripDetailPage() {
   const formattedDepartureDate = departureDate ? format(departureDate, 'dd MMMM yyyy', { locale: es }) : 'Fecha no disponible';
   const formattedReturnDate = returnDate ? format(returnDate, 'dd MMMM yyyy', { locale: es }) : 'Fecha no disponible';
   
-  // Calculate trip duration
-  const tripDuration = (departureDate && returnDate) 
+  // Use manual duration if available, otherwise calculate from dates
+  const tripDuration = trip.days || ((departureDate && returnDate) 
     ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+    : 0);
+  
+  const tripNights = trip.nights !== undefined ? trip.nights : Math.max(0, tripDuration - 1);
   
   // If trip doesn't have tags, assign default ones based on category
   let displayTags = trip.tags || [];
@@ -282,7 +284,7 @@ export function TripDetailPage() {
                     <div className="flex items-center text-secondary-600">
                       <Clock className="h-5 w-5 mr-2 text-primary-950" />
                       <span>
-                        {tripDuration} {tripDuration === 1 ? 'día' : 'días'} / {tripDuration - 1} {tripDuration - 1 === 1 ? 'noche' : 'noches'}
+                        {tripDuration} {tripDuration === 1 ? 'día' : 'días'} / {tripNights} {tripNights === 1 ? 'noche' : 'noches'}
                       </span>
                     </div>
                     

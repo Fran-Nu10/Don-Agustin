@@ -184,15 +184,15 @@ export function TripsPage() {
           break;
         case 'duration-asc':
           filtered.sort((a, b) => {
-            const durationA = (new Date(a.return_date).getTime() - new Date(a.departure_date).getTime()) / (1000 * 60 * 60 * 24);
-            const durationB = (new Date(b.return_date).getTime() - new Date(b.departure_date).getTime()) / (1000 * 60 * 60 * 24);
+            const durationA = a.days || ((new Date(a.return_date).getTime() - new Date(a.departure_date).getTime()) / (1000 * 60 * 60 * 24));
+            const durationB = b.days || ((new Date(b.return_date).getTime() - new Date(b.departure_date).getTime()) / (1000 * 60 * 60 * 24));
             return durationA - durationB;
           });
           break;
         case 'duration-desc':
           filtered.sort((a, b) => {
-            const durationA = (new Date(a.return_date).getTime() - new Date(a.departure_date).getTime()) / (1000 * 60 * 60 * 24);
-            const durationB = (new Date(b.return_date).getTime() - new Date(b.departure_date).getTime()) / (1000 * 60 * 60 * 24);
+            const durationA = a.days || ((new Date(a.return_date).getTime() - new Date(a.departure_date).getTime()) / (1000 * 60 * 60 * 24));
+            const durationB = b.days || ((new Date(b.return_date).getTime() - new Date(b.departure_date).getTime()) / (1000 * 60 * 60 * 24));
             return durationB - durationA;
           });
           break;

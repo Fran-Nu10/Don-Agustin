@@ -41,6 +41,8 @@ export interface Trip {
   info_pdf_url?: string;
   info_pdf_name?: string;
   tags?: string[]; // Nueva propiedad para etiquetas como "dream"
+  days?: number; // Días del paquete (manual)
+  nights?: number; // Noches del paquete (manual)
 }
 
 // Blog Types
@@ -86,6 +88,8 @@ export interface TripFormData {
   info_pdf_url?: string;
   info_pdf_name?: string;
   tags?: string[]; // Nueva propiedad para etiquetas como "dream"
+  days?: number; // Días del paquete (manual)
+  nights?: number; // Noches del paquete (manual)
 }
 
 export interface BookingFormData {

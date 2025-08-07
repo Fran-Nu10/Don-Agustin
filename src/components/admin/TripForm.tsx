@@ -48,12 +48,16 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           itinerary: initialData.itinerary || [],
           included_services: initialData.included_services || [],
           tags: initialData.tags || [],
+          days: initialData.days || 1,
+          nights: initialData.nights || 0,
         }
       : {
           itinerary: [],
           included_services: [{ icon: 'Hotel', title: '', description: '' }],
           currency_type: 'UYU' as const,
           tags: [],
+          days: 1,
+          nights: 0,
         },
   });
 
@@ -467,7 +471,7 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Input
               label="Fecha de salida"
               id="departure_date"
@@ -485,6 +489,58 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
               error={errors.return_date?.message}
               {...register('return_date', { required: 'La fecha de regreso es obligatoria' })}
             />
+          </div>
+          
+          {/* Duración del paquete - Campos manuales */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-secondary-900">
+                Días del paquete
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                {...register('days', { 
+                  required: 'Los días son obligatorios',
+                  valueAsNumber: true,
+                  min: { value: 1, message: 'Mínimo 1 día' },
+                  max: { value: 365, message: 'Máximo 365 días' },
+                })}
+              />
+              {errors.days && (
+                <p className="mt-1 text-sm text-red-600">{errors.days.message}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block mb-1 text-sm font-medium text-secondary-900">
+                Noches del paquete
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="364"
+                className="block w-full px-3 py-2 bg-white border border-secondary-300 rounded-md text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                {...register('nights', { 
+                  required: 'Las noches son obligatorias',
+                  valueAsNumber: true,
+                  min: { value: 0, message: 'Mínimo 0 noches' },
+                  max: { value: 364, message: 'Máximo 364 noches' },
+                })}
+              />
+              {errors.nights && (
+                <p className="mt-1 text-sm text-red-600">{errors.nights.message}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 p-3 rounded-lg mb-4">
+            <p className="text-xs text-blue-700">
+              💡 <strong>Tip:</strong> Ingresa manualmente los días y noches del paquete. 
+              Esto te permite tener control total sobre cómo se presenta la duración a los clientes.
+            </p>
           </div>
 
           {/* Tags Section - UPDATED with new tags */}

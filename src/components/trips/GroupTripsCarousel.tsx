@@ -210,14 +210,7 @@ export function GroupTripsCarousel({ trips }: GroupTripsCarouselProps) {
                               <div className="flex items-center">
                                 <Clock className="h-4 w-4 mr-2 text-primary-500" />
                                 <span>
-                                  {(() => {
-                                    const departureDate = createValidDate(trip.departure_date);
-                                    const returnDate = createValidDate(trip.return_date);
-                                    const duration = (departureDate && returnDate) 
-                                      ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
-                                      : 0;
-                                    return `${duration} días`;
-                                  })()}
+                                  {trip.days || 1} {(trip.days || 1) === 1 ? 'día' : 'días'}
                                 </span>
                               </div>
                             </div>

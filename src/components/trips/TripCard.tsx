@@ -21,10 +21,12 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
   const formattedDepartureDate = departureDate ? format(departureDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
   const formattedReturnDate = returnDate ? format(returnDate, 'dd MMM yyyy', { locale: es }) : 'Fecha no disponible';
   
-  // Calculate trip duration
-  const tripDuration = (departureDate && returnDate) 
+  // Use manual duration if available, otherwise calculate from dates
+  const tripDuration = trip.days || ((departureDate && returnDate) 
     ? Math.ceil((returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+    : 0);
+  
+  const tripNights = trip.nights !== undefined ? trip.nights : Math.max(0, tripDuration - 1);
   
   // Get tag color based on tag name
   const getTagColor = (tag: string) => {
@@ -133,7 +135,7 @@ export function TripCard({ trip, showActions = true }: TripCardProps) {
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1.5 text-primary-600 flex-shrink-0" />
                 <span>
-                  {tripDuration} {tripDuration === 1 ? 'día' : 'días'}
+                  {tripDuration} {tripDuration === 1 ? 'día' : 'días'} / {tripNights} {tripNights === 1 ? 'noche' : 'noches'}
                 </span>
               </div>
               
