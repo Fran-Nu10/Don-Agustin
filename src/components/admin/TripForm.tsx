@@ -4,10 +4,11 @@ import { Trip, TripFormData, ItineraryDay, IncludedService } from '../../types';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, Tag } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Users, Upload, X, Tag, FileText, Download, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../lib/supabase/client';
 import { sanitizeFilename } from '../../lib/supabase/storage';
+import { uploadPDF, deletePDF } from '../../lib/supabase/storage';
 
 interface TripFormProps {
   initialData?: Trip;
@@ -22,6 +23,16 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
   const [imageInputKey, setImageInputKey] = useState(0);
   const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // PDF state
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfInfo, setPdfInfo] = useState<{url: string, name: string} | null>(
+    initialData?.info_pdf_url && initialData?.info_pdf_name 
+      ? { url: initialData.info_pdf_url, name: initialData.info_pdf_name }
+      : null
+  );
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfInputKey, setPdfInputKey] = useState(0);
+  const pdfFileInputRef = useRef<HTMLInputElement>(null);
   // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tags || []);
 
@@ -50,6 +61,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           tags: initialData.tags || [],
           days: initialData.days || 1,
           nights: initialData.nights || 0,
+          info_pdf_url: initialData.info_pdf_url || '',
+          info_pdf_name: initialData.info_pdf_name || '',
         }
       : {
           itinerary: [],
@@ -58,6 +71,8 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
           tags: [],
           days: 1,
           nights: 0,
+          info_pdf_url: '',
+          info_pdf_name: '',
         },
   });
 
@@ -84,6 +99,16 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     setValue('tags', selectedTags);
   }, [selectedTags, setValue]);
 
+  // Update form when PDF info changes
+  useEffect(() => {
+    if (pdfInfo) {
+      setValue('info_pdf_url', pdfInfo.url);
+      setValue('info_pdf_name', pdfInfo.name);
+    } else {
+      setValue('info_pdf_url', '');
+      setValue('info_pdf_name', '');
+    }
+  }, [pdfInfo, setValue]);
   const addItineraryDay = () => {
     appendItinerary({
       day: itineraryFields.length + 1,
@@ -129,6 +154,103 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
     }
   };
 
+  // Handle PDF file selection
+  const handlePdfChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast.error('Por favor selecciona un archivo PDF válido');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo es demasiado grande. Por favor selecciona un PDF menor a 10MB');
+      return;
+    }
+
+    setIsUploadingPdf(true);
+    setPdfFile(file);
+    
+    try {
+      console.log('🚀 [PDF UPLOAD] Iniciando subida de PDF:', file.name);
+      console.log('📁 [PDF UPLOAD] Tamaño del archivo:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+      
+      // Upload to Supabase Storage
+      const uploadResult = await uploadPDF(file, initialData?.id || 'new-trip');
+      
+      if (uploadResult) {
+        console.log('✅ [PDF UPLOAD] Subida exitosa:', uploadResult);
+        setPdfInfo(uploadResult);
+        toast.success('PDF subido correctamente');
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('❌ [PDF UPLOAD] Error en la subida:', error);
+      
+      // Complete cleanup on error
+      setPdfFile(null);
+      setPdfInfo(null);
+      setPdfInputKey(prev => prev + 1);
+      
+      toast.error('Error al subir el PDF. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
+  // Remove PDF
+  const removePdf = async () => {
+    if (pdfInfo?.url) {
+      try {
+        // Only try to delete from storage if it's not the initial data
+        // (to avoid deleting files when just removing from form)
+        if (pdfFile) {
+          await deletePDF(pdfInfo.url);
+        }
+      } catch (error) {
+        console.warn('Could not delete PDF from storage:', error);
+      }
+    }
+    
+    setPdfFile(null);
+    setPdfInfo(null);
+    setPdfInputKey(prev => prev + 1);
+  };
+
+  // View PDF
+  const handleViewPdf = () => {
+    if (!pdfInfo?.url) return;
+    
+    try {
+      window.open(pdfInfo.url, '_blank');
+      toast.success('PDF abierto en nueva pestaña');
+    } catch (error) {
+      console.error('Error al abrir el PDF:', error);
+      toast.error('No se pudo abrir el PDF');
+    }
+  };
+
+  // Download PDF
+  const handleDownloadPdf = () => {
+    if (!pdfInfo?.url || !pdfInfo?.name) return;
+    
+    try {
+      const link = document.createElement('a');
+      link.href = pdfInfo.url;
+      link.download = pdfInfo.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Descarga iniciada');
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      toast.error('No se pudo descargar el PDF');
+    }
+  };
   // Handle image file selection
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -659,6 +781,114 @@ export function TripForm({ initialData, onSubmit, isSubmitting }: TripFormProps)
               type="hidden"
               {...register('image_url', { required: 'La imagen es obligatoria' })}
             />
+          </div>
+          {/* PDF Upload Section */}
+          <div className="mt-6">
+            <label className="block mb-2 text-sm font-medium text-secondary-900 flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-primary-600" />
+              Información adicional (PDF opcional)
+            </label>
+            
+            {pdfInfo ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="bg-green-100 p-2 rounded-full mr-3">
+                      <FileText className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-800">{pdfInfo.name}</p>
+                      <p className="text-sm text-green-600">PDF subido correctamente</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleViewPdf}
+                      className="text-green-600 border-green-300 hover:bg-green-50"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDownloadPdf}
+                      className="text-green-600 hover:bg-green-50"
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Descargar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removePdf}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div 
+                onClick={() => pdfFileInputRef.current?.click()}
+                className="border-2 border-dashed border-secondary-300 rounded-lg p-6 text-center hover:border-secondary-400 transition-colors cursor-pointer"
+              >
+                <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
+                <p className="text-secondary-600 mb-2">
+                  Haz clic para subir un PDF con información adicional
+                </p>
+                <p className="text-xs text-secondary-500 mb-4">
+                  PDF hasta 10MB (opcional)
+                </p>
+              </div>
+            )}
+            
+            <input
+              ref={pdfFileInputRef}
+              key={pdfInputKey}
+              type="file"
+              accept="application/pdf"
+              onChange={handlePdfChange}
+              className="hidden"
+            />
+            
+            <div className="mt-3 flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => pdfFileInputRef.current?.click()}
+                disabled={isUploadingPdf}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {isUploadingPdf ? 'Subiendo PDF...' : 'Seleccionar PDF'}
+              </Button>
+              
+              {pdfInfo && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={removePdf}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Eliminar PDF
+                </Button>
+              )}
+            </div>
+            
+            <p className="mt-2 text-xs text-secondary-500">
+              El PDF puede contener itinerarios detallados, condiciones, mapas o cualquier información adicional sobre el paquete.
+            </p>
+            
+            {/* Hidden inputs for PDF data */}
+            <input type="hidden" {...register('info_pdf_url')} />
+            <input type="hidden" {...register('info_pdf_name')} />
           </div>
         </div>
 

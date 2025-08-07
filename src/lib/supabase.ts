@@ -446,7 +446,23 @@ export async function updateTrip(id: string, tripData: TripFormData): Promise<Tr
     const sanitizedTripData = sanitizeTripData(tripData);
     console.log('✅ [UPDATE TRIP] Datos sanitizados aplicados');
     
+    // Get current trip data to check for existing PDF
+    const currentTrip = await getTrip(id);
+    
     const { itinerary, included_services, ...tripInfo } = sanitizedTripData;
+    
+    // Handle PDF deletion if a new one is uploaded or if PDF is removed
+    if (currentTrip?.info_pdf_url && 
+        (tripInfo.info_pdf_url !== currentTrip.info_pdf_url || !tripInfo.info_pdf_url)) {
+      try {
+        console.log('🗑️ [UPDATE TRIP] Eliminando PDF anterior del storage...');
+        const { deletePDF } = await import('../lib/supabase/storage');
+        await deletePDF(currentTrip.info_pdf_url);
+        console.log('✅ [UPDATE TRIP] PDF anterior eliminado del storage');
+      } catch (error) {
+        console.warn('⚠️ [UPDATE TRIP] No se pudo eliminar el PDF anterior del storage:', error);
+      }
+    }
     
     // Update the trip
     const { data: trip, error: tripError } = await supabase

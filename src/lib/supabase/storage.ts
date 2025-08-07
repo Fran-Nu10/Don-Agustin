@@ -94,7 +94,7 @@ export async function uploadPDF(file: File, tripId: string): Promise<{ url: stri
 
     return {
       url: publicUrlData.publicUrl,
-      name: file.name
+      name: file.name // Return original filename
     };
   } catch (error) {
     console.error('Error in PDF upload:', error);
