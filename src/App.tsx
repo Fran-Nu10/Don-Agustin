@@ -16,6 +16,7 @@ import { BlogsPage } from './pages/admin/BlogsPage';
 import { ClientsPage } from './pages/admin/ClientsPage';
 import { QuotationsPage } from './pages/admin/QuotationsPage';
 import { ReportsPage } from './pages/admin/ReportsPage';
+import WhatsAppFloat from "./components/WhatsAppFloat";
 
 function App() {
   return (
