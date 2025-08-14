@@ -41,6 +41,14 @@ function App() {
         <Route path="/admin/reportes" element={<ReportsPage />} />
         <Route path="/admin/blog" element={<BlogsPage />} />
       </Routes>
+
+       {/* Botón flotante (fuera de Routes) */}
+      <WhatsAppFloat
+        phone="59899123456" 
+        message="Hola Don Agustín, quiero info sobre salidas grupales."
+        bottomOffset={18}
+        side="right"
+      />
     </AuthProvider>
   );
 }
