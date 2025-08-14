@@ -1,0 +1,17 @@
+.wa-float {
+  position: fixed;
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  background: #25d366;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(0,0,0,.15);
+  z-index: 9999;
+  transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.wa-float:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,.2); }
+@media (max-width: 480px){ .wa-float { width: 54px; height: 54px; } }
+@media (prefers-reduced-motion: reduce){ .wa-float { transition: none; } }
