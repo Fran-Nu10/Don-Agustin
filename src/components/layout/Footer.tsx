@@ -88,7 +88,7 @@ export function Footer() {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
                 <span className="text-secondary-300">
-                  Av. 18 de Julio 1234, Montevideo, Uruguay
+                  Av. 18 de Julio 1236, Montevideo, Uruguay
                 </span>
               </li>
               <li className="flex items-center">
