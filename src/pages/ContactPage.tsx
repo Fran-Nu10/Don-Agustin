@@ -172,8 +172,7 @@ export function ContactPage() {
                         Teléfono
                       </h3>
                       <p className="text-secondary-600">
-                        +598 2345 6789<br />
-                        +598 99 123 456
+                       091 339 099
                       </p>
                     </div>
                   </div>
@@ -189,8 +188,7 @@ export function ContactPage() {
                         Correo electrónico
                       </h3>
                       <p className="text-secondary-600">
-                        info@donagustinviajes.com.uy<br />
-                        reservas@donagustinviajes.com.uy
+                        info@donagustinviajes.com.uy
                       </p>
                     </div>
                   </div>
@@ -206,8 +204,8 @@ export function ContactPage() {
                         Horario de atención
                       </h3>
                       <p className="text-secondary-600">
-                        Lunes a Viernes: 9:00 - 18:00<br />
-                        Sábados: 9:00 - 13:00
+                        Lunes a Viernes: 10:00 - 18:00<br />
+                        Sábados: 9:30 - 13:00
                       </p>
                     </div>
                   </div>
