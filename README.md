@@ -1,5 +1,7 @@
  🌍 Don Agustín Viajes — Web App con IA y React
 
+ https://don-agustin.vercel.app/
+
 Proyecto desarrollado con el objetivo de **practicar, mejorar y demostrar mis habilidades técnicas y creativas** en desarrollo web moderno, aplicando **React, Vite, Supabase, y herramientas de inteligencia artificial** para optimizar la experiencia de desarrollo y la productividad.
 
 ---
@@ -89,11 +91,12 @@ La idea fue construir un entorno realista donde convergen **frontend moderno, ba
 Soy un desarrollador frontend en crecimiento, apasionado por la **tecnología, el diseño y la IA aplicada al desarrollo web.  
 Este proyecto representa mi visión de cómo debe trabajar un profesional moderno: **rápido, creativo, automatizado y orientado a resultados.
 
-📬 Contacto: [LinkedIn](https://www.linkedin.com/in/tuusuario) | [Portafolio](https://tuportafolio.dev) | [Email](mailto:tuemail@correo.com)
+📬 Contacto: [LinkedIn] https://www.linkedin.com/in/franconunezdev/ 
 
 ---
 
  ⭐ Si te gustó este proyecto
+ https://don-agustin.vercel.app/
 Podés dejar una ⭐ en GitHub para apoyar el desarrollo y seguir futuras actualizaciones.  
 Toda retroalimentación es bienvenida 🙌
 
