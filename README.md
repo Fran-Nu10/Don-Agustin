@@ -2,9 +2,7 @@
 
  https://www.donagustinviajes.com.uy/
 
-Proyecto desarrollado con el objetivo de **practicar, mejorar y demostrar mis habilidades técnicas y creativas** en desarrollo web moderno, aplicando **React, Vite, Supabase, y herramientas de inteligencia artificial** para optimizar la experiencia de desarrollo y la productividad.
-
----
+ Proyecto Real creado para dueño de agencia de viajes. 
 
  🚀 Visión General
 
