@@ -9,6 +9,7 @@ import { saveUserToCookie, getUserFromCookie, removeUserCookie } from '../utils/
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isRecoveringSession: boolean;
   login: (data: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
   isOwner: () => boolean;
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRecoveringSession, setIsRecoveringSession] = useState(true);
   const navigate = useNavigate();
 
   // Memoized permission check functions
@@ -99,11 +101,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       } finally {
         setLoading(false);
+        setIsRecoveringSession(false);
         console.log('🏁 [COOKIE AUTH] Authentication initialization completed');
       }
     };
 
     initializeAuth();
+  }, []);
+
+  // Cross-tab synchronization using storage event
+  useEffect(() => {
+    const handleStorageChange = async (event: StorageEvent) => {
+      if (event.key?.includes('supabase.auth.token')) {
+        console.log('🔄 [COOKIE AUTH] Detected auth change in another tab, syncing...');
+
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+
+          if (error) {
+            console.warn('⚠️ [COOKIE AUTH] Error getting session after storage change:', error);
+            removeUserCookie();
+            setUser(null);
+            return;
+          }
+
+          if (session && session.user) {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            if (!userError && userData) {
+              console.log('✅ [COOKIE AUTH] User synced from another tab');
+              setUser(userData);
+              saveUserToCookie(userData);
+            }
+          } else {
+            console.log('ℹ️ [COOKIE AUTH] Session removed in another tab, logging out');
+            removeUserCookie();
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('❌ [COOKIE AUTH] Error during cross-tab sync:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Simple login function
@@ -184,6 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     loading,
+    isRecoveringSession,
     login,
     logout,
     isOwner,
