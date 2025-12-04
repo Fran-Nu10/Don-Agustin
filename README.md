@@ -1,30 +1,28 @@
- 🌍 Don Agustín Viajes — Web App con IA y React
+# 🌍 VipTurismo — Web App con IA y React
 
- https://www.donagustinviajes.com.uy/
+Proyecto profesional creado para agencia de viajes premium.
 
- Proyecto Real creado para dueño de agencia de viajes. 
+## 🚀 Visión General
 
- 🚀 Visión General
-
-**Don Agustín Viajes** es una aplicación web creada para una agencia de viajes, diseñada como un sistema integral de gestión y promoción de paquetes turísticos.  
+**VipTurismo** es una aplicación web creada para una agencia de viajes premium, diseñada como un sistema integral de gestión y promoción de paquetes turísticos.
 Su arquitectura combina **tecnología, diseño y automatización** para ofrecer una experiencia fluida tanto para los administradores como para los viajeros.
 
-> 💡 Este proyecto no es solo una web, es una muestra de cómo la IA puede acelerar el desarrollo, mejorar la comunicación con los usuarios y transformar la forma en que los profesionales construimos software.
+> 💡 Este proyecto es una muestra de cómo la IA puede acelerar el desarrollo, mejorar la comunicación con los usuarios y transformar la forma en que los profesionales construimos software.
 
 ---
 
- 🧠 Objetivo del Proyecto
+## 🧠 Objetivo del Proyecto
 
 Este proyecto fue creado con un propósito doble:
 
-1. **Práctica profesional en React y ecosistema moderno (Vite, Hooks, Context, Routing).**  
+1. **Práctica profesional en React y ecosistema moderno (Vite, Hooks, Context, Routing).**
 2. **Exploración de Inteligencia Artificial aplicada al desarrollo frontend y documentación técnica.**
 
 La idea fue construir un entorno realista donde convergen **frontend moderno, backend en la nube (Supabase)** y **procesos asistidos por IA**, simulando un flujo de trabajo profesional de agencia.
 
 ---
 
- ⚙️ Tecnologías Principales
+## ⚙️ Tecnologías Principales
 
 | Categoría | Tecnologías |
 |------------|-------------|
@@ -36,66 +34,65 @@ La idea fue construir un entorno realista donde convergen **frontend moderno, ba
 
 ---
 
- 🧩 Características
+## 🧩 Características
 
- 👨‍💼 Panel Administrativo
-- Gestión de clientes, paquetes y cotizaciones.  
-- CRUD completo con seguridad por roles.  
+### 👨‍💼 Panel Administrativo
+- Gestión de clientes, paquetes y cotizaciones.
+- CRUD completo con seguridad por roles.
 - Reportes y estadísticas en tiempo real.
 
- ✈️ Sección Pública
-- Exploración de viajes, detalles y blog de experiencias.  
-- Sistema de contacto y solicitud de cotizaciones.  
+### ✈️ Sección Pública
+- Exploración de viajes, detalles y blog de experiencias.
+- Sistema de contacto y solicitud de cotizaciones.
 - Diseño responsive, moderno y minimalista.
 
- 🧠 Integración con IA
-- Uso de IA para generación de copys, estructura de guiones y documentación técnica.  
+### 🧠 Integración con IA
+- Uso de IA para generación de copys, estructura de guiones y documentación técnica.
 - Automatización de tareas repetitivas y asistencia en decisiones de diseño y arquitectura.
 
 ---
 
- 🧭 Arquitectura General
+## 🧭 Arquitectura General
 
-- React Context + Custom Hooks para gestión global de estado.  
-- Rutas protegidas con autenticación Supabase.  
-- RLS (Row Level Security) en base de datos para separación multiagencia.  
-- Optimización SEO y rendimiento (Vite + lazy loading).  
+- React Context + Custom Hooks para gestión global de estado.
+- Rutas protegidas con autenticación Supabase.
+- RLS (Row Level Security) en base de datos para separación multiagencia.
+- Optimización SEO y rendimiento (Vite + lazy loading).
 
 ---
 
- 🔒 Seguridad y Escalabilidad
-- Implementación de autenticación por roles (owner, empleado, visitante).  
-- Datos protegidos por políticas RLS en Supabase.  
+## 🔒 Seguridad y Escalabilidad
+- Implementación de autenticación por roles (owner, empleado, visitante).
+- Datos protegidos por políticas RLS en Supabase.
 - Arquitectura multi-tenant lista para escalar a múltiples agencias de viaje.
 
 ---
 
- 💬 Filosofía del Proyecto
-> “La IA no reemplaza al desarrollador, lo potencia.”
+## 💬 Filosofía del Proyecto
+> "La IA no reemplaza al desarrollador, lo potencia."
 > Este proyecto refleja cómo un desarrollador puede combinar **lógica técnica, visión creativa e inteligencia artificial** para crear productos funcionales, escalables y con impacto real.
 
 ---
 
- 📈 Próximos Pasos
-- Integrar métricas de rendimiento en tiempo real.  
-- Conectar APIs externas de turismo y vuelos.  
-- Implementar chatbot inteligente de atención al cliente.  
+## 📈 Próximos Pasos
+- Integrar métricas de rendimiento en tiempo real.
+- Conectar APIs externas de turismo y vuelos.
+- Implementar chatbot inteligente de atención al cliente.
 - Extender la app a versión móvil con React Native.
 
 ---
 
- 🧑‍💻 Sobre mí
+## 🧑‍💻 Sobre el Proyecto
 
-Soy un desarrollador frontend en crecimiento, apasionado por la **tecnología, el diseño y la IA aplicada al desarrollo web.  
-Este proyecto representa mi visión de cómo debe trabajar un profesional moderno: **rápido, creativo, automatizado y orientado a resultados.
+Este proyecto representa la visión de cómo debe trabajar un profesional moderno: **rápido, creativo, automatizado y orientado a resultados.**
 
-📬 Contacto: [LinkedIn] https://www.linkedin.com/in/franconunezdev/ 
+📬 Contacto: [LinkedIn](https://www.linkedin.com/in/franconunezdev/)
 
 ---
 
- ⭐ Si te gustó este proyecto
-https://www.donagustinviajes.com.uy/
-Podés dejar una ⭐ en GitHub para apoyar el desarrollo y seguir futuras actualizaciones.  
+## ⭐ Si te gustó este proyecto
+
+Podés dejar una ⭐ en GitHub para apoyar el desarrollo y seguir futuras actualizaciones.
 Toda retroalimentación es bienvenida 🙌
 
 ---

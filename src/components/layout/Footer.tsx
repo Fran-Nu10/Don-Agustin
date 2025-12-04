@@ -10,21 +10,21 @@ export function Footer() {
           {/* Company Info */}
           <div>
             <div className="flex items-center mb-4">
-              <img 
-                src="/image.png" 
-                alt="Don Agustín Viajes" 
+              <img
+                src="/image.png"
+                alt="VipTurismo"
                 className="h-8 w-8 mr-3"
               />
               <h3 className="font-heading text-xl font-bold">
-                Don Agustín Viajes
+                VipTurismo
               </h3>
             </div>
             <p className="text-secondary-300 mb-4">
-              Tu agencia de viajes de confianza para descubrir el mundo desde 1995.
+              Tu agencia de viajes premium para experiencias inolvidables alrededor del mundo.
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://www.facebook.com/donagustinviajes"
+                href="https://www.facebook.com/vipturismo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -32,7 +32,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://www.instagram.com/donagustin.uy/"
+                href="https://www.instagram.com/vipturismo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -98,10 +98,10 @@ export function Footer() {
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-primary-600 mr-2" />
                 <a
-                  href="mailto:info@donagustinviajes.com.uy"
+                  href="mailto:info@vipturismo.com"
                   className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
-                  info@donagustinviajes.com.uy
+                  info@vipturismo.com
                 </a>
               </li>
             </ul>
@@ -109,7 +109,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-secondary-700 mt-10 pt-6 text-center text-secondary-400 text-sm">
-          <p>© {new Date().getFullYear()} Don Agustín Viajes. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} VipTurismo. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
