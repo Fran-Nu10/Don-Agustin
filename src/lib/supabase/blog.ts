@@ -18,7 +18,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       published_at,
       created_at,
       updated_at,
-      author:users!blog_posts_author_id_fkey(email)
+      author:users(email)
     `)
     .eq('status', 'published')
     .order('published_at', { ascending: false });
@@ -43,7 +43,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
       published_at,
       created_at,
       updated_at,
-      author:users!blog_posts_author_id_fkey(email)
+      author:users(email)
     `)
     .order('created_at', { ascending: false });
 
@@ -67,16 +67,13 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       published_at,
       created_at,
       updated_at,
-      author:users!blog_posts_author_id_fkey(email)
+      author:users(email)
     `)
     .eq('slug', slug)
     .eq('status', 'published')
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    if (error.code === 'PGRST116') return null; // Not found
-    throw error;
-  }
+  if (error) throw error;
   return data;
 }
 
@@ -148,7 +145,7 @@ export async function createBlogPost(data: BlogFormData): Promise<BlogPost> {
       published_at,
       created_at,
       updated_at,
-      author:users!blog_posts_author_id_fkey(email)
+      author:users(email)
     `)
     .single();
 
@@ -187,7 +184,7 @@ export async function updateBlogPost(id: string, data: Partial<BlogFormData>): P
       published_at,
       created_at,
       updated_at,
-      author:users!blog_posts_author_id_fkey(email)
+      author:users(email)
     `)
     .single();
 
