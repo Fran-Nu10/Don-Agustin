@@ -15,16 +15,16 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
   // Filtrar solo los viajes con la etiqueta "dream" si hay alguno
   const dreamTrips = trips.filter(trip => trip.tags?.includes('dream'));
 
-  // Si no hay viajes con etiqueta dream, seleccionar hasta 8 viajes aleatorios
+  // Si no hay viajes con etiqueta dream, seleccionar hasta 6 viajes aleatorios
   const tripsToShow = dreamTrips.length > 0
-    ? dreamTrips.slice(0, 8)
+    ? dreamTrips.slice(0, 6)
     : trips
         .sort(() => 0.5 - Math.random())
-        .slice(0, 8);
+        .slice(0, 6);
 
-  // Asegurarse de que siempre haya exactamente 8 viajes (o 7 mínimo para el diseño)
+  // Asegurarse de que siempre haya exactamente 6 viajes
   const filledTrips = [...tripsToShow];
-  const minTrips = 8; // Llenar hasta 8 espacios
+  const minTrips = 6; // Llenar hasta 6 espacios
   if (filledTrips.length > 0 && filledTrips.length < minTrips) {
     const neededExtras = minTrips - filledTrips.length;
     for (let i = 0; i < neededExtras; i++) {
@@ -34,7 +34,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
 
   if (tripsToShow.length === 0) return null;
 
-  // Grid masonry asimétrico - inspirado en hiperviajes.com.uy
+  // Grid masonry asimétrico - 6 elementos
   const getItemClass = (index: number) => {
     switch (index) {
       case 0: // Grande - izquierda (1 col x 2 filas)
@@ -47,11 +47,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
         return "col-span-1 row-span-1";
       case 4: // Mediana (1 col x 1 fila)
         return "col-span-1 row-span-1";
-      case 5: // Rectangular horizontal abajo (2 cols x 1 fila)
-        return "col-span-2 row-span-1";
-      case 6: // Pequeña (1 col x 1 fila)
-        return "col-span-1 row-span-1";
-      case 7: // Pequeña (1 col x 1 fila) - última posición
+      case 5: // Mediana (1 col x 1 fila)
         return "col-span-1 row-span-1";
       default:
         return "col-span-1 row-span-1";
@@ -68,11 +64,8 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
       case 2:
       case 3:
       case 4:
-      case 6:
-      case 7:
+      case 5:
         return "h-[200px] md:h-[250px]";
-      case 5: // Rectangular horizontal abajo
-        return "h-[200px] md:h-[280px]";
       default:
         return "h-[200px] md:h-[250px]";
     }

@@ -159,38 +159,81 @@ export function HomePage() {
           </>
         )}
 
-        {/* Features Section - Moved below all trip sections - REDUCED SPACING */}
-        <section className="py-8 bg-gradient-to-b from-white to-secondary-50">
+        {/* Features Section - Redesigned with 2x2 grid */}
+        <section className="py-12 md:py-16 bg-gradient-to-b from-white to-secondary-50">
           <div className="container mx-auto px-4">
-            <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-6 text-secondary-900">
-              ¿Por qué elegirnos?
-            </h2>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-10 md:mb-12"
+            >
+              <h2 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl text-secondary-900 mb-4">
+                ¿Por qué elegirnos?
+              </h2>
+              <p className="text-lg md:text-xl text-secondary-600 max-w-2xl mx-auto">
+                Experiencia, calidad y compromiso en cada viaje
+              </p>
+            </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              <FeatureCard
-                icon={<MapPin className="h-8 w-8" />}
-                title="Destinos Únicos"
-                description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
-                bgImage="https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg"
-              />
-              <FeatureCard
-                icon={<Plane className="h-8 w-8" />}
-                title="Transporte de Calidad"
-                description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
-                bgImage="https://images.pexels.com/photos/2026324/pexels-photo-2026324.jpeg"
-              />
-              <FeatureCard
-                icon={<Clock className="h-8 w-8" />}
-                title="Más de 25 Años"
-                description="Más de dos décadas de experiencia organizando paquetes perfectos para nuestros clientes."
-                bgImage="https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg"
-              />
-              <FeatureCard
-                icon={<Shield className="h-8 w-8" />}
-                title="Garantía de Satisfacción"
-                description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
-                bgImage="https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
+                <FeatureCard
+                  icon={<MapPin className="h-12 w-12" />}
+                  title="Destinos Únicos"
+                  description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
+                  bgImage="https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg"
+                  badge="100+"
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <FeatureCard
+                  icon={<Plane className="h-12 w-12" />}
+                  title="Transporte de Calidad"
+                  description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
+                  bgImage="https://images.pexels.com/photos/2026324/pexels-photo-2026324.jpeg"
+                  badge="★ 5.0"
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <FeatureCard
+                  icon={<Clock className="h-12 w-12" />}
+                  title="Más de 25 Años"
+                  description="Más de dos décadas de experiencia organizando paquetes perfectos para nuestros clientes."
+                  bgImage="https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg"
+                  badge="25+"
+                />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <FeatureCard
+                  icon={<Shield className="h-12 w-12" />}
+                  title="Garantía de Satisfacción"
+                  description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
+                  bgImage="https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg"
+                  badge="99%"
+                />
+              </motion.div>
             </div>
           </div>
         </section>
