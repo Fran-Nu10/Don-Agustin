@@ -13,20 +13,18 @@ interface DreamTripsSectionProps {
 
 export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
   // Filtrar solo los viajes con la etiqueta "dream" si hay alguno
-  // Si no hay ninguno con esa etiqueta, mostrar hasta 6 viajes aleatorios
   const dreamTrips = trips.filter(trip => trip.tags?.includes('dream'));
-  
-  // Si no hay viajes con etiqueta dream, seleccionar hasta 6 viajes aleatorios
-  const tripsToShow = dreamTrips.length > 0 
-    ? dreamTrips.slice(0, 6) 
-    : trips
-        .sort(() => 0.5 - Math.random()) // Mezclar aleatoriamente
-        .slice(0, 6); // Tomar los primeros 6
 
-  // Asegurarse de que siempre haya 6 viajes para mostrar (o un múltiplo de 3)
-  // Si hay menos de 6, repetir algunos para llenar los espacios
+  // Si no hay viajes con etiqueta dream, seleccionar hasta 8 viajes aleatorios
+  const tripsToShow = dreamTrips.length > 0
+    ? dreamTrips.slice(0, 8)
+    : trips
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 8);
+
+  // Asegurarse de que siempre haya al menos 6 viajes
   const filledTrips = [...tripsToShow];
-  if (filledTrips.length < 6) {
+  if (filledTrips.length < 6 && tripsToShow.length > 0) {
     const neededExtras = 6 - filledTrips.length;
     for (let i = 0; i < neededExtras; i++) {
       filledTrips.push(tripsToShow[i % tripsToShow.length]);
@@ -35,33 +33,44 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
 
   if (tripsToShow.length === 0) return null;
 
-  // Definir la estructura de la cuadrícula
-  // Primer viaje: grande (ocupa 2 columnas en móvil, 2 filas en desktop)
-  // Segundo y tercer viaje: medianos (ocupan 1 columna cada uno)
-  // Cuarto, quinto y sexto viaje: pequeños (ocupan 1 columna cada uno)
+  // Grid masonry asimétrico - inspirado en hiperviajes.com.uy
   const getItemClass = (index: number) => {
     switch (index) {
-      case 0: // Primer viaje (grande)
-        return "col-span-2 row-span-2 md:col-span-2 lg:col-span-2";
-      case 1: // Segundo viaje (mediano)
-        return "col-span-2 md:col-span-1 lg:col-span-1";
-      case 2: // Tercer viaje (mediano)
-        return "col-span-2 md:col-span-1 lg:col-span-1";
-      default: // Resto (pequeños)
-        return "col-span-1";
+      case 0: // Grande - izquierda (1 col x 2 filas)
+        return "col-span-1 row-span-2";
+      case 1: // Rectangular horizontal arriba derecha (2 cols x 1 fila)
+        return "col-span-2 row-span-1";
+      case 2: // Mediana (1 col x 1 fila)
+        return "col-span-1 row-span-1";
+      case 3: // Mediana (1 col x 1 fila)
+        return "col-span-1 row-span-1";
+      case 4: // Mediana (1 col x 1 fila)
+        return "col-span-1 row-span-1";
+      case 5: // Rectangular horizontal abajo (2 cols x 1 fila)
+        return "col-span-2 row-span-1";
+      case 6: // Pequeña (1 col x 1 fila)
+        return "col-span-1 row-span-1";
+      default:
+        return "col-span-1 row-span-1";
     }
   };
 
-  // Altura de las imágenes según su posición
+  // Alturas específicas para cada posición del grid
   const getImageHeight = (index: number) => {
     switch (index) {
-      case 0: // Primer viaje (grande)
-        return "h-96 md:h-[500px]";
-      case 1: // Segundo viaje (mediano)
-      case 2: // Tercer viaje (mediano)
-        return "h-64 md:h-[240px]";
-      default: // Resto (pequeños)
-        return "h-48 md:h-[240px]";
+      case 0: // Grande - máxima altura
+        return "h-[320px] md:h-[520px]";
+      case 1: // Rectangular horizontal
+        return "h-[200px] md:h-[250px]";
+      case 2:
+      case 3:
+      case 4:
+      case 6:
+        return "h-[200px] md:h-[250px]";
+      case 5: // Rectangular horizontal abajo
+        return "h-[200px] md:h-[280px]";
+      default:
+        return "h-[200px] md:h-[250px]";
     }
   };
 
@@ -100,33 +109,33 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
   };
 
   return (
-    <section className="py-8 bg-white">
+    <section className="py-12 bg-gradient-to-b from-white to-secondary-50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-10"
         >
-          <h2 className="font-heading font-bold text-3xl text-secondary-900 mb-4">
+          <h2 className="font-heading font-bold text-3xl md:text-4xl text-secondary-900 mb-3">
             ¡Las mejores ofertas de Paquetes!
           </h2>
-          <p className="text-lg text-secondary-600">
+          <p className="text-lg md:text-xl text-secondary-600">
             Descubre destinos increíbles a precios especiales
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 auto-rows-auto">
           {filledTrips.map((trip, index) => {
             return (
               <motion.div
                 key={`${trip.id}-${index}`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
                 viewport={{ once: true }}
-                className={`relative overflow-hidden rounded-lg ${getItemClass(index)}`}
+                className={`relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 ${getItemClass(index)}`}
               >
                 <Link to={`/viajes/${trip.id}`} className="block group">
                   <div className={`relative ${getImageHeight(index)} overflow-hidden`}>
@@ -135,72 +144,67 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
                       alt={trip.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                    
-                    {/* Price tag - Now in USD */}
-                    <div className="absolute top-4 right-4 bg-primary-600 text-white py-1.5 px-4 font-bold rounded-full shadow-md text-base md:text-lg">
-                      {formatPrice(trip.price, trip.currency_type)}
+
+                    {/* Overlay más oscuro estilo hiperviajes */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70"></div>
+
+                    {/* Badge de precio estilo hiperviajes - MÁS GRANDE Y PROMINENTE */}
+                    <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-primary-600 text-white py-2 px-5 font-bold rounded-full shadow-xl text-sm md:text-base lg:text-lg z-10 border-2 border-white/20">
+                      Desde {formatPrice(trip.price, trip.currency_type)}
                     </div>
-                    
-                    {/* Optional "últimos lugares" tag */}
+
+                    {/* Badge "últimos lugares" más prominente */}
                     {trip.available_spots <= 5 && (
-                      <div className="absolute top-4 left-4 bg-red-600 text-white py-1 px-3 rounded-full text-sm font-bold uppercase">
+                      <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-red-600 text-white py-1.5 px-4 rounded-full text-xs md:text-sm font-bold uppercase shadow-lg z-10 animate-pulse">
                         Últimos lugares
                       </div>
                     )}
-                    
-                    {/* Category badge with new colors */}
-                    {trip.available_spots > 5 && (
-                      <div className={`absolute top-4 left-4 ${getDestinationColor(trip.category)} text-xs px-3 py-1 rounded-full shadow-sm`}>
-                        {trip.category === 'nacional' ? 'Nacional' : 
-                         trip.category === 'internacional' ? 'Internacional' : 'Grupal'}
-                      </div>
-                    )}
-                    
-                    {/* Tags if available - with new colors */}
-                    {trip.tags && trip.tags.length > 0 && (
-                      <div className="absolute top-14 left-4 flex flex-wrap gap-1 max-w-[70%]">
-                        {trip.tags.slice(0, 2).map((tag, i) => (
-                          <span 
-                            key={i} 
-                            className={`${getTagColor(tag)} text-xs px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Title and destination - Positioned at bottom of image */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                      <h3 className="font-heading font-bold text-xl md:text-2xl mb-1 drop-shadow-md">
-                        {index === 0 || index === 1 || index === 2 
+
+                    {/* Contenido centrado - Estilo hiperviajes */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 md:px-6">
+                      {/* Título grande y centrado */}
+                      <h3 className="font-heading font-bold text-white text-2xl md:text-3xl lg:text-4xl mb-2 md:mb-3 drop-shadow-2xl leading-tight">
+                        {index === 0 || index === 1
                           ? trip.destination.split(',')[0]
-                          : trip.title.length > 15 ? trip.title.substring(0, 15) + '...' : trip.title
-                        }
+                          : trip.title.length > 30
+                          ? trip.title.substring(0, 30) + '...'
+                          : trip.title}
                       </h3>
-                      {(index === 0 || index === 1 || index === 2) && (
-                        <p className="text-white/90 text-sm md:text-base font-medium">
-                          {trip.title.includes('Vacaciones') 
-                            ? trip.title 
+
+                      {/* Subtítulo descriptivo */}
+                      {(index === 0 || index === 1) && (
+                        <p className="text-white/95 text-base md:text-lg lg:text-xl font-medium drop-shadow-lg">
+                          {trip.title.includes('Vacaciones')
+                            ? trip.title
                             : (() => {
                                 const departureDate = createValidDate(trip.departure_date);
-                                return departureDate 
+                                return departureDate
                                   ? `Vacaciones de ${departureDate.toLocaleString('es-ES', { month: 'long' })}`
                                   : 'Vacaciones';
-                              })()
-                          }
+                              })()}
                         </p>
                       )}
+
+                      {/* Tags pequeños abajo del título para tarjetas medianas/pequeñas */}
+                      {index > 1 && trip.tags && trip.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 justify-center mt-2">
+                          {trip.tags.slice(0, 2).map((tag, i) => (
+                            <span
+                              key={i}
+                              className={`${getTagColor(tag)} text-xs px-3 py-1 rounded-full shadow-md`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    
-                    {/* View details link */}
-                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white text-sm px-3 py-1.5 rounded-full transition-all duration-300 flex items-center">
-                        <span>Ver detalles</span>
-                        <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform group-hover:translate-x-1" />
+
+                    {/* Botón "Ver oferta" que aparece en hover */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
+                      <div className="bg-white hover:bg-primary-600 text-primary-900 hover:text-white text-sm md:text-base px-6 py-2.5 rounded-full transition-all duration-300 flex items-center font-bold shadow-xl">
+                        <span>Ver oferta</span>
+                        <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>

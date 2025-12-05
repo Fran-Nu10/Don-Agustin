@@ -5,6 +5,7 @@ import { Footer } from '../components/layout/Footer';
 import { Button } from '../components/ui/Button';
 import { TripSearch } from '../components/trips/TripSearch';
 import { TripCarousel } from '../components/trips/TripCarousel';
+import { TripGrid } from '../components/trips/TripGrid';
 import { GroupTripsCarousel } from '../components/trips/GroupTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
@@ -91,12 +92,12 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* Featured Trips - REDUCED SPACING */}
+        {/* Dream Trips Section - Las mejores ofertas - PRIMERA POSICIÓN */}
         {loading ? (
           <div className="text-center py-8">
             <p className="text-secondary-500">Cargando paquetes...</p>
           </div>
-        ) : error ? ( // Mostrar mensaje de error si existe
+        ) : error ? (
           <div className="text-center py-8 bg-red-50 border border-red-200 rounded-lg shadow-sm mx-auto max-w-3xl mt-8">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="font-heading font-bold text-xl text-red-800 mb-2">
@@ -111,32 +112,40 @@ export function HomePage() {
           </div>
         ) : (
           <>
-            {/* National Trips - Moved up */}
-            {nationalTrips.length > 0 && (
-              <div className="py-8">
-                <TripCarousel
-                  trips={nationalTrips}
-                  title="Paquetes Nacionales"
-                  subtitle="Descubre los mejores destinos de Uruguay"
-                />
+            {trips.length > 0 && (
+              <div className="py-8 bg-white">
+                <DreamTripsSection trips={trips} />
               </div>
             )}
-            
-            {/* International Trips - Moved up */}
-            {internationalTrips.length > 0 && (
-              <div className="py-8">
-                <TripCarousel
-                  trips={internationalTrips}
-                  title="Paquetes Internacionales"
-                  subtitle="Explora destinos alrededor del mundo"
-                />
-              </div>
-            )}
-            
-            {/* Group Trips - Moved down */}
+
+            {/* Group Trips - SEGUNDA POSICIÓN */}
             {groupTrips.length > 0 && (
               <div className="py-8">
                 <GroupTripsCarousel trips={groupTrips} />
+              </div>
+            )}
+
+            {/* National Trips - TERCERA POSICIÓN - Grid 4 columnas */}
+            {nationalTrips.length > 0 && (
+              <div className="py-8 bg-gradient-to-b from-secondary-50 to-white">
+                <TripGrid
+                  trips={nationalTrips}
+                  title="Paquetes Nacionales"
+                  subtitle="Descubre los mejores destinos de Uruguay"
+                  maxItems={8}
+                />
+              </div>
+            )}
+
+            {/* International Trips - CUARTA POSICIÓN - Grid 4 columnas */}
+            {internationalTrips.length > 0 && (
+              <div className="py-8 bg-gradient-to-b from-white to-secondary-50">
+                <TripGrid
+                  trips={internationalTrips}
+                  title="Paquetes Internacionales"
+                  subtitle="Explora destinos alrededor del mundo"
+                  maxItems={8}
+                />
               </div>
             )}
           </>
@@ -148,7 +157,7 @@ export function HomePage() {
             <h2 className="font-heading font-bold text-2xl md:text-3xl text-center mb-6 text-secondary-900">
               ¿Por qué elegirnos?
             </h2>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               <FeatureCard
                 icon={<MapPin className="h-8 w-8" />}
@@ -177,13 +186,6 @@ export function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* Dream Trips Section - REDUCED SPACING */}
-        {!loading && trips.length > 0 && (
-          <div className="py-8 bg-white">
-            <DreamTripsSection trips={trips} />
-          </div>
-        )}
 
         {/* Testimonials - REDUCED SPACING */}
         <div className="py-8">
