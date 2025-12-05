@@ -22,10 +22,11 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
         .sort(() => 0.5 - Math.random())
         .slice(0, 8);
 
-  // Asegurarse de que siempre haya al menos 6 viajes
+  // Asegurarse de que siempre haya exactamente 8 viajes (o 7 mínimo para el diseño)
   const filledTrips = [...tripsToShow];
-  if (filledTrips.length < 6 && tripsToShow.length > 0) {
-    const neededExtras = 6 - filledTrips.length;
+  const minTrips = 8; // Llenar hasta 8 espacios
+  if (filledTrips.length > 0 && filledTrips.length < minTrips) {
+    const neededExtras = minTrips - filledTrips.length;
     for (let i = 0; i < neededExtras; i++) {
       filledTrips.push(tripsToShow[i % tripsToShow.length]);
     }

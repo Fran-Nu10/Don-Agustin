@@ -13,7 +13,17 @@ interface TripGridProps {
 }
 
 export function TripGrid({ trips, title, subtitle, maxItems = 8 }: TripGridProps) {
-  const displayTrips = trips.slice(0, maxItems);
+  // Llenar la grilla repitiendo viajes si es necesario
+  const filledTrips = [...trips.slice(0, maxItems)];
+
+  if (filledTrips.length > 0 && filledTrips.length < maxItems) {
+    const neededExtras = maxItems - filledTrips.length;
+    for (let i = 0; i < neededExtras; i++) {
+      filledTrips.push(trips[i % trips.length]);
+    }
+  }
+
+  const displayTrips = filledTrips;
 
   if (displayTrips.length === 0) return null;
 
@@ -46,7 +56,7 @@ export function TripGrid({ trips, title, subtitle, maxItems = 8 }: TripGridProps
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
           {displayTrips.map((trip, index) => (
             <motion.div
-              key={trip.id}
+              key={`${trip.id}-${index}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
