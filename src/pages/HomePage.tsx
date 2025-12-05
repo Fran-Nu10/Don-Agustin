@@ -118,7 +118,7 @@ export function HomePage() {
                 <Link to="/viajes">
                   <Button
                     size="lg"
-                    className="bg-white text-primary-600 hover:bg-white/90 text-lg px-8 py-6 shadow-2xl"
+                    className="bg-primary-600 hover:bg-primary-700 text-white text-lg px-8 py-6 shadow-2xl"
                   >
                     Explorar Destinos
                   </Button>
@@ -156,15 +156,7 @@ export function HomePage() {
         {/* Search Section - Below Hero */}
         <section className="relative -mt-16 z-20 mb-12">
           <div className="container mx-auto px-4">
-            <div className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 rounded-2xl shadow-2xl p-8 md:p-10 border border-white/20 backdrop-blur-sm">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl md:text-3xl font-heading font-bold text-white mb-2">
-                  Encontrá tu próximo destino
-                </h2>
-                <p className="text-white/90 text-sm md:text-base">
-                  Descubrí experiencias únicas en los mejores destinos
-                </p>
-              </div>
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-6 md:p-8 border border-gray-200/50">
               <TripSearch destinations={destinations} />
             </div>
           </div>
@@ -241,12 +233,12 @@ export function HomePage() {
 
         {/* CTA Section - Regala una experiencia */}
         <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
-          {/* Background Image - Couple enjoying luxury vacation */}
+          {/* Background Image - Luxury resort pool with mountain view */}
           <div className="absolute inset-0 z-0">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/3225531/pexels-photo-3225531.jpeg)',
+                backgroundImage: 'url(https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg)',
                 backgroundAttachment: 'fixed'
               }}
             />
