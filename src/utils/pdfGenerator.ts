@@ -15,12 +15,12 @@ export function generateQuotationPDF(quotation: Quotation) {
   // Header con logo y título
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
-  doc.text('18 de Julio 1236, Montevideo, Uruguay', 20, 32);
-  doc.text('Tel: +598 2345 6789 | Email: info@donagustinviajes.com.uy', 20, 38);
+  doc.text('Rocha 2334, Montevideo, Uruguay', 20, 32);
+  doc.text('Tel: 091 517 217 / 097 442 727 | Email: info@vipturismo.com', 20, 38);
   
   // Línea separadora
   doc.setDrawColor(255, 107, 0); // Color primario
@@ -135,7 +135,7 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
@@ -253,12 +253,12 @@ export function generateClientPDF(client: Client) {
   // Header con logo y título
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
-  doc.text('18 de Julio 1236, Montevideo, Uruguay', 20, 32);
-  doc.text('Tel: +598 2345 6789 | Email: info@donagustinviajes.com.uy', 20, 38);
+  doc.text('Rocha 2334, Montevideo, Uruguay', 20, 32);
+  doc.text('Tel: 091 517 217 / 097 442 727 | Email: info@vipturismo.com', 20, 38);
   
   // Línea separadora
   doc.setDrawColor(255, 107, 0); // Color primario
@@ -404,7 +404,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
@@ -533,7 +533,7 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
@@ -619,7 +619,7 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Don Agustín Viajes', 20, 25);
+  doc.text('VIP Turismo', 20, 25);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);

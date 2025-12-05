@@ -73,9 +73,10 @@ export function HomePage() {
               <div className="mb-8 md:mb-12">
                 <TypewriterText
                   phrases={[
+                    'LOS VERDADEROS CREADORES DE EXPERIENCIAS VIP',
                     'DISEÑAMOS TU EXPERIENCIA',
-                    'DESTINOS PARADISÍACOS',
-                    'VIAJES EXCLUSIVOS VIP'
+                    'VIAJES PERSONALIZADOS A TU MEDIDA',
+                    'ATENCIÓN EXCLUSIVA Y PREMIUM'
                   ]}
                   typingSpeed={80}
                   deletingSpeed={50}
@@ -201,7 +202,7 @@ export function HomePage() {
                 <TripGrid
                   trips={nationalTrips}
                   title="Paquetes Nacionales"
-                  subtitle="Descubre los mejores destinos de Uruguay"
+                  subtitle="Experiencias auténticas en los mejores rincones de Uruguay"
                   maxItems={8}
                 />
               </div>
@@ -213,7 +214,7 @@ export function HomePage() {
                 <TripGrid
                   trips={internationalTrips}
                   title="Paquetes Internacionales"
-                  subtitle="Explora destinos alrededor del mundo"
+                  subtitle="Viajes exclusivos a destinos soñados con atención personalizada"
                   maxItems={8}
                 />
               </div>

@@ -116,10 +116,10 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
           className="text-center mb-10"
         >
           <h2 className="font-heading font-bold text-3xl md:text-4xl text-secondary-900 mb-3">
-            ¡Las mejores ofertas de Paquetes!
+            Experiencias VIP Seleccionadas
           </h2>
           <p className="text-lg md:text-xl text-secondary-600">
-            Descubre destinos increíbles a precios especiales
+            Destinos exclusivos diseñados para vos
           </p>
         </motion.div>
 

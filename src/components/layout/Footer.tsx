@@ -20,10 +20,10 @@ export function Footer() {
               </h3>
             </div>
             <p className="text-secondary-300 mb-4 font-semibold">
-              Una forma diferente de viajar
+              Los verdaderos creadores de Experiencias VIP
             </p>
             <p className="text-secondary-400 mb-4 text-sm">
-              Experiencias personalizadas y atención VIP para hacer realidad tus sueños de viaje.
+              Turismo nacional e internacional personalizado con atención exclusiva y servicio premium.
             </p>
             <div className="flex space-x-4">
               <a
@@ -91,12 +91,12 @@ export function Footer() {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
                 <span className="text-secondary-300">
-                  Av. 18 de Julio 1236, Montevideo, Uruguay
+                  Rocha 2334, Montevideo, Uruguay
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 text-primary-600 mr-2" />
-                <span className="text-secondary-300">091 339 099/teléfono de linea 2903 26 80</span>
+                <span className="text-secondary-300">091 517 217 / 097 442 727</span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-primary-600 mr-2" />
