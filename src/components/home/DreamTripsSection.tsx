@@ -51,6 +51,8 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
         return "col-span-2 row-span-1";
       case 6: // Pequeña (1 col x 1 fila)
         return "col-span-1 row-span-1";
+      case 7: // Pequeña (1 col x 1 fila) - última posición
+        return "col-span-1 row-span-1";
       default:
         return "col-span-1 row-span-1";
     }
@@ -67,6 +69,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
       case 3:
       case 4:
       case 6:
+      case 7:
         return "h-[200px] md:h-[250px]";
       case 5: // Rectangular horizontal abajo
         return "h-[200px] md:h-[280px]";

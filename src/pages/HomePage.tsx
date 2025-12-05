@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { TripSearch } from '../components/trips/TripSearch';
 import { TripCarousel } from '../components/trips/TripCarousel';
 import { TripGrid } from '../components/trips/TripGrid';
-import { GroupTripsCarousel } from '../components/trips/GroupTripsCarousel';
+import { PremiumTripsCarousel } from '../components/trips/PremiumTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
 import { DreamTripsSection } from '../components/home/DreamTripsSection';
@@ -24,7 +24,15 @@ export function HomePage() {
   // Filter trips by category
   const nationalTrips = trips.filter(trip => trip.category === 'nacional');
   const internationalTrips = trips.filter(trip => trip.category === 'internacional');
-  const groupTrips = trips.filter(trip => trip.category === 'grupal');
+
+  // Filter premium trips - those with 'premium' or 'vip' tags, or top price trips
+  const premiumTrips = trips
+    .filter(trip => trip.tags?.some(tag => tag.toLowerCase().includes('premium') || tag.toLowerCase().includes('vip')))
+    .length > 0
+    ? trips.filter(trip => trip.tags?.some(tag => tag.toLowerCase().includes('premium') || tag.toLowerCase().includes('vip')))
+    : trips
+        .sort((a, b) => b.price - a.price)
+        .slice(0, 6);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -118,10 +126,10 @@ export function HomePage() {
               </div>
             )}
 
-            {/* Group Trips - SEGUNDA POSICIÓN */}
-            {groupTrips.length > 0 && (
+            {/* Premium Trips - SEGUNDA POSICIÓN */}
+            {premiumTrips.length > 0 && (
               <div className="py-8">
-                <GroupTripsCarousel trips={groupTrips} />
+                <PremiumTripsCarousel trips={premiumTrips} />
               </div>
             )}
 
