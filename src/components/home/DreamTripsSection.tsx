@@ -199,7 +199,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
 
                     {/* Botón "Ver oferta" que aparece en hover */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                      <div className="bg-white hover:bg-primary-600 text-primary-900 hover:text-white text-sm md:text-base px-6 py-2.5 rounded-full transition-all duration-300 flex items-center font-bold shadow-xl">
+                      <div className="bg-white hover:bg-primary-600 text-primary-900 hover:text-white text-sm md:text-base px-6 py-2.5 rounded-full transition-all duration-300 flex items-center justify-center font-bold shadow-xl">
                         <span>Ver oferta</span>
                         <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
                       </div>
