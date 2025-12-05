@@ -103,7 +103,7 @@ export function HomePage() {
                   </span>
                   <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white drop-shadow-2xl"
                         style={{ letterSpacing: '0.02em' }}>
-                    CON <span className="font-extrabold">DON AGUSTÍN</span>
+                    CON <span className="font-extrabold">VIPTURISMO</span>
                   </span>
                 </h1>
               </motion.div>
@@ -154,9 +154,17 @@ export function HomePage() {
         </section>
 
         {/* Search Section - Below Hero */}
-        <section className="relative -mt-16 z-20">
+        <section className="relative -mt-16 z-20 mb-12">
           <div className="container mx-auto px-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+            <div className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 rounded-2xl shadow-2xl p-8 md:p-10 border border-white/20 backdrop-blur-sm">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-white mb-2">
+                  Encontrá tu próximo destino
+                </h2>
+                <p className="text-white/90 text-sm md:text-base">
+                  Descubrí experiencias únicas en los mejores destinos
+                </p>
+              </div>
               <TripSearch destinations={destinations} />
             </div>
           </div>
@@ -231,39 +239,102 @@ export function HomePage() {
           <BlogSection />
         </div>
 
-        {/* CTA Section - Inspired by Funtour */}
-        <section className="relative py-16 md:py-20 lg:py-24 overflow-hidden">
-          {/* Background with dark pattern */}
+        {/* CTA Section - Regala una experiencia */}
+        <section className="relative py-24 md:py-32 lg:py-40 overflow-hidden">
+          {/* Background Image - Couple enjoying luxury vacation */}
           <div className="absolute inset-0 z-0">
             <div
-              className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900"
+              className="absolute inset-0 bg-cover bg-center"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                backgroundImage: 'url(https://images.pexels.com/photos/3225531/pexels-photo-3225531.jpeg)',
+                backgroundAttachment: 'fixed'
               }}
             />
+            {/* Dark gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70"></div>
           </div>
 
           <div className="container mx-auto px-4 text-center relative z-10">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
+              className="max-w-4xl mx-auto"
             >
-              <h2 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white mb-8 md:mb-10 leading-tight">
+              {/* Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="inline-block mb-6"
+              >
+                <span className="px-6 py-2 bg-primary-600/90 backdrop-blur-sm text-white text-sm font-semibold rounded-full border border-white/20">
+                  EXPERIENCIAS EXCLUSIVAS
+                </span>
+              </motion.div>
+
+              {/* Main Heading */}
+              <h2 className="font-heading font-bold text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-6 leading-tight drop-shadow-2xl">
                 ¡Regalá una experiencia única{' '}
-                <span className="text-primary-500">ahora!</span>
+                <span className="text-primary-400">ahora!</span>
               </h2>
 
-              <Link to="/viajes">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg md:text-xl px-10 md:px-12 py-4 md:py-5 rounded-full shadow-2xl transition-all duration-300 hover:shadow-primary-600/50"
-                >
-                  Ver más destinos
-                </motion.button>
-              </Link>
+              {/* Subheading */}
+              <p className="text-lg md:text-xl text-white/90 mb-10 drop-shadow-lg max-w-2xl mx-auto">
+                Sorprendé a tus seres queridos con momentos inolvidables en destinos paradisíacos
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link to="/viajes">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 rounded-full shadow-2xl transition-all duration-300 hover:shadow-primary-600/50 min-w-[250px]"
+                  >
+                    Ver más destinos
+                  </motion.button>
+                </Link>
+                <Link to="/cotizacion">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 rounded-full shadow-2xl transition-all duration-300 border-2 border-white/30 min-w-[250px]"
+                  >
+                    Cotizar ahora
+                  </motion.button>
+                </Link>
+              </div>
+
+              {/* Trust indicators */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="mt-12 flex flex-wrap justify-center items-center gap-8 text-white/80"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium">Paquetes personalizados</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium">Atención 24/7</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium">Mejores precios</span>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </section>
