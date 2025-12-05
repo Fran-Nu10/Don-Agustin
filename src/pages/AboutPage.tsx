@@ -56,7 +56,7 @@ export function AboutPage() {
                 Sobre Nosotros
               </h1>
               <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-                Más de 25 años creando experiencias inolvidables
+                Una forma diferente de viajar
               </p>
             </motion.div>
           </div>
@@ -77,16 +77,15 @@ export function AboutPage() {
                 </h2>
                 <div className="prose prose-lg">
                   <p className="text-secondary-600 mb-4">
-                    Don Agustín Viajes nació en 1997 con una misión clara: brindar servicios 
-                    integrales de viajes con un toque personal y profesional. Desde entonces, 
-                    hemos crecido hasta convertirnos en una referencia en el mercado nacional 
-                    de viajes y excursiones.
+                    VIP Turismo nació con una visión diferente: ofrecer una forma única de viajar
+                    donde cada cliente recibe atención personalizada y experiencias a medida. Nos
+                    especializamos en crear viajes que se adaptan a tus sueños, no al revés.
                   </p>
                   <p className="text-secondary-600">
-                    A lo largo de estos años, hemos tenido el privilegio de ayudar a miles de 
-                    viajeros a descubrir nuevos destinos y crear recuerdos inolvidables. Nuestra 
-                    experiencia nos ha permitido desarrollar un profundo conocimiento de la 
-                    industria y establecer relaciones sólidas con proveedores de todo el mundo.
+                    Más allá de vender paquetes turísticos, nos dedicamos a diseñar experiencias
+                    memorables. Nuestro compromiso es brindar un servicio VIP que haga de cada viaje
+                    algo extraordinario, combinando destinos fascinantes con atención al detalle
+                    y un trato exclusivo.
                   </p>
                 </div>
               </motion.div>
@@ -100,7 +99,7 @@ export function AboutPage() {
               >
                 <img
                   src="https://images.pexels.com/photos/7625042/pexels-photo-7625042.jpeg"
-                  alt="Don Agustín Viajes Through the Years"
+                  alt="VIP Turismo - Experiencias Únicas"
                   className="w-full h-full object-cover"
                 />
               </motion.div>

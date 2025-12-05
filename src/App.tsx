@@ -44,8 +44,8 @@ function App() {
 
        {/* Botón flotante (fuera de Routes) */}
       <WhatsAppFloat
-        phone="+59891339099" 
-        message="Hola Don Agustín, quiero info sobre salidas grupales."
+        phone="+59891339099"
+        message="Hola VIP Turismo, quiero información sobre paquetes de viaje."
         bottomOffset={18}
         side="right"
       />

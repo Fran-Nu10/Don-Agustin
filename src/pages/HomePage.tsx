@@ -83,7 +83,7 @@ export function HomePage() {
               className="text-center mb-6 md:mb-8"
             >
               <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-6 md:mb-8 leading-tight">
-                Tu próxima aventura empieza aquí
+                Viví experiencias VIP únicas
               </h1>
             </motion.div>
 
@@ -199,10 +199,10 @@ export function HomePage() {
         <section className="relative py-8 overflow-hidden">
           {/* Responsive Background */}
           <div className="absolute inset-0 z-0">
-            <div 
+            <div
               className="absolute inset-0 bg-primary-600"
               style={{
-                backgroundImage: 'linear-gradient(135deg, #F2940A 0%, #EB951C 50%, #C4730A 100%)'
+                backgroundImage: 'linear-gradient(135deg, #F04444 0%, #DC5F5F 50%, #C73232 100%)'
               }}
             />
           </div>

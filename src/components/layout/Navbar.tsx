@@ -86,13 +86,13 @@ export function Navbar() {
             <div className="flex items-center justify-between h-16">
               {/* Logo - Always visible */}
               <Link to="/" className="flex items-center">
-                <img 
-                  src="/image.png" 
-                  alt="Don Agustín Viajes" 
-                  className="h-10 w-10 mr-3"
+                <img
+                  src="/427173037_306946561968763_5005834942579133161_n.jpg"
+                  alt="VIP Turismo"
+                  className="h-10 w-auto mr-3"
                 />
                 <span className="font-heading font-bold text-xl text-white">
-                  Don Agustín Viajes
+                  VIP Turismo
                 </span>
               </Link>
 
@@ -204,7 +204,7 @@ export function Navbar() {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="md:hidden overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, #F9A826 0%, #FF8C00 25%, #FF7F50 50%, #FF6B00 75%, #FF5722 100%)'
+                  background: 'linear-gradient(135deg, #FF6B6B 0%, #F04444 25%, #DC5F5F 50%, #C73232 75%, #A82A2A 100%)'
                 }}
               >
                 <div className="container mx-auto px-4 py-6">

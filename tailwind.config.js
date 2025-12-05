@@ -5,17 +5,17 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#FEF7ED',
-          100: '#FDEDD3',
-          200: '#FBD9A5',
-          300: '#F8C06D',
-          400: '#F5A332',
-          500: '#F2940A',
-          600: '#EB951C', // Main orange
-          700: '#C4730A',
-          800: '#9C5A0E',
-          900: '#7E4A0F',
-          950: '#442405',
+          50: '#FFF1F1',
+          100: '#FFE1E1',
+          200: '#FFC7C7',
+          300: '#FFA0A0',
+          400: '#FF6B6B',
+          500: '#F04444',
+          600: '#DC5F5F', // Main VipTurismo red
+          700: '#C73232',
+          800: '#A82A2A',
+          900: '#8E2424',
+          950: '#4D1010',
         },
         secondary: {
           50: '#F9FAFB',

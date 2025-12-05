@@ -11,16 +11,19 @@ export function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <img
-                src="/image.png"
-                alt="VipTurismo"
-                className="h-8 w-8 mr-3"
+                src="/427173037_306946561968763_5005834942579133161_n.jpg"
+                alt="VIP Turismo"
+                className="h-10 w-auto mr-3"
               />
               <h3 className="font-heading text-xl font-bold">
-                VipTurismo
+                VIP Turismo
               </h3>
             </div>
-            <p className="text-secondary-300 mb-4">
-              Tu agencia de viajes premium para experiencias inolvidables alrededor del mundo.
+            <p className="text-secondary-300 mb-4 font-semibold">
+              Una forma diferente de viajar
+            </p>
+            <p className="text-secondary-400 mb-4 text-sm">
+              Experiencias personalizadas y atención VIP para hacer realidad tus sueños de viaje.
             </p>
             <div className="flex space-x-4">
               <a
@@ -32,7 +35,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://www.instagram.com/vipturismo"
+                href="https://www.instagram.com/vipturismo.uy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -109,7 +112,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-secondary-700 mt-10 pt-6 text-center text-secondary-400 text-sm">
-          <p>© {new Date().getFullYear()} VipTurismo. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} VIP Turismo. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
