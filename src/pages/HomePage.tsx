@@ -10,6 +10,7 @@ import { PremiumTripsCarousel } from '../components/trips/PremiumTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
 import { DreamTripsSection } from '../components/home/DreamTripsSection';
+import { TypewriterText } from '../components/home/TypewriterText';
 import { AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTrips } from '../hooks/useTrips';
@@ -38,64 +39,126 @@ export function HomePage() {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Hero Section with Improved Responsive Background - REDUCED HEIGHT */}
-        <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-          {/* Responsive Background with Multiple Images */}
+        {/* Hero Section with Video Background - VIATUR Style */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          {/* Video Background */}
           <div className="absolute inset-0 z-0">
-            {/* Desktop Background */}
-            <div 
-              className="hidden lg:block absolute inset-0"
-              style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center center',
-                backgroundAttachment: 'fixed',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-            
-            {/* Tablet Background */}
-            <div 
-              className="hidden md:block lg:hidden absolute inset-0"
-              style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center 30%',
-                backgroundAttachment: 'scroll',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-            
-            {/* Mobile Background */}
-            <div 
-              className="block md:hidden absolute inset-0"
-              style={{
-                backgroundImage: 'url(https://images.pexels.com/photos/1174732/pexels-photo-1174732.jpeg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center 40%',
-                backgroundAttachment: 'scroll',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-            
-            {/* Responsive Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70 md:from-black/40 md:via-black/25 md:to-black/60"></div>
-          </div>
-          
-          {/* Content with Better Responsive Spacing */}
-          <div className="container mx-auto px-4 relative z-10 pt-16 md:pt-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-center mb-6 md:mb-8"
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              poster="https://images.pexels.com/photos/3225531/pexels-photo-3225531.jpeg"
             >
-              <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-6 md:mb-8 leading-tight">
-                Viví experiencias VIP únicas
-              </h1>
+              <source
+                src="https://videos.pexels.com/video-files/3044494/3044494-uhd_2560_1440_25fps.mp4"
+                type="video/mp4"
+              />
+            </video>
+
+            {/* Gradient Overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
+          </div>
+
+          {/* Hero Content */}
+          <div className="container mx-auto px-4 relative z-10 pt-32 pb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center"
+            >
+              {/* Typewriter Text - Small Header */}
+              <div className="mb-8 md:mb-12">
+                <TypewriterText
+                  phrases={[
+                    'DISEÑAMOS TU EXPERIENCIA',
+                    'DESTINOS PARADISÍACOS',
+                    'VIAJES EXCLUSIVOS VIP'
+                  ]}
+                  typingSpeed={80}
+                  deletingSpeed={50}
+                  pauseTime={2500}
+                  className="text-sm md:text-base lg:text-lg text-white/90 font-medium tracking-[0.3em] uppercase drop-shadow-lg"
+                />
+              </div>
+
+              {/* Main Title - VIATUR Style */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className="mb-12 md:mb-16"
+              >
+                <h1 className="font-heading font-bold leading-tight mb-4">
+                  <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-transparent"
+                        style={{
+                          WebkitTextStroke: '2px white',
+                          textStroke: '2px white',
+                          paintOrder: 'stroke fill',
+                          letterSpacing: '0.02em'
+                        }}>
+                    VIVÍ EXPERIENCIAS VIP
+                  </span>
+                  <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white drop-shadow-2xl"
+                        style={{ letterSpacing: '0.02em' }}>
+                    CON <span className="font-extrabold">DON AGUSTÍN</span>
+                  </span>
+                </h1>
+              </motion.div>
+
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              >
+                <Link to="/viajes">
+                  <Button
+                    size="lg"
+                    className="bg-white text-primary-600 hover:bg-white/90 text-lg px-8 py-6 shadow-2xl"
+                  >
+                    Explorar Destinos
+                  </Button>
+                </Link>
+                <Link to="/cotizacion">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-white text-white hover:bg-white hover:text-primary-600 text-lg px-8 py-6 backdrop-blur-sm"
+                  >
+                    Solicitar Cotización
+                  </Button>
+                </Link>
+              </motion.div>
             </motion.div>
 
-            <TripSearch destinations={destinations} />
+            {/* Scroll Indicator */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 1.2 }}
+              className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+            >
+              <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-2">
+                <motion.div
+                  animate={{ y: [0, 12, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="w-1.5 h-1.5 bg-white rounded-full"
+                />
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Search Section - Below Hero */}
+        <section className="relative -mt-16 z-20">
+          <div className="container mx-auto px-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+              <TripSearch destinations={destinations} />
+            </div>
           </div>
         </section>
 

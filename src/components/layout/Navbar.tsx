@@ -10,6 +10,7 @@ export function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollDirection, setScrollDirection] = useState('up');
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -23,7 +24,10 @@ export function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
+      // Update isScrolled state
+      setIsScrolled(currentScrollY > 50);
+
       // Determine scroll direction
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down and past 100px
@@ -34,7 +38,7 @@ export function Navbar() {
         setScrollDirection('up');
         setShowNavbar(true);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
@@ -64,12 +68,21 @@ export function Navbar() {
     };
   }, [lastScrollY]);
 
-  // Navbar classes - always orange background with shadow
-  const navbarClasses = "fixed top-0 left-0 right-0 z-50 bg-primary-600 shadow-lg transition-transform duration-300";
+  // Navbar classes - transparent on homepage when not scrolled, solid otherwise
+  const isTransparent = isHomePage && !isScrolled;
+  const navbarClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    isTransparent
+      ? 'bg-transparent backdrop-blur-md border-b border-white/10'
+      : 'bg-primary-600 shadow-lg'
+  }`;
 
-  // Link classes - always white text on orange background
-  const linkClasses = "text-white/90 hover:text-white";
-  const activeLinkClasses = "text-white font-semibold";
+  // Link classes - white text with shadow on transparent, white on solid
+  const linkClasses = isTransparent
+    ? "text-white/95 hover:text-white drop-shadow-md"
+    : "text-white/90 hover:text-white";
+  const activeLinkClasses = isTransparent
+    ? "text-white font-semibold drop-shadow-md"
+    : "text-white font-semibold";
 
   return (
     <AnimatePresence>
@@ -150,18 +163,21 @@ export function Navbar() {
                 {user ? (
                   <div className="flex items-center space-x-4">
                     <Link to="/admin/dashboard">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-white border-white hover:bg-white hover:text-primary-600"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={isTransparent
+                          ? "text-white border-white/80 hover:bg-white hover:text-primary-600 backdrop-blur-sm"
+                          : "text-white border-white hover:bg-white hover:text-primary-600"
+                        }
                       >
                         Panel Admin
                       </Button>
                     </Link>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => logout()} 
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => logout()}
                       className="text-white hover:bg-white/10"
                     >
                       Cerrar Sesión
@@ -169,10 +185,13 @@ export function Navbar() {
                   </div>
                 ) : (
                   <Link to="/login">
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="bg-white text-primary-600 hover:bg-white/90"
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className={isTransparent
+                        ? "bg-white/90 text-primary-600 hover:bg-white backdrop-blur-sm shadow-lg"
+                        : "bg-white text-primary-600 hover:bg-white/90"
+                      }
                     >
                       Iniciar Sesión
                     </Button>
