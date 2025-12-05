@@ -45,9 +45,10 @@ export function useTrips() {
       }
     });
   }, []);
+
   useEffect(() => {
     loadTrips();
-  }, []);
+  }, [loadTrips]);
 
   const removeTrip = useCallback((tripId: string) => {
     console.log('🗑️ [OPTIMISTIC UPDATE] Removing trip:', tripId);
@@ -55,7 +56,7 @@ export function useTrips() {
       const filteredTrips = prevTrips.filter(t => t.id !== tripId);
       console.log('✅ [OPTIMISTIC UPDATE] Trip removed, new count:', filteredTrips.length);
       return filteredTrips;
-  }, [loadTrips]);
+    });
   }, []);
   return { 
     trips, 
