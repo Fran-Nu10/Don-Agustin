@@ -10,10 +10,9 @@ import { PremiumTripsCarousel } from '../components/trips/PremiumTripsCarousel';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BlogSection } from '../components/home/BlogSection';
 import { DreamTripsSection } from '../components/home/DreamTripsSection';
-import { MapPin, Plane, Clock, Shield, AlertCircle } from 'lucide-react'; // Importar AlertCircle
+import { AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTrips } from '../hooks/useTrips';
-import { FeatureCard } from '../components/home/FeatureCard';
 
 export function HomePage() {
   const { trips, loading, error } = useTrips(); // Obtener el estado de error
@@ -159,85 +158,6 @@ export function HomePage() {
           </>
         )}
 
-        {/* Features Section - Redesigned with 2x2 grid */}
-        <section className="py-12 md:py-16 bg-gradient-to-b from-white to-secondary-50">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-center mb-10 md:mb-12"
-            >
-              <h2 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl text-secondary-900 mb-4">
-                ¿Por qué elegirnos?
-              </h2>
-              <p className="text-lg md:text-xl text-secondary-600 max-w-2xl mx-auto">
-                Experiencia, calidad y compromiso en cada viaje
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                <FeatureCard
-                  icon={<MapPin className="h-12 w-12" />}
-                  title="Destinos Únicos"
-                  description="Ofrecemos destinos cuidadosamente seleccionados para brindarte experiencias inolvidables."
-                  bgImage="https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg"
-                  badge="100+"
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <FeatureCard
-                  icon={<Plane className="h-12 w-12" />}
-                  title="Transporte de Calidad"
-                  description="Viaja con comodidad y seguridad en nuestros medios de transporte seleccionados."
-                  bgImage="https://images.pexels.com/photos/2026324/pexels-photo-2026324.jpeg"
-                  badge="★ 5.0"
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <FeatureCard
-                  icon={<Clock className="h-12 w-12" />}
-                  title="Más de 25 Años"
-                  description="Más de dos décadas de experiencia organizando paquetes perfectos para nuestros clientes."
-                  bgImage="https://images.pexels.com/photos/1252500/pexels-photo-1252500.jpeg"
-                  badge="25+"
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <FeatureCard
-                  icon={<Shield className="h-12 w-12" />}
-                  title="Garantía de Satisfacción"
-                  description="Tu satisfacción es nuestra prioridad. Estamos contigo en cada paso del viaje."
-                  bgImage="https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg"
-                  badge="99%"
-                />
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
         {/* Testimonials - REDUCED SPACING */}
         <div className="py-8">
           <TestimonialsSection />
@@ -247,38 +167,41 @@ export function HomePage() {
         <div className="py-8">
           <BlogSection />
         </div>
-        
-        {/* CTA Section with Responsive Background - REDUCED SPACING */}
-        <section className="relative py-8 overflow-hidden">
-          {/* Responsive Background */}
+
+        {/* CTA Section - Inspired by Funtour */}
+        <section className="relative py-16 md:py-20 lg:py-24 overflow-hidden">
+          {/* Background with dark pattern */}
           <div className="absolute inset-0 z-0">
             <div
-              className="absolute inset-0 bg-primary-600"
+              className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900"
               style={{
-                backgroundImage: 'linear-gradient(135deg, #F04444 0%, #DC5F5F 50%, #C73232 100%)'
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
               }}
             />
           </div>
-          
+
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-4">
-              ¿Listo para tu próxima aventura?
-            </h2>
-            <p className="text-lg md:text-xl text-white mb-6 max-w-3xl mx-auto">
-              Explora nuestros destinos y encuentra el paquete perfecto para ti. Déjanos llevarte a lugares increíbles.
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white mb-8 md:mb-10 leading-tight">
+                ¡Regalá una experiencia única{' '}
+                <span className="text-primary-500">ahora!</span>
+              </h2>
+
               <Link to="/viajes">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Ver destinos
-                </Button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg md:text-xl px-10 md:px-12 py-4 md:py-5 rounded-full shadow-2xl transition-all duration-300 hover:shadow-primary-600/50"
+                >
+                  Ver más destinos
+                </motion.button>
               </Link>
-              <Link to="/contacto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-white border-white hover:bg-primary-700">
-                  Contáctanos
-                </Button>
-              </Link>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
