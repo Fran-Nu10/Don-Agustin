@@ -389,7 +389,7 @@ export function TripDetailPage() {
                     ¡Solicitud enviada!
                   </h3>
                   <p className="text-secondary-600 mb-4">
-                    Gracias por solicitar una cotización con Don Agustín Viajes. Te hemos enviado un correo con los detalles y nos pondremos en contacto contigo pronto.
+                    Gracias por solicitar una cotización con VIP Turismo. Te hemos enviado un correo con los detalles y nos pondremos en contacto contigo pronto.
                   </p>
                   <Button
                     variant="outline"

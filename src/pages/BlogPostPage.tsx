@@ -94,7 +94,7 @@ export function BlogPostPage() {
   }
 
   const shareUrl = window.location.href;
-  const shareText = `Leé "${post.title}" en Don Agustín Viajes`;
+  const shareText = `Leé "${post.title}" en VIP Turismo`;
 
   const handleShare = (platform: string) => {
     let shareLink = '';
@@ -214,7 +214,7 @@ export function BlogPostPage() {
               <div className="flex flex-wrap items-center gap-6 text-secondary-600 mb-6 pb-6 border-b border-secondary-200">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
-                  <span>Por {post.author?.email || 'Don Agustín Viajes'}</span>
+                  <span>Por {post.author?.email || 'VIP Turismo'}</span>
                 </div>
                 
                 <div className="flex items-center">

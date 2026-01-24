@@ -76,7 +76,7 @@ export function LoginPage() {
                   Iniciar Sesión
                 </h1>
                 <p className="text-secondary-600">
-                  Accede al panel administrativo de Don Agustín Viajes
+                  Accede al panel administrativo de VIP Turismo
                 </p>
               </div>
               
