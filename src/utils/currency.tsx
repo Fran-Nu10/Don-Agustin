@@ -1,5 +1,5 @@
 /**
- * Currency utility functions for VIP Turismo
+ * Currency utility functions for Don Agustín Viajes
  */
 
 /**

@@ -122,7 +122,7 @@ export function generateQuotationPDF(quotation: Quotation) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Los verdaderos creadores de experiencias VIP', 20, pageHeight - 20);
+  doc.text('Don Agustín Viajes - Tu agencia de confianza desde 1997', 20, pageHeight - 20);
   doc.text(`Generado el ${format(new Date(), 'dd MMM yyyy HH:mm', { locale: es })}`, 20, pageHeight - 15);
   
   // Descargar el PDF
@@ -236,7 +236,7 @@ export function generateQuotationsSummaryPDF(quotations: Quotation[]) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Reporte confidencial', 20, pageHeight - 15);
+  doc.text('Don Agustín Viajes - Reporte confidencial', 20, pageHeight - 15);
   
   // Descargar el PDF
   doc.save(`reporte-cotizaciones-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
@@ -391,7 +391,7 @@ export function generateClientPDF(client: Client) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Documento confidencial del CRM', 20, pageHeight - 20);
+  doc.text('Don Agustín Viajes - Documento confidencial del CRM', 20, pageHeight - 20);
   doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`, 20, pageHeight - 15);
   
   // Descargar el PDF
@@ -521,7 +521,7 @@ export function generateClientsSummaryPDF(clients: Client[]) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Reporte confidencial del CRM', 20, pageHeight - 15);
+  doc.text('Don Agustín Viajes - Reporte confidencial del CRM', 20, pageHeight - 15);
   
   // Descargar el PDF
   doc.save(`reporte-clientes-completo-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
@@ -606,7 +606,7 @@ export function generateClientsByStatusPDF(clients: Client[], status: string) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Reporte confidencial del CRM', 20, pageHeight - 15);
+  doc.text('Don Agustín Viajes - Reporte confidencial del CRM', 20, pageHeight - 15);
   
   // Descargar el PDF
   const statusSlug = status.replace('_', '-');
@@ -692,7 +692,7 @@ export function generateClientsBySourcePDF(clients: Client[], source: string) {
   const pageHeight = doc.internal.pageSize.height;
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('VIP Turismo - Reporte confidencial del CRM', 20, pageHeight - 15);
+  doc.text('Don Agustín Viajes - Reporte confidencial del CRM', 20, pageHeight - 15);
   
   // Descargar el PDF
   const sourceSlug = source.replace('_', '-');
