@@ -11,7 +11,7 @@ export default {
           300: '#FFA0A0',
           400: '#FF6B6B',
           500: '#F04444',
-          600: '#DC5F5F', // Main VipTurismo red
+          600: '#DC5F5F', // Main brand color
           700: '#C73232',
           800: '#A82A2A',
           900: '#8E2424',

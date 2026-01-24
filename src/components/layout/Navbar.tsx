@@ -100,12 +100,12 @@ export function Navbar() {
               {/* Logo - Always visible */}
               <Link to="/" className="flex items-center">
                 <img
-                  src="/427173037_306946561968763_5005834942579133161_n.jpg"
-                  alt="VIP Turismo"
+                  src="/logo-don-agustin.png"
+                  alt="Don Agustín Viajes"
                   className="h-10 w-auto mr-3"
                 />
                 <span className="font-heading font-bold text-xl text-white">
-                  VIP Turismo
+                  Don Agustín Viajes
                 </span>
               </Link>
 

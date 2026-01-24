@@ -77,15 +77,15 @@ export function AboutPage() {
                 </h2>
                 <div className="prose prose-lg">
                   <p className="text-secondary-600 mb-4">
-                    VIP Turismo nació con una visión diferente: ofrecer una forma única de viajar
-                    donde cada cliente recibe atención personalizada y experiencias a medida. Nos
-                    especializamos en crear viajes que se adaptan a tus sueños, no al revés.
+                    Don Agustín Viajes nació en 1997 con la visión de ofrecer experiencias de viaje
+                    personalizadas y memorables. Con más de 25 años de experiencia, nos especializamos
+                    en crear viajes que se adaptan a tus sueños, brindando atención personalizada
+                    en cada detalle.
                   </p>
                   <p className="text-secondary-600">
                     Más allá de vender paquetes turísticos, nos dedicamos a diseñar experiencias
-                    memorables. Nuestro compromiso es brindar un servicio VIP que haga de cada viaje
-                    algo extraordinario, combinando destinos fascinantes con atención al detalle
-                    y un trato exclusivo.
+                    únicas. Nuestro compromiso es hacer de cada viaje algo extraordinario, combinando
+                    destinos fascinantes con un servicio cercano, profesional y de confianza.
                   </p>
                 </div>
               </motion.div>
@@ -99,7 +99,7 @@ export function AboutPage() {
               >
                 <img
                   src="https://images.pexels.com/photos/7625042/pexels-photo-7625042.jpeg"
-                  alt="VIP Turismo - Experiencias Únicas"
+                  alt="Don Agustín Viajes - Experiencias Únicas"
                   className="w-full h-full object-cover"
                 />
               </motion.div>

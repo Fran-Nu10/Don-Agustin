@@ -96,7 +96,7 @@ export function PremiumTripsCarousel({ trips }: PremiumTripsCarouselProps) {
             viewport={{ once: true }}
             className="font-heading font-bold text-3xl md:text-4xl text-secondary-900 mb-3"
           >
-            Experiencias <span className="text-primary-600">VIP</span>
+            Experiencias <span className="text-primary-600">Premium</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

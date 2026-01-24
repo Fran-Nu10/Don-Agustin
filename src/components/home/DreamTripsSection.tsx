@@ -116,7 +116,7 @@ export function DreamTripsSection({ trips }: DreamTripsSectionProps) {
           className="text-center mb-10"
         >
           <h2 className="font-heading font-bold text-3xl md:text-4xl text-secondary-900 mb-3">
-            Experiencias VIP Seleccionadas
+            Experiencias Seleccionadas
           </h2>
           <p className="text-lg md:text-xl text-secondary-600">
             Destinos exclusivos diseñados para vos

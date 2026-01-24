@@ -11,23 +11,23 @@ export function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <img
-                src="/427173037_306946561968763_5005834942579133161_n.jpg"
-                alt="VIP Turismo"
+                src="/logo-don-agustin.png"
+                alt="Don Agustín Viajes"
                 className="h-10 w-auto mr-3"
               />
               <h3 className="font-heading text-xl font-bold">
-                VIP Turismo
+                Don Agustín Viajes
               </h3>
             </div>
             <p className="text-secondary-300 mb-4 font-semibold">
-              Los verdaderos creadores de Experiencias VIP
+              Tu agencia de confianza desde 1997
             </p>
             <p className="text-secondary-400 mb-4 text-sm">
-              Turismo nacional e internacional personalizado con atención exclusiva y servicio premium.
+              Más de 25 años brindando experiencias inolvidables. Turismo nacional e internacional personalizado.
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://www.facebook.com/vipturismo"
+                href="https://www.facebook.com/donagustinviajes"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -35,7 +35,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://www.instagram.com/vipturismo.uy"
+                href="https://www.instagram.com/donagustinviajes"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-300 hover:text-primary-600 transition-colors"
@@ -91,20 +91,20 @@ export function Footer() {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
                 <span className="text-secondary-300">
-                  Rocha 2334, Montevideo, Uruguay
+                  18 de Julio 1236, 11100 Montevideo, Uruguay
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 text-primary-600 mr-2" />
-                <span className="text-secondary-300">091 517 217 / 097 442 727</span>
+                <span className="text-secondary-300">091 339 099</span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-primary-600 mr-2" />
                 <a
-                  href="mailto:info@vipturismo.com"
+                  href="mailto:info@donagustinviajes.com"
                   className="text-secondary-300 hover:text-primary-600 transition-colors"
                 >
-                  info@vipturismo.com
+                  info@donagustinviajes.com
                 </a>
               </li>
             </ul>
@@ -112,7 +112,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-secondary-700 mt-10 pt-6 text-center text-secondary-400 text-sm">
-          <p>© {new Date().getFullYear()} VIP Turismo. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Don Agustín Viajes. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

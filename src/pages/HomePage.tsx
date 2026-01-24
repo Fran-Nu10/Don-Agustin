@@ -73,10 +73,10 @@ export function HomePage() {
               <div className="mb-8 md:mb-12">
                 <TypewriterText
                   phrases={[
-                    'LOS VERDADEROS CREADORES DE EXPERIENCIAS VIP',
-                    'DISEÑAMOS TU EXPERIENCIA',
+                    'TU AGENCIA DE CONFIANZA DESDE 1997',
+                    'MÁS DE 25 AÑOS DE EXPERIENCIA',
                     'VIAJES PERSONALIZADOS A TU MEDIDA',
-                    'ATENCIÓN EXCLUSIVA Y PREMIUM'
+                    'HACEMOS REALIDAD TUS SUEÑOS'
                   ]}
                   typingSpeed={80}
                   deletingSpeed={50}
@@ -100,11 +100,11 @@ export function HomePage() {
                           paintOrder: 'stroke fill',
                           letterSpacing: '0.02em'
                         }}>
-                    VIVÍ EXPERIENCIAS VIP
+                    DESCUBRÍ EL MUNDO
                   </span>
                   <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl text-white drop-shadow-2xl"
                         style={{ letterSpacing: '0.02em' }}>
-                    CON <span className="font-extrabold">VIPTURISMO</span>
+                    CON <span className="font-extrabold">DON AGUSTÍN VIAJES</span>
                   </span>
                 </h1>
               </motion.div>

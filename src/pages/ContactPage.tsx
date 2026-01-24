@@ -188,7 +188,7 @@ export function ContactPage() {
                         Correo electrónico
                       </h3>
                       <p className="text-secondary-600">
-                        info@vipturismo.com
+                        info@donagustinviajes.com
                       </p>
                     </div>
                   </div>
